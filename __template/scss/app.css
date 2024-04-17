@@ -1,0 +1,215 @@
+/*!
+ * AdminKit v3.0.2 (https://adminkit.io/)
+ * Copyright 2021 Paul Laros
+ * Copyright 2021 AdminKit
+ * Licensed under MIT (https://github.com/adminkit/adminkit/blob/master/LICENSE)
+ */
+/*
+// Bootstrap
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
+@import "~bootstrap/scss/utilities";
+@import "~bootstrap/scss/root";
+@import "~bootstrap/scss/reboot";
+@import "~bootstrap/scss/type";
+@import "~bootstrap/scss/images";
+@import "~bootstrap/scss/containers";
+@import "~bootstrap/scss/grid";
+@import "~bootstrap/scss/tables";
+@import "~bootstrap/scss/forms";
+@import "~bootstrap/scss/buttons";
+@import "~bootstrap/scss/transitions";
+@import "~bootstrap/scss/dropdown";
+@import "~bootstrap/scss/button-group";
+@import "~bootstrap/scss/nav";
+@import "~bootstrap/scss/navbar";
+@import "~bootstrap/scss/card";
+@import "~bootstrap/scss/badge";
+@import "~bootstrap/scss/list-group";
+@import "~bootstrap/scss/close";
+@import "~bootstrap/scss/helpers";
+@import "~bootstrap/scss/utilities/api";
+*/
+.avatar {
+  width: 40px;
+  height: 40px;
+}
+
+.avatar-lg {
+  width: 64px;
+  height: 64px;
+}
+
+.avatar-title {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: #3B7DDD;
+}
+
+.btn .feather {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-primary, .btn-primary:focus, .btn-primary.focus, .btn-primary.disabled, .btn-primary:disabled, .show > .btn-primary.dropdown-toggle {
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled):not(.disabled), .btn-primary.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-secondary, .btn-secondary:focus, .btn-secondary.focus, .btn-secondary.disabled, .btn-secondary:disabled, .show > .btn-secondary.dropdown-toggle {
+  color: #fff;
+}
+.btn-secondary:hover:not(:disabled):not(.disabled), .btn-secondary.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-success, .btn-success:focus, .btn-success.focus, .btn-success.disabled, .btn-success:disabled, .show > .btn-success.dropdown-toggle {
+  color: #fff;
+}
+.btn-success:hover:not(:disabled):not(.disabled), .btn-success.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-info, .btn-info:focus, .btn-info.focus, .btn-info.disabled, .btn-info:disabled, .show > .btn-info.dropdown-toggle {
+  color: #fff;
+}
+.btn-info:hover:not(:disabled):not(.disabled), .btn-info.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-warning, .btn-warning:focus, .btn-warning.focus, .btn-warning.disabled, .btn-warning:disabled, .show > .btn-warning.dropdown-toggle {
+  color: #fff;
+}
+.btn-warning:hover:not(:disabled):not(.disabled), .btn-warning.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-danger, .btn-danger:focus, .btn-danger.focus, .btn-danger.disabled, .btn-danger:disabled, .show > .btn-danger.dropdown-toggle {
+  color: #fff;
+}
+.btn-danger:hover:not(:disabled):not(.disabled), .btn-danger.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-light, .btn-light:focus, .btn-light.focus, .btn-light.disabled, .btn-light:disabled, .show > .btn-light.dropdown-toggle {
+  color: #fff;
+}
+.btn-light:hover:not(:disabled):not(.disabled), .btn-light.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-dark, .btn-dark:focus, .btn-dark.focus, .btn-dark.disabled, .btn-dark:disabled, .show > .btn-dark.dropdown-toggle {
+  color: #fff;
+}
+.btn-dark:hover:not(:disabled):not(.disabled), .btn-dark.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-facebook, .btn-facebook:focus, .btn-facebook.focus, .btn-facebook.disabled, .btn-facebook:disabled, .show > .btn-facebook.dropdown-toggle {
+  color: #fff;
+}
+.btn-facebook:hover:not(:disabled):not(.disabled), .btn-facebook.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-twitter, .btn-twitter:focus, .btn-twitter.focus, .btn-twitter.disabled, .btn-twitter:disabled, .show > .btn-twitter.dropdown-toggle {
+  color: #fff;
+}
+.btn-twitter:hover:not(:disabled):not(.disabled), .btn-twitter.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-google, .btn-google:focus, .btn-google.focus, .btn-google.disabled, .btn-google:disabled, .show > .btn-google.dropdown-toggle {
+  color: #fff;
+}
+.btn-google:hover:not(:disabled):not(.disabled), .btn-google.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-youtube, .btn-youtube:focus, .btn-youtube.focus, .btn-youtube.disabled, .btn-youtube:disabled, .show > .btn-youtube.dropdown-toggle {
+  color: #fff;
+}
+.btn-youtube:hover:not(:disabled):not(.disabled), .btn-youtube.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-vimeo, .btn-vimeo:focus, .btn-vimeo.focus, .btn-vimeo.disabled, .btn-vimeo:disabled, .show > .btn-vimeo.dropdown-toggle {
+  color: #fff;
+}
+.btn-vimeo:hover:not(:disabled):not(.disabled), .btn-vimeo.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-dribbble, .btn-dribbble:focus, .btn-dribbble.focus, .btn-dribbble.disabled, .btn-dribbble:disabled, .show > .btn-dribbble.dropdown-toggle {
+  color: #fff;
+}
+.btn-dribbble:hover:not(:disabled):not(.disabled), .btn-dribbble.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-github, .btn-github:focus, .btn-github.focus, .btn-github.disabled, .btn-github:disabled, .show > .btn-github.dropdown-toggle {
+  color: #fff;
+}
+.btn-github:hover:not(:disabled):not(.disabled), .btn-github.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-instagram, .btn-instagram:focus, .btn-instagram.focus, .btn-instagram.disabled, .btn-instagram:disabled, .show > .btn-instagram.dropdown-toggle {
+  color: #fff;
+}
+.btn-instagram:hover:not(:disabled):not(.disabled), .btn-instagram.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-pinterest, .btn-pinterest:focus, .btn-pinterest.focus, .btn-pinterest.disabled, .btn-pinterest:disabled, .show > .btn-pinterest.dropdown-toggle {
+  color: #fff;
+}
+.btn-pinterest:hover:not(:disabled):not(.disabled), .btn-pinterest.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-flickr, .btn-flickr:focus, .btn-flickr.focus, .btn-flickr.disabled, .btn-flickr:disabled, .show > .btn-flickr.dropdown-toggle {
+  color: #fff;
+}
+.btn-flickr:hover:not(:disabled):not(.disabled), .btn-flickr.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-bitbucket, .btn-bitbucket:focus, .btn-bitbucket.focus, .btn-bitbucket.disabled, .btn-bitbucket:disabled, .show > .btn-bitbucket.dropdown-toggle {
+  color: #fff;
+}
+.btn-bitbucket:hover:not(:disabled):not(.disabled), .btn-bitbucket.hover:not(:disabled):not(.disabled) {
+  color: #fff;
+}
+
+.btn-light, .btn-light:focus, .btn-light.focus, .btn-light.disabled, .btn-light:disabled, .show > .btn-light.dropdown-toggle,
+.btn-white,
+.btn-white:focus,
+.btn-white.focus,
+.btn-white.disabled,
+.btn-white:disabled,
+.show > .btn-white.dropdown-toggle {
+  color: #343a40;
+}
+.btn-light:hover:not(:disabled):not(.disabled), .btn-light.hover:not(:disabled):not(.disabled),
+.btn-white:hover:not(:disabled):not(.disabled),
+.btn-white.hover:not(:disabled):not(.disabled) {
+  color: #343a40;
+}
+
+/*
+// 3rd party plugins
+@import "~jsvectormap/dist/css/jsvectormap";
+@import "~simplebar/dist/simplebar";
+@import "~flatpickr/dist/flatpickr";
+
+// 3rd party plugin styles
+@import "5-vendor/flatpickr";
+@import "5-vendor/simplebar";
+*//*# sourceMappingURL=app.css.map */
