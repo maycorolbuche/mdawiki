@@ -1,21 +1,24 @@
+/*3-components.type :: start*/
 .text-sm {
-  font-size: $font-size-sm;
+    font-size: $font-size-sm;
 }
 
 .text-lg {
-  font-size: $font-size-lg;
+    font-size: $font-size-lg;
 }
 
-b, strong {
-	font-weight: $font-weight-bold;
+b,
+strong {
+    font-weight: $font-weight-bold;
 }
 
 pre.snippet {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  text-align: justify;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: justify;
 }
 
 a {
-  cursor: pointer;
+    cursor: pointer;
 }
+/*3-components.type :: end*/

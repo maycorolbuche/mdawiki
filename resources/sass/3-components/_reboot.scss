@@ -1,14 +1,18 @@
-body, html, #root {
-  height: 100%;
+/*3-components.reboot :: start*/
+body,
+html,
+#root {
+    height: 100%;
 }
 
 body {
-  overflow-y: scroll;
-  opacity: 1 !important;
+    overflow-y: scroll;
+    opacity: 1 !important;
 }
 
 @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
-  html {
-    overflow-x: hidden;
-  }
+    html {
+        overflow-x: hidden;
+    }
 }
+/*3-components.reboot :: end*/

@@ -3032,17 +3032,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-/*
-// Charts
-import "./modules/chartjs";
-
-// Forms
-import "./modules/flatpickr";
-
-// Maps
-import "./modules/vector-maps";
-*/
-
 /***/ }),
 
 /***/ "./resources/js/modules/bootstrap.js":
@@ -10096,6 +10085,19 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/css/fonts/open_sans.css":
+/*!*******************************************!*\
+  !*** ./resources/css/fonts/open_sans.css ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
 /***/ "./resources/css/app.css":
 /*!*******************************!*\
   !*** ./resources/css/app.css ***!
@@ -12257,6 +12259,7 @@ if (can_use_dom__WEBPACK_IMPORTED_MODULE_0__) {
 /******/ 	// This entry module depends on other loaded chunks and execution need to be delayed
 /******/ 	__webpack_require__.O(undefined, ["css/app"], () => (__webpack_require__("./resources/js/app.js")))
 /******/ 	__webpack_require__.O(undefined, ["css/app"], () => (__webpack_require__("./resources/sass/app.scss")))
+/******/ 	__webpack_require__.O(undefined, ["css/app"], () => (__webpack_require__("./resources/css/fonts/open_sans.css")))
 /******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["css/app"], () => (__webpack_require__("./resources/css/app.css")))
 /******/ 	__webpack_exports__ = __webpack_require__.O(__webpack_exports__);
 /******/ 	

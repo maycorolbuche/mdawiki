@@ -1,0 +1,71 @@
+/* General */
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+
+/* Fonts */
+h1,
+.h1 {
+    font-weight: 200;
+    font-size: 30px;
+}
+
+h2,
+.h2 {
+    font-weight: 350;
+    font-size: 24px;
+}
+
+.text-justify {
+    text-align: justify !important;
+}
+
+/* Sidebar */
+.sidebar-user {
+    padding: .75rem 1.5rem;
+}
+
+.sidebar-user a {
+    outline: 0;
+    text-decoration: none;
+}
+
+.sidebar-user-title,
+.sidebar-user-title:hover {
+    color: #e9ecef;
+}
+
+.sidebar-user-subtitle {
+    color: #adb5bd;
+}
+
+/* NavBar */
+.input-group-navbar .btn,
+.input-group-navbar .form-control {
+    background: #f3f6fa;
+    border: 0;
+    border-radius: 20px;
+    box-shadow: none;
+    height: calc(2.1875rem + 2px);
+    padding: .4rem 1rem;
+}
+
+.input-group-navbar .btn .feather {
+    height: 20px;
+    width: 20px;
+}
+
+/* Card */
+.card .card-body {
+    font-size: 13px !important;
+    color: #666 !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+}
+
+.card.card-group {
+    box-shadow: inherit !important;
+}
