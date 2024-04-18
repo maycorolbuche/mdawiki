@@ -24,6 +24,7 @@
                         <x-input type="password" name="password" label="Senha" placeholder="Escolha uma senha" />
                         <x-input type="password" name="password_confirmation" label="Confirme a Senha"
                             placeholder="Confirme sua senha" />
+                        <x-input type="captcha" name="captcha" label="Digite os caracteres da imagem" />
                     </x-form-group>
 
                     <div class="d-grid gap-2 mt-3">

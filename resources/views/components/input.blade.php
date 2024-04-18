@@ -5,9 +5,18 @@
 <div
     class="{{ $colXs ? " col-$colXs " : '' }} {{ $colSm ? " col-sm-$colSm " : '' }}{{ $colMd ? " col-md-$colMd " : '' }}{{ $colLg ? " col-lg-$colLg " : '' }}{{ $colXl ? " col-xl-$colXl " : '' }}{{ $colXxl ? " col-xxl-$colXxl " : '' }}">
     <label for="{{ $id }}" class="form-label">{{ $label }}</label>
-    <input type="{{ $type }}" id="{{ $id }}" name="{{ $name }}"
-        placeholder="{{ $placeholder }}" value="{{ $value }}"
-        class="form-control {{ $errors->has($field) ? 'is-invalid' : '' }}">
+
+    @if ($type == 'captcha')
+        <div class="d-flex">
+            {!! Captcha::img() !!}
+            <input type="text" id="{{ $id }}" name="{{ $name }}" class="form-control">
+        </div>
+    @else
+        <input type="{{ $type }}" id="{{ $id }}" name="{{ $name }}"
+            placeholder="{{ $placeholder }}" value="{{ $value }}"
+            class="form-control {{ $errors->has($field) ? 'is-invalid' : '' }}">
+    @endif
+
 
     @if ($errors->has($field))
         <div class="invalid-feedback">
