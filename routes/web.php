@@ -8,7 +8,10 @@ Route::prefix('@')->group(function () {
     Route::get('/registro', 'Auth\RegisterController@index')->name('registro');
     Route::post('/registro', 'Auth\RegisterController@store');
 
-    Route::get('/acessar', 'Auth\RegisterController@index')->name('login');
+    Route::get('/validar/{id_user_hash?}/{id_code_hash?}', 'Auth\VerificationCodeController@index')->name('validar-email');
+    Route::post('/validar/{id_user_hash?}/{id_code_hash?}', 'Auth\VerificationCodeController@validate');
+
+    Route::get('/acessar', 'Auth\LoginController@index')->name('login');
 
 
     Route::get('/test', function () {
