@@ -49,6 +49,58 @@
                     sua Associação/Missão, através do Regional ou Distrital, que autorizará a investidura.
 
                 </x-group>
+                <x-group title="GRUpo 22">
+                    Itens atualizados, conforme novos cartões de classe regular e avançados. Também foram
+                    seguidas
+                    todas as OMD's (Orientações do Ministério dos Desbravadores), publicadas no portal
+                    http://www.desbravadores.org.br.
+
+                    Os requisitos devem ser acompanhados e avaliados por um instrutor responsável. A pasta
+                    final,
+                    contendo trabalhos, relatórios e o cartão assinado, deve ser avaliada pelo Ministério Jovem
+                    da
+                    sua Associação/Missão, através do Regional ou Distrital, que autorizará a investidura.
+
+                </x-group>
+                <x-group title="GRUpo 22">
+                    Itens atualizados, conforme novos cartões de classe regular e avançados. Também foram
+                    seguidas
+                    todas as OMD's (Orientações do Ministério dos Desbravadores), publicadas no portal
+                    http://www.desbravadores.org.br.
+
+                    Os requisitos devem ser acompanhados e avaliados por um instrutor responsável. A pasta
+                    final,
+                    contendo trabalhos, relatórios e o cartão assinado, deve ser avaliada pelo Ministério Jovem
+                    da
+                    sua Associação/Missão, através do Regional ou Distrital, que autorizará a investidura.
+
+                </x-group>
+                <x-group title="GRUpo 22">
+                    Itens atualizados, conforme novos cartões de classe regular e avançados. Também foram
+                    seguidas
+                    todas as OMD's (Orientações do Ministério dos Desbravadores), publicadas no portal
+                    http://www.desbravadores.org.br.
+
+                    Os requisitos devem ser acompanhados e avaliados por um instrutor responsável. A pasta
+                    final,
+                    contendo trabalhos, relatórios e o cartão assinado, deve ser avaliada pelo Ministério Jovem
+                    da
+                    sua Associação/Missão, através do Regional ou Distrital, que autorizará a investidura.
+
+                </x-group>
+                <x-group title="GRUpo 22">
+                    Itens atualizados, conforme novos cartões de classe regular e avançados. Também foram
+                    seguidas
+                    todas as OMD's (Orientações do Ministério dos Desbravadores), publicadas no portal
+                    http://www.desbravadores.org.br.
+
+                    Os requisitos devem ser acompanhados e avaliados por um instrutor responsável. A pasta
+                    final,
+                    contendo trabalhos, relatórios e o cartão assinado, deve ser avaliada pelo Ministério Jovem
+                    da
+                    sua Associação/Missão, através do Regional ou Distrital, que autorizará a investidura.
+
+                </x-group>
 
             </x-content>
         </div>

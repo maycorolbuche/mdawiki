@@ -3,6 +3,11 @@ html,
 body {
     margin: 0;
     padding: 0;
+    overflow-y: auto;
+}
+
+.main {
+    overflow: initial !important;
 }
 
 
@@ -68,4 +73,27 @@ h2,
 
 .card.card-group {
     box-shadow: inherit !important;
+}
+
+/* Form */
+.form-label {
+    font-weight: 700;
+    margin-bottom: .1rem;
+}
+
+.invalid-feedback,
+.valid-feedback {
+    font-size: 12px;
+}
+
+
+/* Alert */
+.alert {
+    display: flex;
+    padding: 0;
+}
+
+.alert .alert-icon {
+    background: rgba(0, 0, 0, .05);
+    padding: .95rem;
 }

@@ -16,6 +16,8 @@
 
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
+    @include('layouts.partials.analytics')
+
     @stack('styles')
 </head>
 

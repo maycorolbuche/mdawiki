@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand navbar-light navbar-bg">
+<nav class="navbar navbar-expand navbar-light navbar-bg position-sticky top-0 z-3">
     <a class="sidebar-toggle js-sidebar-toggle">
         <i class="hamburger align-self-center"></i>
     </a>
@@ -157,8 +157,8 @@
                         <a href="#" class="list-group-item">
                             <div class="row g-0 align-items-center">
                                 <div class="col-2">
-                                    <img src="img/avatars/avatar-5.jpg" class="avatar img-fluid rounded-circle"
-                                        alt="Vanessa Tucker">
+                                    <img src="{{ asset('img/avatars/avatar-5.jpg') }}"
+                                        class="avatar img-fluid rounded-circle" alt="Vanessa Tucker">
                                 </div>
                                 <div class="col-10 ps-2">
                                     <div class="text-dark">Vanessa Tucker</div>
@@ -171,8 +171,8 @@
                         <a href="#" class="list-group-item">
                             <div class="row g-0 align-items-center">
                                 <div class="col-2">
-                                    <img src="img/avatars/avatar-2.jpg" class="avatar img-fluid rounded-circle"
-                                        alt="William Harris">
+                                    <img src="{{ asset('img/avatars/avatar-2.jpg') }}"
+                                        class="avatar img-fluid rounded-circle" alt="William Harris">
                                 </div>
                                 <div class="col-10 ps-2">
                                     <div class="text-dark">William Harris</div>
@@ -184,8 +184,8 @@
                         <a href="#" class="list-group-item">
                             <div class="row g-0 align-items-center">
                                 <div class="col-2">
-                                    <img src="img/avatars/avatar-4.jpg" class="avatar img-fluid rounded-circle"
-                                        alt="Christina Mason">
+                                    <img src="{{ asset('img/avatars/avatar-4.jpg') }}"
+                                        class="avatar img-fluid rounded-circle" alt="Christina Mason">
                                 </div>
                                 <div class="col-10 ps-2">
                                     <div class="text-dark">Christina Mason</div>
@@ -197,8 +197,8 @@
                         <a href="#" class="list-group-item">
                             <div class="row g-0 align-items-center">
                                 <div class="col-2">
-                                    <img src="img/avatars/avatar-3.jpg" class="avatar img-fluid rounded-circle"
-                                        alt="Sharon Lessman">
+                                    <img src="{{ asset('img/avatars/avatar-3.jpg') }}"
+                                        class="avatar img-fluid rounded-circle" alt="Sharon Lessman">
                                 </div>
                                 <div class="col-10 ps-2">
                                     <div class="text-dark">Sharon Lessman</div>
@@ -216,23 +216,27 @@
             </li>
             <li class="nav-item dropdown">
                 <a class="nav-flag dropdown-toggle" href="#" id="languageDropdown" data-bs-toggle="dropdown">
-                    <img src="img/flags/us.png" alt="English" />
+                    <img src="{{ asset('img/flags/us.png') }}" alt="English" />
                 </a>
                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
                     <a class="dropdown-item" href="#">
-                        <img src="img/flags/us.png" alt="English" width="20" class="align-middle me-1" />
+                        <img src="{{ asset('img/flags/us.png') }}" alt="English" width="20"
+                            class="align-middle me-1" />
                         <span class="align-middle">English</span>
                     </a>
                     <a class="dropdown-item" href="#">
-                        <img src="img/flags/es.png" alt="Spanish" width="20" class="align-middle me-1" />
+                        <img src="{{ asset('img/flags/es.png') }}" alt="Spanish" width="20"
+                            class="align-middle me-1" />
                         <span class="align-middle">Spanish</span>
                     </a>
                     <a class="dropdown-item" href="#">
-                        <img src="img/flags/ru.png" alt="Russian" width="20" class="align-middle me-1" />
+                        <img src="{{ asset('img/flags/ru.png') }}" alt="Russian" width="20"
+                            class="align-middle me-1" />
                         <span class="align-middle">Russian</span>
                     </a>
                     <a class="dropdown-item" href="#">
-                        <img src="img/flags/de.png" alt="German" width="20" class="align-middle me-1" />
+                        <img src="{{ asset('img/flags/de.png') }}" alt="German" width="20"
+                            class="align-middle me-1" />
                         <span class="align-middle">German</span>
                     </a>
                 </div>
@@ -246,7 +250,8 @@
             </li>
             <li class="nav-item dropdown">
                 <a class="nav-icon pe-md-0 dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                    <img src="img/avatars/avatar.jpg" class="avatar img-fluid rounded" alt="Charles Hall" />
+                    <img src="{{ asset('img/avatars/avatar.jpg') }}" class="avatar img-fluid rounded"
+                        alt="Charles Hall" />
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
                     <a class='dropdown-item' href='/pages-profile'><i class="align-middle me-1"
@@ -262,6 +267,16 @@
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="#">Log out</a>
                 </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    Entrar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('registro') }}">
+                    Cadastre-se
+                </a>
             </li>
         </ul>
     </div>
