@@ -28,6 +28,11 @@ h2,
     text-align: justify !important;
 }
 
+small,
+.small {
+    font-size: 12px;
+}
+
 /* Sidebar */
 .sidebar-user {
     padding: .75rem 1.5rem;

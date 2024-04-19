@@ -53,7 +53,7 @@ class VerificationCodeEmail extends Notification
             ->subject('Validação de E-mail')
             ->greeting('Olá, ' . $notifiable->name . '!')
             ->line($html)
-            ->action('VALIDAR CÓDIGO', route('validar-email', [
+            ->action('VALIDAR CÓDIGO', route('validate', [
                 'id_user_hash' => CryptHelper::encryptNumber($notifiable->id),
                 'id_code_hash' => CryptHelper::encryptNumber($notifiable->verification_code),
             ]))

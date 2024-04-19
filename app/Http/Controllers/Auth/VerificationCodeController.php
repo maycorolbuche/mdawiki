@@ -18,24 +18,24 @@ class VerificationCodeController extends Controller
             $id_user = CryptHelper::decryptNumber($id_user_hash);
             $user = User::find($id_user);
             if (!$user) {
-                return redirect()->route('validar-email')->with('error', 'Usuário não encontrado!');
+                return redirect()->route('validate')->with('error', 'Usuário não encontrado!');
             }
 
             if ($user->email_verified_at != null) {
-                return redirect()->route('validar-email', ['id_user_hash' => $id_user_hash])->with('error', 'Este e-mail já está validado!')->withInput();
+                return redirect()->route('validate', ['id_user_hash' => $id_user_hash])->with('error', 'Este e-mail já está validado!')->withInput();
             }
 
             $verification_code = CryptHelper::decryptNumber($id_code_hash);
 
             if ($verification_code <> $user->verification_code) {
-                return redirect()->route('validar-email', ['id_user_hash' => $id_user_hash])->with('error', 'Este link expirou! Solicite um novo código.')->withInput();
+                return redirect()->route('validate', ['id_user_hash' => $id_user_hash])->with('error', 'Este link expirou! Solicite um novo código.')->withInput();
             }
 
             $verification_code_generated_at = Carbon::parse($user->verification_code_generated_at);
             $minutes = $verification_code_generated_at->diffInMinutes(now());
 
             if ($minutes > 30) {
-                return redirect()->route('validar-email')->with('error', 'Este link expirou! Solicite um novo código.');
+                return redirect()->route('validate')->with('error', 'Este link expirou! Solicite um novo código.');
             };
 
             $user->update([
@@ -84,7 +84,7 @@ class VerificationCodeController extends Controller
 
             $this->sendVerificationCodeEmail($user->id);
 
-            return redirect()->route('validar-email', ['id_user_hash' => CryptHelper::encryptNumber($user->id)]);
+            return redirect()->route('validate', ['id_user_hash' => CryptHelper::encryptNumber($user->id)]);
         } else {
             $request->validate([
                 'verification_code' => 'required|integer',
@@ -93,7 +93,7 @@ class VerificationCodeController extends Controller
             $id_user = CryptHelper::decryptNumber($id_user_hash);
             $user = User::find($id_user);
             if (!$user) {
-                return redirect()->route('validar-email')->with('error', 'Usuário não encontrado!');
+                return redirect()->route('validate')->with('error', 'Usuário não encontrado!');
             }
 
             $verification_code = $request->input('verification_code');
@@ -106,7 +106,7 @@ class VerificationCodeController extends Controller
             $minutes = $verification_code_generated_at->diffInMinutes(now());
 
             if ($minutes > 30) {
-                return redirect()->route('validar-email')->with('error', 'Este código expirou! Solicite um novo código.');
+                return redirect()->route('validate')->with('error', 'Este código expirou! Solicite um novo código.');
             };
 
             $user->update([

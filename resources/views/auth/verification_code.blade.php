@@ -13,7 +13,7 @@
                 @include('layouts.partials.messages')
 
                 @if ($id_user_hash == '')
-                    <form method="POST" action="{{ route('validar-email') }}">
+                    <form method="POST" action="{{ route('validate.validate') }}">
                         @csrf
                         <x-input name="email" label="Enviaremos um código para o seu e-mail!"
                             placeholder="Digite seu e-mail" />
@@ -33,7 +33,7 @@
                         </style>
                     @endpush
                     Foi enviado um código para o seu e-mail! Digite o código no campo abaixo:
-                    <form method="POST" action="{{ route('validar-email', ['id_user_hash' => $id_user_hash]) }}">
+                    <form method="POST" action="{{ route('validate.validate', ['id_user_hash' => $id_user_hash]) }}">
                         @csrf
 
                         <x-form-group>
@@ -44,14 +44,14 @@
                             <input type="submit" class='btn btn-lg btn-primary' value='Validar'>
                         </div>
                     </form>
-                    <br>Ainda não recebeu o código? <a href='{{ route('validar-email') }}'>Enviar novamente</a>
+                    <br>Ainda não recebeu o código? <a href='{{ route('validate') }}'>Enviar novamente</a>
                 @endif
             </div>
         </div>
     </div>
     <div class="text-center mb-3">
         <a href='{{ route('login') }}'>Acessar minha conta</a>
-        | <a href='{{ route('registro') }}'>Cadastre-se</a>
-        | <a href="{{ route('inicio') }}">Voltar para o site</a>
+        | <a href='{{ route('register') }}'>Cadastre-se</a>
+        | <a href="{{ route('home') }}">Voltar para o site</a>
     </div>
 @endsection

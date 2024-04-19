@@ -3,41 +3,74 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Http\Requests\LoginRequest;
 use App\Models\User;
-use App\Http\Requests\RegisterRequest;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Notification;
-use App\Notifications\VerificationCodeEmail;
-use App\Helpers\CryptHelper;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
+    /**
+     * Display login page.
+     * 
+     * @return Renderable
+     */
     public function index()
     {
-        return "LOGIN";
-        return view('auth.register');
+        return view('auth.login');
     }
 
-    public function store(RegisterRequest $request)
+    /**
+     * Handle account login request
+     * 
+     * @param LoginRequest $request
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function login(LoginRequest $request)
     {
-        $verificationCode = random_int(100000, 999999);
+        $credentials = $request->getCredentials();
+        $remember = $request->has('remember');
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'verification_code' => $verificationCode,
-            'verification_code_generated_at' => now()
-        ]);
+        $user = User::where('username', $credentials['username'] ?? null)->orWhere('email', $credentials['email'] ?? null)->first();
+        if ($user) {
+            if (empty($user->password)) {
+                return redirect()
+                    ->route('password.request')
+                    ->with('email', $user->email)
+                    ->withErrors('Você precisa cadastrar uma nova senha de acesso! Siga as instruções abaixo para criar sua senha.');
+            }
+        }
 
-        $this->sendVerificationCodeEmail($user->id);
+        if (!Auth::attempt($credentials, $remember)) {
+            return redirect()
+                ->route('login')
+                ->withInput()
+                ->withErrors(trans('auth.failed'));
+        }
 
-        return redirect()->route('validar-email', ['id_user_hash' => CryptHelper::encryptNumber($user->id)]);
+        $user = Auth::user();
+        if ($user->active <= 0) {
+            Auth::logout();
+            return redirect()
+                ->route('login')
+                ->withInput()
+                ->withErrors("Usuário inativo. Entre em contato com o suporte!");
+        }
+
+        return $this->authenticated($request, $user);
     }
 
-    public function sendVerificationCodeEmail($id_user)
+    /**
+     * Handle response after user authenticated
+     * 
+     * @param Request $request
+     * @param Auth $user
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    protected function authenticated(Request $request, $user)
     {
-        $user = User::find($id_user);
-        Notification::send($user, new VerificationCodeEmail());
+        return redirect()->intended();
     }
 }

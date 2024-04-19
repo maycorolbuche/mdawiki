@@ -31,7 +31,7 @@ class RegisterController extends Controller
 
         $this->sendVerificationCodeEmail($user->id);
 
-        return redirect()->route('validar-email', ['id_user_hash' => CryptHelper::encryptNumber($user->id)]);
+        return redirect()->route('validate', ['id_user_hash' => CryptHelper::encryptNumber($user->id)]);
     }
 
     public function sendVerificationCodeEmail($id_user)

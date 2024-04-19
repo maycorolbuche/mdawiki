@@ -15,7 +15,7 @@
         <div class="card-body">
             <div class="m-sm-3">
                 @include('layouts.partials.messages')
-                <form method="POST" action="{{ route('registro') }}">
+                <form method="POST" action="{{ route('register.store') }}">
                     @csrf
 
                     <x-form-group>
@@ -36,7 +36,6 @@
     </div>
     <div class="text-center mb-3">
         Já tem uma conta? <a href='{{ route('login') }}'>Acesse</a>
-        | <a href="{{ route('validar-email') }}">Tenho um código</a>
-        | <a href="{{ route('inicio') }}">Voltar para o site</a>
+        | <a href="{{ route('home') }}">Voltar para o site</a>
     </div>
 @endsection

@@ -248,36 +248,42 @@
                     </div>
                 </a>
             </li>
-            <li class="nav-item dropdown">
-                <a class="nav-icon pe-md-0 dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                    <img src="{{ asset('img/avatars/avatar.jpg') }}" class="avatar img-fluid rounded"
-                        alt="Charles Hall" />
-                </a>
-                <div class="dropdown-menu dropdown-menu-end">
-                    <a class='dropdown-item' href='/pages-profile'><i class="align-middle me-1"
-                            data-feather="user"></i> Profile</a>
-                    <a class="dropdown-item" href="#"><i class="align-middle me-1"
-                            data-feather="pie-chart"></i> Analytics</a>
-                    <div class="dropdown-divider"></div>
-                    <a class='dropdown-item' href='/pages-settings'><i class="align-middle me-1"
-                            data-feather="settings"></i> Settings &
-                        Privacy</a>
-                    <a class="dropdown-item" href="#"><i class="align-middle me-1"
-                            data-feather="help-circle"></i> Help Center</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#">Log out</a>
-                </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    Entrar
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('registro') }}">
-                    Cadastre-se
-                </a>
-            </li>
+
+            @auth
+                <li class="nav-item dropdown">
+                    <a class="nav-icon pe-md-0 dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <img src="{{ asset('img/avatars/avatar.jpg') }}" class="avatar img-fluid rounded"
+                            alt="Charles Hall" />
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class='dropdown-item' href='/pages-profile'><i class="align-middle me-1"
+                                data-feather="user"></i> Profile</a>
+                        <a class="dropdown-item" href="#"><i class="align-middle me-1"
+                                data-feather="pie-chart"></i> Analytics</a>
+                        <div class="dropdown-divider"></div>
+                        <a class='dropdown-item' href='/pages-settings'><i class="align-middle me-1"
+                                data-feather="settings"></i> Settings &
+                            Privacy</a>
+                        <a class="dropdown-item" href="#"><i class="align-middle me-1"
+                                data-feather="help-circle"></i> Help Center</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{{ route('logout') }}">Log out</a>
+                    </div>
+                </li>
+            @endauth
+
+            @guest
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('login') }}">
+                        Entrar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('register') }}">
+                        Cadastre-se
+                    </a>
+                </li>
+            @endguest
         </ul>
     </div>
 </nav>
