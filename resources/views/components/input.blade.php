@@ -4,14 +4,21 @@
 
 <div
     class="{{ $colXs ? " col-$colXs " : '' }} {{ $colSm ? " col-sm-$colSm " : '' }}{{ $colMd ? " col-md-$colMd " : '' }}{{ $colLg ? " col-lg-$colLg " : '' }}{{ $colXl ? " col-xl-$colXl " : '' }}{{ $colXxl ? " col-xxl-$colXxl " : '' }}">
-    <label for="{{ $id }}" class="form-label">{{ $label }}</label>
+
 
     @if ($type == 'captcha')
+        <label for="{{ $id }}" class="form-label">{{ $label }}</label>
         <div class="d-flex">
             {!! Captcha::img() !!}
             <input type="text" id="{{ $id }}" name="{{ $name }}" class="form-control">
         </div>
+    @elseif ($type == 'checkbox')
+        <input type="{{ $type }}" id="{{ $id }}" name="{{ $name }}"
+            value="{{ $itemValue }}" {{ $value == $itemValue ? 'checked' : '' }}
+            class="{{ $type == 'checkbox' ? 'form-check-input' : 'form-control' }}">
+        <label for="{{ $id }}" class="form-check-label">{{ $label }}</label>
     @else
+        <label for="{{ $id }}" class="form-label">{{ $label }}</label>
         <input type="{{ $type }}" id="{{ $id }}" name="{{ $name }}"
             placeholder="{{ $placeholder }}" value="{{ $value }}"
             class="form-control {{ $errors->has($field) ? 'is-invalid' : '' }}">
@@ -23,6 +30,8 @@
             {{ $errors->first($field) }}
         </div>
     @endif
+
+    {{ $slot }}
 </div>
 
 @php

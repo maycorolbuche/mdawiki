@@ -22,6 +22,7 @@ class Input extends Component
         public int $colLg = 0,
         public int $colXl = 0,
         public int $colXxl = 0,
+        public $itemValue = 1,
         public string $label = '',
         public string $placeholder = '',
 

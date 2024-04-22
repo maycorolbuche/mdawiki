@@ -51,6 +51,10 @@ class ForgotPasswordController extends Controller
             ? $this->sendResetLinkResponse($request, $response)
             : $this->sendResetLinkFailedResponse($request, $response);
 
-        return redirect()->route('login')->with('success', 'Você receberá um link para recuperação de senha em seu e-mail.');
+        if ($response == "passwords.sent") {
+            return redirect()->route('login')->with('success', 'Você receberá um link para recuperação de senha em seu e-mail.');
+        } else {
+            return redirect()->back()->withInput();
+        }
     }
 }

@@ -20,22 +20,16 @@
 
                     <x-form-group>
                         <x-input name="email" label="E-mail" placeholder="Digite seu e-mail" />
-                        <x-input type="password" name="password" label="Senha" placeholder="Escolha uma senha" />
-                        <small class="m-0">
-                            <a href="{{ route('password.request') }}">Esqueceu sua senha?</a>
-                        </small>
-                        <div>
-                            <div class="form-check align-items-center">
-                                <input id="customControlInline" type="checkbox" class="form-check-input" value="remember-me"
-                                    name="remember-me" checked>
-                                <label class="form-check-label text-small" for="customControlInline">Manter
-                                    conectado</label>
-                            </div>
-                        </div>
+                        <x-input type="password" name="password" label="Senha" placeholder="Escolha uma senha">
+                            <small>
+                                <a href="{{ route('password.request') }}">Esqueceu sua senha?</a>
+                            </small>
+                        </x-input>
+                        <x-input type="checkbox" name="remember" label="Manter conectado" />
                     </x-form-group>
 
                     <div class="d-grid gap-2 mt-3">
-                        <input type="submit" class='btn btn-lg btn-primary' value='Cadastrar'>
+                        <input type="submit" class='btn btn-lg btn-primary' value='Entrar'>
                     </div>
                 </form>
             </div>

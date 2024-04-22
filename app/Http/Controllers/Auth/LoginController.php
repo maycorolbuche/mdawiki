@@ -32,7 +32,8 @@ class LoginController extends Controller
         $credentials = $request->getCredentials();
         $remember = $request->has('remember');
 
-        $user = User::where('username', $credentials['username'] ?? null)->orWhere('email', $credentials['email'] ?? null)->first();
+        $user = User::where('email', $credentials['email'])->first();
+
         if ($user) {
             if (empty($user->password)) {
                 return redirect()
@@ -50,14 +51,6 @@ class LoginController extends Controller
         }
 
         $user = Auth::user();
-        if ($user->active <= 0) {
-            Auth::logout();
-            return redirect()
-                ->route('login')
-                ->withInput()
-                ->withErrors("Usuário inativo. Entre em contato com o suporte!");
-        }
-
         return $this->authenticated($request, $user);
     }
 

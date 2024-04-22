@@ -16,7 +16,8 @@
                     @csrf
 
                     <x-form-group>
-                        <x-input name="email" label="E-mail" placeholder="Digite seu e-mail" />
+                        <x-input name="email" label="E-mail" placeholder="Digite seu e-mail"
+                            value="{{ $email ?? (session('email') ?? old('email')) }}" />
                     </x-form-group>
 
                     Digite seu e-mail para receber as instruções de recuperação de senha.
