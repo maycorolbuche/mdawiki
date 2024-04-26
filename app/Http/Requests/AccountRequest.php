@@ -34,6 +34,7 @@ class AccountRequest extends FormRequest
         $this->merge([
             'is_pathfinder' => $this->has('is_pathfinder') ?? false,
             'is_adventurer' => $this->has('is_adventurer') ?? false,
+            'state' => strtoupper($this->input('state')),
             'change_data_at' => now(),
         ]);
     }

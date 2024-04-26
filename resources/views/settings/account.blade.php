@@ -89,3 +89,34 @@
         </form>
     </x-card>
 @endsection
+
+@push('scripts')
+    <script>
+        document.getElementById('pathfinder_club').onchange = function() {
+            club_change(this, document.getElementById('is_pathfinder'))
+        };
+        document.getElementById('adventurer_club').onchange = function() {
+            club_change(this, document.getElementById('is_adventurer'))
+        };
+        document.getElementById('is_pathfinder').onchange = function() {
+            is_club_change(this, document.getElementById('pathfinder_club'))
+        };
+        document.getElementById('is_adventurer').onchange = function() {
+            is_club_change(this, document.getElementById('adventurer_club'))
+        };
+
+        function club_change(input, checkbox) {
+            if (input.value === '') {
+                checkbox.checked = false;
+            } else {
+                checkbox.checked = true;
+            }
+        }
+
+        function is_club_change(checkbox, input) {
+            if (!checkbox.checked) {
+                input.value = '';
+            }
+        }
+    </script>
+@endpush

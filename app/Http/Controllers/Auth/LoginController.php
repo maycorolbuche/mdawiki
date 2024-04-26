@@ -53,6 +53,9 @@ class LoginController extends Controller
         }
 
         $user = Auth::user();
+        $user->last_login_at = now();
+        $user->save();
+
         if (!$user->change_data_at) {
             return redirect()->route('settings.account')->with('warning', 'Você está conectado! Aproveite para completar seus dados.');
         } else {
