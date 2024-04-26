@@ -17,6 +17,10 @@
             value="{{ $itemValue }}" {{ $value == $itemValue ? 'checked' : '' }}
             class="{{ $type == 'checkbox' ? 'form-check-input' : 'form-control' }}">
         <label for="{{ $id }}" class="form-check-label">{{ $label }}</label>
+    @elseif ($type == 'textarea')
+        <label for="{{ $id }}" class="form-label">{{ $label }}</label>
+        <textarea rows="{{ $rows }}" id="{{ $id }}" name="{{ $name }}" class="form-control"
+            id="inputBio" placeholder="{{ $placeholder }}">{{ $value }}</textarea>
     @else
         <label for="{{ $id }}" class="form-label">{{ $label }}</label>
         <input type="{{ $type }}" id="{{ $id }}" name="{{ $name }}"

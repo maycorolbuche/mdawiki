@@ -25,6 +25,7 @@ class Input extends Component
         public $itemValue = 1,
         public string $label = '',
         public string $placeholder = '',
+        public int $rows = 2,
 
         string $name = '',
         string $id = '',

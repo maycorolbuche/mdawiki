@@ -23,6 +23,20 @@ class User extends Authenticatable
         'password',
         'verification_code',
         'verification_code_generated_at',
+        'level',
+        'nickname',
+        'photo',
+        'birth_date',
+        'biography',
+        'city',
+        'state',
+        'association',
+        'is_pathfinder',
+        'pathfinder_club',
+        'is_adventurer',
+        'adventurer_club',
+        'change_data_at',
+        'last_login_at',
     ];
 
     /**

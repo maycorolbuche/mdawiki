@@ -251,9 +251,11 @@
 
             @auth
                 <li class="nav-item dropdown">
-                    <a class="nav-icon pe-md-0 dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                    <a class="nav-link pe-md-0 dropdown-toggle" href="#" data-bs-toggle="dropdown">
                         <img src="{{ asset('img/avatars/avatar.jpg') }}" class="avatar img-fluid rounded"
-                            alt="Charles Hall" />
+                            alt="{{ auth()->user()->nickname }}" />
+                        <span class="align-middle d-none d-md-inline-block text-truncate"
+                            style="max-width: 110px;">{{ auth()->user()->nickname }}</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end">
                         <a class='dropdown-item' href='/pages-profile'><i class="align-middle me-1"
@@ -261,9 +263,8 @@
                         <a class="dropdown-item" href="#"><i class="align-middle me-1"
                                 data-feather="pie-chart"></i> Analytics</a>
                         <div class="dropdown-divider"></div>
-                        <a class='dropdown-item' href='/pages-settings'><i class="align-middle me-1"
-                                data-feather="settings"></i> Settings &
-                            Privacy</a>
+                        <a class='dropdown-item' href="{{ route('settings') }}"><i class="align-middle me-1"
+                                data-feather="settings"></i> Minha Conta</a>
                         <a class="dropdown-item" href="#"><i class="align-middle me-1"
                                 data-feather="help-circle"></i> Help Center</a>
                         <div class="dropdown-divider"></div>

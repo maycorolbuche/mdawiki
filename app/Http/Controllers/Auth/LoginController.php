@@ -8,6 +8,7 @@ use App\Http\Requests\LoginRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
+
 class LoginController extends Controller
 {
     /**
@@ -15,8 +16,9 @@ class LoginController extends Controller
      * 
      * @return Renderable
      */
-    public function index()
+    public function index(Request $request)
     {
+        $request->session()->put('previous_url', url()->previous());
         return view('auth.login');
     }
 
@@ -51,7 +53,12 @@ class LoginController extends Controller
         }
 
         $user = Auth::user();
-        return $this->authenticated($request, $user);
+        if (!$user->change_data_at) {
+            return redirect()->route('settings.account')->with('warning', 'Você está conectado! Aproveite para completar seus dados.');
+        } else {
+            return redirect()->to($request->session()->pull('previous_url', '/'));
+            //return $this->authenticated($request, $user);
+        }
     }
 
     /**
@@ -62,8 +69,8 @@ class LoginController extends Controller
      * 
      * @return \Illuminate\Http\Response
      */
-    protected function authenticated(Request $request, $user)
-    {
-        return redirect()->intended();
-    }
+    //protected function authenticated(Request $request, $user)
+    //{
+    //    return redirect()->intended();
+    //}
 }

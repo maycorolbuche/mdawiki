@@ -21,10 +21,14 @@ class RegisterController extends Controller
     {
         $verificationCode = random_int(100000, 999999);
 
+        $parts = explode("@", $request->email);
+        $nickname = $parts[0];
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'nickname' => $nickname,
             'verification_code' => $verificationCode,
             'verification_code_generated_at' => now()
         ]);

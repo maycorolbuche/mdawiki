@@ -26,14 +26,22 @@ Route::prefix('@')->group(function () {
 
     Route::group(['middleware' => ['auth']], function () {
         Route::get('/sair', 'Auth\LogoutController@index')->name('logout');
+
+        Route::get('config', function () {
+            return redirect()->route('settings.account');
+        })->name('settings');
+
+        Route::get('config/conta', 'Setting\AccountController@index')->name('settings.account');
+        Route::get('config/e-mail', 'Setting\AccountController@index')->name('settings.email');
+        Route::get('config/senha', 'Setting\AccountController@index')->name('settings.password');
+        Route::get('config/privacidade', 'Setting\AccountController@index')->name('settings.privacy');
+        Route::get('config/notificacoes', 'Setting\AccountController@index')->name('settings.notifications');
     });
 
+
+    /* *** */
     Route::get('/test', function () {
         return view('test');
-    });
-
-    Route::get('/test2', function () {
-        return view('test2');
     });
 });
 
