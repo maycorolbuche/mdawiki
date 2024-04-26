@@ -16,12 +16,12 @@ return new class extends Migration
             $table->timestamp('verification_code_generated_at')->nullable()->after('verification_code');
 
             $table->integer('level')->default(1)->comment('0 = Limitado | 1 = Usuário | 2 = Revisor | 3 = Administrador | 4 = Super Administrador')->after('remember_token');
-            $table->string('nickname')->after('level');
+            $table->string('nickname', 20)->after('level');
             $table->string('photo')->nullable()->after('nickname');
             $table->date('birth_date')->nullable()->after('photo');
             $table->longText('biography')->nullable()->after('birth_date');
             $table->string('city')->nullable()->after('biography');
-            $table->string('state')->nullable()->after('city');
+            $table->string('state', 2)->nullable()->after('city');
             $table->string('association')->nullable()->after('state');
             $table->boolean('is_pathfinder')->nullable()->after('association');
             $table->string('pathfinder_club')->nullable()->after('is_pathfinder');

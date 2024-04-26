@@ -32,6 +32,8 @@ Route::prefix('@')->group(function () {
         })->name('settings');
 
         Route::get('config/conta', 'Setting\AccountController@index')->name('settings.account');
+        Route::post('config/conta', 'Setting\AccountController@update')->name('settings.account.update');
+
         Route::get('config/e-mail', 'Setting\AccountController@index')->name('settings.email');
         Route::get('config/senha', 'Setting\AccountController@index')->name('settings.password');
         Route::get('config/privacidade', 'Setting\AccountController@index')->name('settings.privacy');

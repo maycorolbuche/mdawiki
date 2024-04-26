@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 class Input extends Component
 {
     public string $name, $id, $field, $type, $value; //, $class, $rows;
-    //public bool $required, $disabled, $readonly, $hidden;
+    /*public bool $required, $disabled, $readonly, $hidden;*/
 
     /**
      * Create a new component instance.
@@ -26,20 +26,21 @@ class Input extends Component
         public string $label = '',
         public string $placeholder = '',
         public int $rows = 2,
+        public $min = '',
+        public $max = '',
+        public bool $required = false,
 
         string $name = '',
         string $id = '',
         string $type = '',
         string $field = '',
-        string $value = ''
+        string $value = '',
         /*
         public int $width = 400,
-        public $min = '',
-        public $max = '',
         
         
         public string $pre_type = '',
-        string $required = 'false',
+        
         string $disabled = 'false',
         string $readonly = 'false',
         string $hidden = 'false',
@@ -112,7 +113,6 @@ class Input extends Component
         
         $this->rows = $rows ?: 5;
 
-        $this->required = $required && $required != "false";
         $this->disabled = $disabled && $disabled != "false";
         $this->readonly = $readonly && $readonly != "false";
         $this->hidden = $hidden && $hidden != "false";*/

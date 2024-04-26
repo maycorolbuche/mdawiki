@@ -5,22 +5,35 @@
 @section('card')
     <x-card title="Informações Pessoais">
         @include('layouts.partials.messages')
-        <form>
+        <form method="POST" action="{{ route('settings.account.update') }}">
+            @csrf
+
             <div class="row">
                 <div class="col-md-8">
                     <div class="mb-3">
-                        <x-input name="name" label="Nome completo" value="{{ $user->name }}"
-                            placeholder="Digite seu nome" />
+                        <x-input name="name" label="Nome completo" value="{{ $user->name }}" placeholder="Digite seu nome"
+                            required />
                     </div>
                     <div class="mb-3">
                         <x-input name="nickname" label="Apelido" value="{{ $user->nickname }}"
-                            placeholder="Como gostaria de ser chamado?">
+                            placeholder="Como gostaria de ser chamado?" max=20 required>
                             <small>É a forma como seu nome será exibido publicamente</small>
                         </x-input>
                     </div>
                     <div class="mb-3">
-                        <x-input type="textarea" rows=4 name="biografy" label="Biografia" value="{{ $user->biografy }}"
+                        <x-input type="textarea" rows=4 name="biography" label="Biografia" value="{{ $user->biografy }}"
                             placeholder="Conte um pouco sobre você" />
+                    </div>
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-12 col-sm-9">
+                                <x-input name="city" label="Cidade" value="{{ $user->city }}"
+                                    placeholder="Cidade onde moro" />
+                            </div>
+                            <div class="col-12 col-sm-3">
+                                <x-input name="state" label="Estado" max=2 value="{{ $user->state }}" />
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -36,7 +49,43 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">Save changes</button>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h5 class="card-title mb-4 text-truncate">Informações sobre meu clube</h5>
+                    <div class="mb-3">
+                        <x-input name="association" label="Associação/Missão" value="{{ $user->association }}"
+                            placeholder="Digite o campo de atuação" />
+                    </div>
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-12 col-md-4 col-xl-3 d-flex align-items-center">
+                                <x-input type="checkbox" name="is_pathfinder" label="Sou Desbravador"
+                                    value="{{ $user->is_pathfinder }}" />
+                            </div>
+                            <div class="col-12 col-md-8 col-xl-9">
+                                <x-input name="pathfinder_club" label="Clube de Desbravadores"
+                                    value="{{ $user->pathfinder_club }}"
+                                    placeholder="Digite o nome do seu clube de desbravadores" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-12 col-md-4 col-xl-3 d-flex align-items-center">
+                                <x-input type="checkbox" name="is_adventurer" label="Sou Aventureiro"
+                                    value="{{ $user->is_adventurer }}" />
+                            </div>
+                            <div class="col-12 col-md-8 col-xl-9">
+                                <x-input name="adventurer_club" label="Clube de Aventureiros"
+                                    value="{{ $user->adventurer_club }}"
+                                    placeholder="Digite o nome do seu clube de aventureiros" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Salvar</button>
         </form>
     </x-card>
 @endsection

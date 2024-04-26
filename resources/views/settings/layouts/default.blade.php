@@ -8,7 +8,7 @@
             @include('settings.partials.sidebar')
         </div>
 
-        <div class="col-md-9 col-xxl-10">
+        <div class="col-sm-8 col-md-9 col-xxl-10">
             @yield('card')
         </div>
     </div>
