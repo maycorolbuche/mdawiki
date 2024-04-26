@@ -21,7 +21,7 @@
                         </x-input>
                     </div>
                     <div class="mb-3">
-                        <x-input type="textarea" rows=4 name="biography" label="Biografia" value="{{ $user->biografy }}"
+                        <x-input type="textarea" rows=4 name="biography" label="Biografia" value="{{ $user->biography }}"
                             placeholder="Conte um pouco sobre você" />
                     </div>
                     <div class="mb-3">

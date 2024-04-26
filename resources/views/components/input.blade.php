@@ -38,7 +38,8 @@
                 </a>
             </div>
             <div class="mt-2">
-                <a href="javascript:" id="remove_image_button_{{ $id }}" class="text-danger small">
+                <a href="javascript:" id="remove_image_button_{{ $id }}" class="text-danger small"
+                    style="display: none">
                     <i class="align-middle" data-feather="trash-2"></i> Remover Imagem
                 </a>
             </div>
@@ -71,7 +72,9 @@
                             interact(this.fileInput, this.preview, this.previewContainer, function(base64) {
                                 self.imageInput.value = base64;
                                 self.imageContent();
-                                self.currentImage.remove();
+                                if (self.currentImage !== null) {
+                                    self.currentImage.remove();
+                                }
                             });
                         },
                         imageContent: function() {
@@ -88,7 +91,9 @@
                             this.preview.innerHTML = '';
                             this.imageInput.value = '';
                             this.fileInput.value = '';
-                            this.currentImage.remove();
+                            if (this.currentImage !== null) {
+                                this.currentImage.remove();
+                            }
                             this.imageContent();
                         }
                     }
