@@ -9,7 +9,7 @@
             @csrf
 
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-a">
                     <div class="mb-3">
                         <x-input name="name" label="Nome completo" value="{{ $user->name }}" placeholder="Digite seu nome"
                             required />
@@ -36,16 +36,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="text-center">
-                        <img alt="Charles Hall" src="img/avatars/avatar.jpg" class="rounded-circle img-responsive mt-2"
-                            width="128" height="128" />
-                        <div class="mt-2">
-                            <span class="btn btn-primary"><i class="fas fa-upload"></i> Upload</span>
-                        </div>
-                        <small>For best results, use an image at least 128px by
-                            128px in .jpg format</small>
-                    </div>
+                <div class="col-b">
+                    <x-input type="photo" name="photo" label="Foto de Perfil" value="{{ $user->photo }}" />
                 </div>
             </div>
 
@@ -119,4 +111,18 @@
             }
         }
     </script>
+@endpush
+
+@push('styles')
+    <style>
+        @media screen and (min-width: 790px) {
+            .col-a {
+                width: calc(100% - 220px);
+            }
+
+            .col-b {
+                width: 220px;
+            }
+        }
+    </style>
 @endpush

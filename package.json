@@ -18,9 +18,11 @@
         "simplebar": "^6.2.5"
     },
     "dependencies": {
+        "@interactjs/interact": "^1.10.27",
         "@popperjs/core": "^2.11.8",
         "bootstrap": "^5.3.3",
         "feather-icons": "^4.29.1",
+        "interactjs": "^1.10.27",
         "jquery": "^3.7.1",
         "sass": "^1.75.0"
     }

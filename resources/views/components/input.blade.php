@@ -20,7 +20,83 @@
     @elseif ($type == 'textarea')
         <label for="{{ $id }}" class="form-label">{!! $label !!}</label>
         <textarea rows="{{ $rows }}" id="{{ $id }}" name="{{ $name }}" class="form-control"
-            id="inputBio" placeholder="{{ $placeholder }}">{{ $value }}</textarea>
+            placeholder="{{ $placeholder }}">{{ $value }}</textarea>
+    @elseif ($type == 'photo')
+        <label for="{{ $id }}" class="form-label">{!! $label !!}</label>
+        <div class="col-b d-flex flex-column align-items-center">
+
+            <div id="preview_container_{{ $id }}"
+                style="width: 200px; height: 200px; overflow: hidden; padding: 0;">
+                <div id="preview_{{ $id }}">
+                </div>
+                {!! $value != '' ? "<img id='current_image_" . $id . "' src='$value'>" : '' !!}
+            </div>
+            <div class="mt-2">
+                <a href="javascript:" id="add_image_button_{{ $id }}" class="btn btn-primary">
+                    <i class="fas fa-upload"></i>
+                    Enviar Imagem
+                </a>
+            </div>
+            <div class="mt-2">
+                <a href="javascript:" id="remove_image_button_{{ $id }}" class="text-danger small">
+                    <i class="align-middle" data-feather="trash-2"></i> Remover Imagem
+                </a>
+            </div>
+
+            <input type="file" id="file_input_{{ $id }}" class="d-none">
+            <input type="hidden" id="{{ $id }}" name="{{ $name }}" value="{{ $value }}">
+
+            @push('scripts')
+                <script>
+                    const el_{{ $id }} = {
+                        imageInput: document.getElementById('{{ $id }}'),
+                        fileInput: document.getElementById('file_input_{{ $id }}'),
+                        previewContainer: document.getElementById('preview_container_{{ $id }}'),
+                        preview: document.getElementById('preview_{{ $id }}'),
+                        addImageButton: document.getElementById('add_image_button_{{ $id }}'),
+                        removeImageButton: document.getElementById('remove_image_button_{{ $id }}'),
+                        currentImage: document.getElementById('current_image_{{ $id }}'),
+
+                        init: function() {
+                            const self = this;
+                            el_{{ $id }}.imageContent();
+
+                            this.addImageButton.onclick = function() {
+                                self.fileInput.click();
+                            };
+                            this.removeImageButton.onclick = function() {
+                                self.removeImage();
+                            };
+
+                            interact(this.fileInput, this.preview, this.previewContainer, function(base64) {
+                                self.imageInput.value = base64;
+                                self.imageContent();
+                                self.currentImage.remove();
+                            });
+                        },
+                        imageContent: function() {
+                            if (this.imageInput.value != '') {
+                                this.removeImageButton.style.display = 'block';
+                                this.previewContainer.style.backgroundImage = '';
+                            } else {
+                                this.removeImageButton.style.display = 'none';
+                                this.previewContainer.style.backgroundImage =
+                                    "url('{{ asset('img/avatars/default.png') }}')";
+                            }
+                        },
+                        removeImage: function() {
+                            this.preview.innerHTML = '';
+                            this.imageInput.value = '';
+                            this.fileInput.value = '';
+                            this.currentImage.remove();
+                            this.imageContent();
+                        }
+                    }
+                    el_{{ $id }}.init();
+                </script>
+            @endpush
+
+        </div>
     @else
         <label for="{{ $id }}" class="form-label">{!! $label !!}</label>
         <input type="{{ $type }}" id="{{ $id }}" name="{{ $name }}"
