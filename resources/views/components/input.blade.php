@@ -37,11 +37,14 @@
                     Enviar Imagem
                 </a>
             </div>
-            <div class="mt-2">
+            <div class="mt-2 d-flex flex-column align-items-center">
                 <a href="javascript:" id="remove_image_button_{{ $id }}" class="text-danger small"
                     style="display: none">
                     <i class="align-middle" data-feather="trash-2"></i> Remover Imagem
                 </a>
+                <small class='text-center px-3' id="drag_image_info_{{ $id }}" style="display: none">
+                    Arraste a imagem para reposicionar
+                </small>
             </div>
 
             <input type="file" id="file_input_{{ $id }}" class="d-none">
@@ -57,6 +60,7 @@
                         addImageButton: document.getElementById('add_image_button_{{ $id }}'),
                         removeImageButton: document.getElementById('remove_image_button_{{ $id }}'),
                         currentImage: document.getElementById('current_image_{{ $id }}'),
+                        dragImageInfo: document.getElementById('drag_image_info_{{ $id }}'),
 
                         init: function() {
                             const self = this;
@@ -75,6 +79,11 @@
                                 if (self.currentImage !== null) {
                                     self.currentImage.remove();
                                 }
+                                if (base64) {
+                                    self.dragImageInfo.style.display = 'block';
+                                } else {
+                                    self.dragImageInfo.style.display = 'none';
+                                }
                             });
                         },
                         imageContent: function() {
@@ -91,6 +100,7 @@
                             this.preview.innerHTML = '';
                             this.imageInput.value = '';
                             this.fileInput.value = '';
+                            this.dragImageInfo.style.display = 'none';
                             if (this.currentImage !== null) {
                                 this.currentImage.remove();
                             }
