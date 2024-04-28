@@ -252,7 +252,7 @@
             @auth
                 <li class="nav-item dropdown">
                     <a class="nav-link pe-md-0 dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <img src="{{ asset('img/avatars/avatar.jpg') }}" class="avatar img-fluid rounded"
+                        <img src="{{ auth()->user()->avatar }}" class="avatar img-fluid rounded"
                             alt="{{ auth()->user()->nickname }}" />
                         <span class="align-middle d-none d-md-inline-block text-truncate"
                             style="max-width: 110px;">{{ auth()->user()->nickname }}</span>

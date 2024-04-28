@@ -62,4 +62,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+
+    /**
+     * Get the user's full photo path.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getAvatarAttribute($value)
+    {
+        if ($this->attributes['photo']) {
+            return asset('storage/' . $this->attributes['photo']);
+        } else {
+            return asset('img/avatars/default.png');
+        }
+    }
 }
