@@ -11,11 +11,6 @@ use App\Http\Requests\PasswordChangeRequest;
 
 class PasswordController extends Controller
 {
-
-    protected $fillable = [
-        'password',
-    ];
-
     /**
      * Display a listing of the resource.
      */

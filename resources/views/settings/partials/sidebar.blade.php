@@ -1,7 +1,7 @@
 @php
     $items = [
         ['title' => 'Conta', 'route' => 'settings.account'],
-        //['title' => 'E-mail', 'route' => 'settings.email'],
+        ['title' => 'E-mail', 'route' => 'settings.email'],
         ['title' => 'Senha', 'route' => 'settings.password'],
         ['title' => 'Privacidade', 'route' => 'settings.privacy'],
         ['title' => 'Notificações', 'route' => 'settings.notifications'],
