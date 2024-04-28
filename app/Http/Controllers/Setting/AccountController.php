@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Setting;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountRequest;
 use App\Helpers\ImageHelper;
+use App\Helpers\MailHelper;
 
 class AccountController extends Controller
 {
@@ -49,6 +50,8 @@ class AccountController extends Controller
         }
 
         $user->update($data);
+
+        MailHelper::addToQueue('notify_update_user', '[update_user] ' . $user->name . ' | ' . $user->email, 'Usuário alterado!' . MailHelper::userData($user->id));
 
         return redirect()->route('settings.account')->with('success', 'Dados salvos com sucesso');
     }

@@ -21,6 +21,10 @@
                         </x-input>
                     </div>
                     <div class="mb-3">
+                        <x-input type="date" name="birth_date" label="Data de Nascimento"
+                            value="{{ $user->birth_date }}" />
+                    </div>
+                    <div class="mb-3">
                         <x-input type="textarea" rows=4 name="biography" label="Biografia" value="{{ $user->biography }}"
                             placeholder="Conte um pouco sobre você" />
                     </div>

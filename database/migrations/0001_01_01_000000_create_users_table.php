@@ -35,6 +35,7 @@ return new class extends Migration
             $table->string('adventurer_club')->nullable();
 
             $table->boolean('notify_new_user')->default(false);
+            $table->boolean('notify_active_user')->default(false);
             $table->boolean('notify_update_user')->default(false);
             $table->boolean('notify_update_page')->default(false);
 

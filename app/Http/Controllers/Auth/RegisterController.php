@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\VerificationCodeEmail;
 use App\Helpers\CryptHelper;
+use App\Helpers\MailHelper;
 
 class RegisterController extends Controller
 {
@@ -34,6 +35,8 @@ class RegisterController extends Controller
         ]);
 
         $this->sendVerificationCodeEmail($user->id);
+
+        MailHelper::addToQueue('notify_new_user', '[new_user] ' . $request->name . ' | ' . $request->email, 'Novo usuário cadastrado!' . MailHelper::userData($user->id));
 
         return redirect()->route('validate', ['id_user_hash' => CryptHelper::encryptNumber($user->id)]);
     }

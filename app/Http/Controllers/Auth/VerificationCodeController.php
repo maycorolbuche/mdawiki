@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Notification;
 use App\Notifications\VerificationCodeEmail;
 use App\Helpers\CryptHelper;
 use Carbon\Carbon;
+use App\Helpers\MailHelper;
 
 class VerificationCodeController extends Controller
 {
@@ -43,6 +44,8 @@ class VerificationCodeController extends Controller
                 'verification_code_generated_at' => null,
                 'email_verified_at' => now(),
             ]);
+
+            MailHelper::addToQueue('notify_active_user', '[active_user] ' . $user->name . ' | ' . $user->email, 'Usuário ativado!' . MailHelper::userData($user->id));
 
             return redirect()->route('login')->with('success', 'Seu e-mail foi validado com sucesso! Agora você já pode se logar em nosso site.');
         }
@@ -114,6 +117,8 @@ class VerificationCodeController extends Controller
                 'verification_code_generated_at' => null,
                 'email_verified_at' => now(),
             ]);
+
+            MailHelper::addToQueue('notify_active_user', '[active_user] ' . $user->name . ' | ' . $user->email, 'Usuário ativado!' . MailHelper::userData($user->id));
 
             return redirect()->route('login')->with('success', 'Seu e-mail foi validado com sucesso! Agora você já pode se logar em nosso site.');
         }
