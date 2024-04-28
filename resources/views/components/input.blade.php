@@ -29,7 +29,7 @@
                 style="width: 200px; height: 200px; overflow: hidden; padding: 0;">
                 <div id="preview_{{ $id }}">
                 </div>
-                {!! $value != '' ? "<img id='current_image_" . $id . "' src='$value'>" : '' !!}
+                {!! $value != '' ? "<img id='current_image_" . $id . "' src='" . asset('storage/' . $value) . "'>" : '' !!}
             </div>
             <div class="mt-2">
                 <a href="javascript:" id="add_image_button_{{ $id }}" class="btn btn-primary">

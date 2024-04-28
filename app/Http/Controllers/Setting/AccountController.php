@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Setting;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AccountRequest;
+use App\Helpers\ImageHelper;
 
 class AccountController extends Controller
 {
@@ -40,7 +41,14 @@ class AccountController extends Controller
     public function update(AccountRequest $request)
     {
         $user = auth()->user();
-        $user->update($request->only($this->fillable));
+        $data = $request->only($this->fillable);
+
+        $data["photo"] = ImageHelper::saveBase64Image($data["photo"]);
+        if ($user->photo && $user->photo <> $data["photo"]) {
+            ImageHelper::delete($user->photo);
+        }
+
+        $user->update($data);
 
         return redirect()->route('settings.account')->with('success', 'Dados salvos com sucesso');
     }
