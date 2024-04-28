@@ -1,39 +1,33 @@
-@extends('layouts.app')
-@section('title', 'Alterar Senha')
+@extends('settings.layouts.default')
+@section('title', 'Alteração de Senha')
 
-@section('content')
-    <x-title>Alterar Senha</x-title>
+@section('card')
+    <x-card title="Alteração de Senha">
+        @include('layouts.partials.messages')
+        <form method="POST" action="{{ route('settings.password.update') }}">
+            @csrf
 
-    <div class="row">
-        <div class="col-md-3 col-xl-2">
-            @include('settings.partials.sidebar')
-        </div>
-
-        <div class="col-md-9 col-xl-10">
-
-            <x-card title="Password">
-                <form>
+            <div class="row">
+                <div class="col-12">
                     <div class="mb-3">
-                        <label class="form-label" for="inputPasswordCurrent">Current
-                            password</label>
-                        <input type="password" class="form-control" id="inputPasswordCurrent">
-                        <small><a href="#">Forgot your password?</a></small>
+                        <x-input type="password" name="current_password" label="Senha atual" placeholder="Digite a Senha Atual"
+                            required />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="inputPasswordNew">New
-                            password</label>
-                        <input type="password" class="form-control" id="inputPasswordNew">
+                        <x-input type="password" name="password" label="Nova Senha" placeholder="Escolha uma senha"
+                            required />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="inputPasswordNew2">Verify
-                            password</label>
-                        <input type="password" class="form-control" id="inputPasswordNew2">
+                        <x-input type="password" name="password_confirmation" label="Confirme a Nova Senha"
+                            placeholder="Confirme sua senha" required />
                     </div>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                </form>
+                    <div class="mb-3">
+                        <x-input type="captcha" name="captcha" label="Digite os caracteres da imagem" />
+                    </div>
+                </div>
+            </div>
 
-            </x-card>
-
-        </div>
-    </div>
+            <button type="submit" class="btn btn-primary">Salvar</button>
+        </form>
+    </x-card>
 @endsection

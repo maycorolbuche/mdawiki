@@ -1,6 +1,5 @@
 @extends('settings.layouts.default')
 @section('title', 'Cadastro')
-@section('subtitle', 'Cadastroaa')
 
 @section('card')
     <x-card title="Informações Pessoais">

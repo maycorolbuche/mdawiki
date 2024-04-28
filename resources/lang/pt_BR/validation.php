@@ -161,6 +161,8 @@ return [
         'mobile' => 'celular',
         'month' => 'mês',
         'name' => 'nome',
+        'nickname' => 'apelido',
+        'current_password' => 'senha atual',
         'password_confirmation' => 'confirmação da senha',
         'password' => 'senha',
         'phone' => 'telefone',

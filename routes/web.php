@@ -34,8 +34,9 @@ Route::prefix('@')->group(function () {
         Route::get('config/conta', 'Setting\AccountController@index')->name('settings.account');
         Route::post('config/conta', 'Setting\AccountController@update')->name('settings.account.update');
 
-        Route::get('config/e-mail', 'Setting\AccountController@index')->name('settings.email');
-        Route::get('config/senha', 'Setting\AccountController@index')->name('settings.password');
+        Route::get('config/senha', 'Setting\PasswordController@index')->name('settings.password');
+        Route::post('config/senha', 'Setting\PasswordController@update')->name('settings.password.update');
+
         Route::get('config/privacidade', 'Setting\AccountController@index')->name('settings.privacy');
         Route::get('config/notificacoes', 'Setting\AccountController@index')->name('settings.notifications');
     });
