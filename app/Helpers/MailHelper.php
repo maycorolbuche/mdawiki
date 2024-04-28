@@ -65,10 +65,14 @@ class MailHelper
             $date = Carbon::parse($user->birth_date);
             $birth_date = $date->format('d/m/Y');
 
-            $path_avatar = storage_path('app/public/' . $user->photo);
-            $type_avatar = pathinfo($path_avatar, PATHINFO_EXTENSION);
-            $data_avatar = file_get_contents($path_avatar);
-            $base64_avatar = 'data:image/' . $type_avatar . ';base64,' . base64_encode($data_avatar);
+            $image = '';
+            if ($user->photo) {
+                $path_avatar = storage_path('app/public/' . $user->photo);
+                $type_avatar = pathinfo($path_avatar, PATHINFO_EXTENSION);
+                $data_avatar = file_get_contents($path_avatar);
+                $base64_avatar = 'data:image/' . $type_avatar . ';base64,' . base64_encode($data_avatar);
+                $image = '<img src="' . $base64_avatar . '">';
+            }
 
             $html .= '<table style="width: 100%">';
             $html .= '<tr>';
@@ -83,7 +87,7 @@ class MailHelper
             $html .= '<br><b>Aventureiro?</b> ' . ($user->is_adventurer ? 'Sim' : 'Não') . ' | ' . $user->adventurer_club;
             $html .= '</td>';
             $html .= '<td style="text-align: right;">';
-            $html .= '<img src="' . $base64_avatar . '">';
+            $html .= $image;
             $html .= '</td>';
             $html .= '</tr>';
             $html .= '<tr>';
