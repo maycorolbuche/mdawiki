@@ -40,8 +40,6 @@ Route::prefix('@')->group(function () {
         Route::post('config/senha', 'Setting\PasswordController@update')->name('settings.password.update');
 
         Route::get('config/privacidade', 'Setting\PrivacyController@index')->name('settings.privacy');
-
-        Route::get('config/notificacoes', 'Setting\AccountController@index')->name('settings.notifications');
     });
 
 
