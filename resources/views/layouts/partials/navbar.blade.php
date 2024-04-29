@@ -154,6 +154,7 @@
                         </div>
                     </div>
                     <div class="list-group">
+                    <!--
                         <a href="#" class="list-group-item">
                             <div class="row g-0 align-items-center">
                                 <div class="col-2">
@@ -208,6 +209,7 @@
                                 </div>
                             </div>
                         </a>
+                        -->
                     </div>
                     <div class="dropdown-menu-footer">
                         <a href="#" class="text-muted">Show all messages</a>
