@@ -47,7 +47,7 @@
                 </small>
             </div>
 
-            <input type="file" id="file_input_{{ $id }}" class="d-none">
+            <input type="file" id="file_input_{{ $id }}" class="d-none" accept="image/*">
             <input type="hidden" id="{{ $id }}" name="{{ $name }}" value="{{ $value }}">
 
             @push('scripts')
