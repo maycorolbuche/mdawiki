@@ -1,13 +1,13 @@
-// Variables
+/* Variables */
 @import "1-variables/app";
 
-// Bootstrap
+/* Bootstrap */
 @import "bootstrap/scss/bootstrap";
 
-// Theme mixins
+/* Theme mixins */
 @import "2-mixins/button";
 
-// Theme components
+/* Theme components */
 @import "3-components/avatar";
 @import "3-components/buttons";
 @import "3-components/card";
@@ -28,11 +28,15 @@
 @import "3-components/type";
 @import "3-components/wrapper";
 
-// Theme utilities
+/* Theme utilities */
 @import "4-utilities/cursors";
 
-// Plugins
+/* Plugin :: simplebar */
 @import "simplebar/dist/simplebar";
 
-// Plugin styles
+/* Plugin :: froala */
+@import "froala-editor/css/froala_editor";
+@import "froala-editor/css/plugins/char_counter.min.css";
+
+/* Plugin styles*/
 @import "5-vendor/simplebar";

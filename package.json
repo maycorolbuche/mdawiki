@@ -20,8 +20,11 @@
     "dependencies": {
         "@interactjs/interact": "^1.10.27",
         "@popperjs/core": "^2.11.8",
+        "@wiris/mathtype-froala": "^8.9.1",
+        "@wiris/mathtype-froala3": "^7.31.1",
         "bootstrap": "^5.3.3",
         "feather-icons": "^4.29.1",
+        "froala-editor": "^4.2.0",
         "interactjs": "^1.10.27",
         "jquery": "^3.7.1",
         "sass": "^1.75.0"
