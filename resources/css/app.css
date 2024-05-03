@@ -28,6 +28,16 @@ h2,
     text-align: justify !important;
 }
 
+blockquote {
+    border-left: solid 2px #777;
+    margin-left: 0;
+    padding-left: 15px;
+    color: #777;
+    margin-bottom: 1rem;
+    font-size: 1.09375rem;
+    font-style: italic;
+}
+
 small,
 .small {
     font-size: 12px;
@@ -101,4 +111,15 @@ small,
 .alert .alert-icon {
     background: rgba(0, 0, 0, .05);
     padding: .95rem;
+}
+
+
+/* Plugins */
+.fr-view table td,
+.fr-view table th {
+    border: 1px solid #DDD;
+}
+
+#fr-logo {
+    display: none;
 }

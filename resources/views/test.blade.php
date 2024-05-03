@@ -11,18 +11,29 @@
 @section('content')
     <x-title>Título da Página</x-title>
 
-    <div class="row">
-        <div class="col-12">
-            <div id="example"></div>
+    <div class="row" style="flex: auto;">
+        <div class="col-12" style="display: flex;">
+            <div id="editor-container" class="editor" style="flex: auto;">
+                <div id="editor" class="editor">
+                </div>
+            </div>
         </div>
     </div>
 @endsection
 
 @push('scripts')
     <script>
+        document.querySelector('.content').style.display = 'flex';
+        document.querySelector('.content').style.alignItems = 'stretch';
+        document.querySelector('.container-fluid').style.display = 'flex';
+        document.querySelector('.container-fluid').style.flexDirection = 'column';
+
+
         document.addEventListener("DOMContentLoaded", () => {
-            const editor = new FroalaEditor('#example', {
+            const editor = new FroalaEditor('#editor', {
                 language: 'pt_br',
+                height: document.getElementById('editor-container').offsetHeight - 190,
+
                 toolbarButtons: [
                     [
                         'undo', 'redo',
@@ -31,26 +42,52 @@
                     ],
                     [
                         'bold', 'italic', 'underline', 'strikeThrough',
+                        '|', 'insertLink',
                         '|', 'subscript', 'superscript',
+                        '|', 'specialCharacters',
                         '|', 'clearFormatting',
                         '|',
                     ],
                     [
-                        'paragraphFormat', 'align',
-                        '|', 'insertLink',
+                        'paragraphFormat',
+                        'fontSize',
+                        '|', 'alignLeft', 'alignCenter', 'alignRight', 'alignJustify',
+                        '|', 'quote',
                         '|', 'formatOL', 'formatUL',
                         '|', 'outdent', 'indent',
                         '|', 'insertHR',
                         '|',
                     ],
                     [
+                        /*'table',*/
+                        'insertTable',
+                    ],
+                    [
                         //'wirisEditor', 'wirisChemistry',
                         'custom_insert', 'myButton',
                         '|',
-                    ]
+                    ],
                 ],
+                quickInsertEnabled: false,
+
                 listAdvancedTypes: true,
                 formatOLBeginOption: true,
+
+                fontFamilySelection: true,
+                fontSizeSelection: true,
+                paragraphFormatSelection: true,
+
+                tableResizerOffset: 10,
+                tableResizingLimit: 50,
+                //tableEditButtons: ['imageDisplay', 'imageAlign', 'imageInfo', 'imageRemove'],
+                tableStyles: {
+                    class1: 'Tabela listrada',
+                    class2: 'Class 2'
+                },
+                tableCellStyles: {
+                    class1: 'Célula Destacada',
+                    class2: 'Class 2'
+                },
 
                 events: {
                     initialized: function() {
@@ -257,22 +294,23 @@
             refreshAfterCallback: true,
             callback: function() {
                 const tableHTML = `
-                        <table class="custom-table" style='background:red;'>
-                            <thead>
-                                <tr>
-                                    <th contenteditable="false">Header 1</th>
-                                    <th contenteditable="false">Header 2</th>
-                                    <th contenteditable="false">Header 3</th>
-                                    <th><button class="delete-table-btn">Delete</button></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td contenteditable="false">|</td>
-                                    <td></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="custom-table" style='background:red;'>
+                            <div class="table-header">
+                                <div contenteditable="false" class="table-header-cell">Header 1</div>
+                                <div contenteditable="false" class="table-header-cell">Header 2</div>
+                                <div contenteditable="false" class="table-header-cell">Header 3</div>
+                                <div contenteditable="false" class="table-header-cell"><button class="delete-table-btn">Delete</button></div>
+                            </div>
+                            <div class="table-body">
+                                <div class="table-row">
+                                    <div class="table-cell">Header 1</div>
+                                    <div class="table-cell">Header 2</div>
+                                    <div class="table-cell">Header 3</div>
+                                    <div class="table-cell"><button class="delete-row-btn">Delete</button></div>
+                                </div>
+                                <!-- Mais linhas podem ser adicionadas aqui conforme necessário -->
+                            </div>
+                        </div>
                     `;
                 this.html.insert(tableHTML);
             }

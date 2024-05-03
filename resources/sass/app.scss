@@ -36,7 +36,24 @@
 
 /* Plugin :: froala */
 @import "froala-editor/css/froala_editor";
-@import "froala-editor/css/plugins/char_counter.min.css";
+@import "froala-editor/css/plugins/char_counter.css";
+@import "froala-editor/css/plugins/code_view.css";
+@import "froala-editor/css/plugins/colors.css";
+@import "froala-editor/css/plugins/draggable.css";
+@import "froala-editor/css/plugins/emoticons.css";
+@import "froala-editor/css/plugins/file.css";
+@import "froala-editor/css/plugins/files_manager.css";
+@import "froala-editor/css/plugins/fullscreen.css";
+@import "froala-editor/css/plugins/help.css";
+@import "froala-editor/css/plugins/image_manager.css";
+@import "froala-editor/css/plugins/image.css";
+@import "froala-editor/css/plugins/line_breaker.css";
+@import "froala-editor/css/plugins/markdown.css";
+@import "froala-editor/css/plugins/quick_insert.css";
+@import "froala-editor/css/plugins/special_characters.css";
+@import "froala-editor/css/plugins/table.css";
+@import "froala-editor/css/plugins/trim_video.css";
+@import "froala-editor/css/plugins/video.css";
 
 /* Plugin styles*/
 @import "5-vendor/simplebar";
