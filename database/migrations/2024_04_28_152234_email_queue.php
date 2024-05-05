@@ -20,6 +20,7 @@ return new class extends Migration
             $table->timestamp('scheduled_at')->nullable();
             $table->enum('status', ['pending', 'sent', 'failed'])->default('pending');
             $table->text('error_message')->nullable();
+
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

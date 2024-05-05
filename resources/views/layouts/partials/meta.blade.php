@@ -2,7 +2,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="Mayco Rolbuche, mayco_rolbuche@hotmail.com">
-<meta name="robots" content="index,follow" />
+@if (!empty(trim($__env->yieldContent('robots'))))
+    <meta name="robots" content="@yield('robots')" />
+@else
+    <meta name="robots" content="index,follow" />
+@endif
 <meta name="language" content="pt-BR">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="reply-to" content="{{ $_ENV['MAIL_REPLY_TO'] }}">

@@ -13,6 +13,7 @@ class Card extends Component
      */
     public function __construct(
         public string $title = '',
+        public string $img = '',
         public string $bodyClass = ''
     ) {
         //

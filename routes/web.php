@@ -49,7 +49,12 @@ Route::prefix('@img')->group(function () {
     });
 
     Route::get('/{page?}', 'ImageController@index')->name('image');
-    Route::post('/{page?}', 'ImageController@update')->name('image.update');
+    Route::get('/{page?}/editar', 'ImageController@edit')->name('image.edit');
+    Route::get('/{page?}/historico', 'ImageController@history')->name('image.log');
+    Route::group(['middleware' => ['auth']], function () {
+        Route::post('/{page?}', 'ImageController@update')->name('image.update');
+        Route::delete('/{page?}', 'ImageController@delete')->name('image.delete');
+    });
 });
 
 

@@ -63,13 +63,6 @@ class User extends Authenticatable
         ];
     }
 
-
-    /**
-     * Get the user's full photo path.
-     *
-     * @param  string  $value
-     * @return string
-     */
     public function getAvatarAttribute($value)
     {
         if ($this->attributes['photo']) {

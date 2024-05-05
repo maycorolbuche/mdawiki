@@ -44,7 +44,7 @@ class AccountController extends Controller
         $user = auth()->user();
         $data = $request->only($this->fillable);
 
-        $data["photo"] = ImageHelper::saveBase64Image($data["photo"]);
+        $data["photo"] = ImageHelper::saveBase64($data["photo"], 'images/avatars');
         if ($user->photo && $user->photo <> $data["photo"]) {
             ImageHelper::delete($user->photo);
         }

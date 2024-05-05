@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('affected_records_count')->default(0);
             $table->dateTime('start_time');
             $table->dateTime('end_time')->nullable();
+
             $table->timestamps();
         });
     }
