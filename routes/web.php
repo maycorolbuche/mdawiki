@@ -41,13 +41,23 @@ Route::prefix('@')->group(function () {
 
         Route::get('config/privacidade', 'Setting\PrivacyController@index')->name('settings.privacy');
     });
-
-
-    /* *** */
-    Route::get('/test', function () {
-        return view('test');
-    });
 });
+
+Route::prefix('@img')->group(function () {
+    Route::get('/', function () {
+        return "INICIO IMG";
+    });
+
+    Route::get('/{page?}', 'ImageController@index')->name('image');
+    Route::post('/{page?}', 'ImageController@update')->name('image.update');
+});
+
+
+/* *** */
+Route::get('/test', function () {
+    return view('home');
+});
+
 
 Route::get('/{page?}', function () {
     return view('test');

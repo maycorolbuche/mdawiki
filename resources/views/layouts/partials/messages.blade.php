@@ -77,14 +77,14 @@
             <div class="alert-message d-flex align-items-center flex-fill p-3">
                 <div>
                     @if (count($message) == 1)
-                        {{ $message[0] }}
+                        {!! $message[0] !!}
                     @else
                         @if ($type == 'danger')
                             <strong>Alertas:</strong>
                         @endif
                         <ul class="m-0">
                             @foreach ($message as $msg)
-                                <li>{{ $msg }}</li>
+                                <li>{!! $msg !!}</li>
                             @endforeach
                         </ul>
                     @endif
