@@ -28,6 +28,25 @@
 
                 HISTPRICO
 
+                <x-data-table src="{{ route('image.datatable', ['page' => $page]) }}" order="id"
+                    columns="{{ json_encode([
+                        [
+                            'data' => 'actions',
+                            'width' => '20px',
+                            'orderable' => false,
+                        ],
+                        [
+                            'title' => 'Código',
+                            'data' => 'id',
+                            'className' => 'text-right',
+                        ],
+                        [
+                            'title' => 'Nome',
+                            'data' => 'path',
+                        ],
+                    ]) }}" />
+
+
 
             </x-content>
         </div>

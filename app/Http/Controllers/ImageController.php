@@ -7,6 +7,7 @@ use App\Models\Image;
 use App\Models\ImageHistory;
 use App\Helpers\StringHelper;
 use App\Helpers\ImageHelper;
+use DataTables;
 
 class ImageController extends Controller
 {
@@ -147,5 +148,20 @@ class ImageController extends Controller
         $image = Image::where('slug', $slug)->first();
 
         return view('image.log', compact('page', 'title', 'image'));
+    }
+
+    public function datatable()
+    {
+        $data = ImageHistory::select();
+
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->addColumn('actions', function ($row) {
+                //$edit_route = route(request('route') ?: 'clients.show', [$id_field => $row->id_client]);
+                //$actionBtn = '<a href="' . $edit_route . '" class="edit btn btn-warning btn-sm"><i class="glyphicons glyphicons-edit"></i></a>';
+                return "OK";
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
 }
