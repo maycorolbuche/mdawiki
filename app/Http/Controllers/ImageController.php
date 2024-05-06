@@ -7,6 +7,7 @@ use App\Models\Image;
 use App\Models\ImageHistory;
 use App\Helpers\StringHelper;
 use App\Helpers\ImageHelper;
+use Carbon\Carbon;
 use DataTables;
 
 class ImageController extends Controller
@@ -150,9 +151,11 @@ class ImageController extends Controller
         return view('image.log', compact('page', 'title', 'image'));
     }
 
-    public function datatable()
+    public function datatable(Request $request)
     {
-        $data = ImageHistory::select();
+        $page = $request->route('page');
+        $slug = StringHelper::toSlug($page);
+        $data = ImageHistory::with('user')->where('slug', $slug)->select();
 
         return DataTables::of($data)
             ->addIndexColumn()
@@ -161,7 +164,21 @@ class ImageController extends Controller
                 //$actionBtn = '<a href="' . $edit_route . '" class="edit btn btn-warning btn-sm"><i class="glyphicons glyphicons-edit"></i></a>';
                 return "OK";
             })
-            ->rawColumns(['actions'])
+            ->editColumn('updated_at', function ($row) {
+                return Carbon::parse($row->updated_at)->format('d/m/Y H:i:s');
+            })
+            ->addColumn('image', function ($row) {
+                if ($row->path <> "") {
+                    return "<img src='" . $row->fullUrl . "' class='avatar img-fluid rounded' style='object-fit: cover;'>";
+                } else {
+                    return "<span class='badge bg-danger'>Imagem Excluída</span>";
+                }
+            })
+            ->editColumn('user.name', function ($row) {
+                return "<img src='" . $row->user->avatar . "' class='avatar img-fluid rounded-circle' alt='" . $row->user->name . "'>"
+                    . "<span class='px-2 fw-bold'>" . $row->user->name . "</span>";
+            })
+            ->rawColumns(['actions', 'image', 'user.name'])
             ->make(true);
     }
 }

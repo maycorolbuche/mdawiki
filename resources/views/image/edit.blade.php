@@ -1,12 +1,14 @@
 @extends('layouts.app')
 @section('title', $title . ' (Edição de Imagem)')
 @section('description', 'Imagem - ' . $title)
-@section('image', $image->full_url)
-@section('image-type', $image->mime)
-@section('image-width', $image->width)
-@section('image-height', $image->height)
-@section('revised', $image->updated_at)
 @section('robots', 'noindex,nofollow')
+@if ($image)
+    @section('image', $image->full_url)
+    @section('image-type', $image->mime)
+    @section('image-width', $image->width)
+    @section('image-height', $image->height)
+    @section('revised', $image->updated_at)
+@endif
 
 @section('content')
     <x-title>Imagem: {{ $title }} <span class="badge bg-warning">Edição</span></x-title>

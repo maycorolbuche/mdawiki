@@ -28,7 +28,7 @@ class Image extends Model
         'updated_by',
     ];
 
-    public function getFullUrlAttribute($value)
+    public function getFullUrlAttribute()
     {
         if ($this->attributes['path']) {
             return asset('storage/' . $this->attributes['path']);

@@ -17,17 +17,13 @@
 
             var dataTable = new DataTable(table, {
                 serverSide: true,
-                //processing: true,
+                processing: true,
                 ajax: '{{ $src }}',
                 columns: columns,
                 order: order,
-                /*language: {
-                    url: '{{ asset('vendor/plugins/datatables/media/js/pt-BR.json') }}'
-                },
                 createdRow: function(row, data, index) {
-                    // Execute the PHP code for createdRow here
                     {!! html_entity_decode($createdRow) !!}
-                }*/
+                }
             });
         });
     </script>

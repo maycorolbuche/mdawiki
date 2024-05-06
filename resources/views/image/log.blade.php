@@ -1,11 +1,13 @@
 @extends('layouts.app')
 @section('title', $title . ' (Histórico de Imagem)')
 @section('description', 'Imagem - ' . $title)
-@section('image', $image->full_url)
-@section('image-type', $image->mime)
-@section('image-width', $image->width)
-@section('image-height', $image->height)
-@section('revised', $image->updated_at)
+@if ($image)
+    @section('image', $image->full_url)
+    @section('image-type', $image->mime)
+    @section('image-width', $image->width)
+    @section('image-height', $image->height)
+    @section('revised', $image->updated_at)
+@endif
 @section('robots', 'noindex,nofollow')
 
 @section('content')
@@ -26,23 +28,27 @@
 
                 @include('layouts.partials.messages')
 
-                HISTPRICO
-
-                <x-data-table src="{{ route('image.datatable', ['page' => $page]) }}" order="id"
+                <x-data-table src="{{ route('image.datatable', ['page' => $page]) }}" order="updated_at" order-dir="desc"
                     columns="{{ json_encode([
+                        [
+                            'title' => 'Data/Hora',
+                            'data' => 'updated_at',
+                            'className' => 'text-center',
+                        ],
+                        [
+                            'title' => 'Imagem',
+                            'data' => 'image',
+                            'className' => 'text-center',
+                            'orderable' => false,
+                        ],
+                        [
+                            'title' => 'Usuário',
+                            'data' => 'user.name',
+                        ],
                         [
                             'data' => 'actions',
                             'width' => '20px',
                             'orderable' => false,
-                        ],
-                        [
-                            'title' => 'Código',
-                            'data' => 'id',
-                            'className' => 'text-right',
-                        ],
-                        [
-                            'title' => 'Nome',
-                            'data' => 'path',
                         ],
                     ]) }}" />
 

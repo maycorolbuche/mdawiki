@@ -24,6 +24,7 @@
         "@wiris/mathtype-froala3": "^7.31.1",
         "bootstrap": "^5.3.3",
         "datatables.net-bs5": "^2.0.6",
+        "datatables.net-plugins": "^2.0.5",
         "feather-icons": "^4.29.1",
         "froala-editor": "^4.2.0",
         "interactjs": "^1.10.27",

@@ -1,11 +1,13 @@
 @extends('layouts.app')
 @section('title', $title . ' (Imagem)')
 @section('description', 'Imagem - ' . $title)
-@section('image', $image->full_url)
-@section('image-type', $image->mime)
-@section('image-width', $image->width)
-@section('image-height', $image->height)
-@section('revised', $image->updated_at)
+@if ($image)
+    @section('image', $image->full_url)
+    @section('image-type', $image->mime)
+    @section('image-width', $image->width)
+    @section('image-height', $image->height)
+    @section('revised', $image->updated_at)
+@endif
 
 @section('content')
     <x-title>Imagem: {{ $title }}</x-title>
