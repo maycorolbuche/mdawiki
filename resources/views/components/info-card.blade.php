@@ -5,7 +5,7 @@
     <div class="flex-grow-1 ms-3">
         <strong>{{ $title }}</strong>
         <div class="text-muted">
-            {{ $value }}
+            {!! $value !!}
             {{ $slot }}
         </div>
     </div>

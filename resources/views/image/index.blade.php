@@ -48,7 +48,7 @@
                                 <tr>
                                     <td class="bg-white">
                                         <x-info-card icon="move" title="Dimensões"
-                                            value="{{ $image->width }} x {{ $image->height }}" />
+                                            value="{{ $image->width }}px <b>x</b> {{ $image->height }}px" />
                                     </td>
                                 </tr>
                             @endif
