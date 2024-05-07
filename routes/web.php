@@ -45,17 +45,17 @@ Route::prefix('@')->group(function () {
 
 Route::prefix('@img')->group(function () {
     Route::get('/', function () {
-        return "INICIO IMG";
+        return null;
     });
 
-    Route::get('/{page?}', 'ImageController@index')->name('image');
-    Route::get('/{page?}/editar', 'ImageController@edit')->name('image.edit');
-    Route::get('/{page?}/historico', 'ImageController@history')->name('image.log');
+    Route::get('/{page}', 'ImageController@index')->name('image');
+    Route::get('/{page}/editar', 'ImageController@edit')->name('image.edit');
+    Route::get('/{page}/historico', 'ImageController@history')->name('image.log');
     Route::group(['middleware' => ['auth']], function () {
-        Route::post('/{page?}', 'ImageController@update')->name('image.update');
-        Route::delete('/{page?}', 'ImageController@delete')->name('image.delete');
-        Route::get('/{page?}/restaurar/{id}', 'ImageController@restore')->name('image.restore');
-        Route::get('/{page?}/datatable', 'ImageController@datatable')->name('image.datatable');
+        Route::post('/{page}', 'ImageController@update')->name('image.update');
+        Route::delete('/{page}', 'ImageController@delete')->name('image.delete');
+        Route::get('/{page}/restaurar/{id}', 'ImageController@restore')->name('image.restore');
+        Route::get('/{page}/datatable', 'ImageController@datatable')->name('image.datatable');
     });
 });
 
@@ -66,6 +66,6 @@ Route::get('/test', function () {
 });
 
 
-Route::get('/{page?}', function () {
+Route::get('/{page}', function () {
     return view('test');
 });

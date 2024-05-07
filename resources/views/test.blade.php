@@ -61,6 +61,8 @@
                     [
                         /*'table',*/
                         'insertTable',
+                        '|', 'insertImage',
+                        '|', 'imageManager',
                     ],
                     [
                         //'wirisEditor', 'wirisChemistry',
