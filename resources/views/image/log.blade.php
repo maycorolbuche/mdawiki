@@ -48,6 +48,7 @@
                         [
                             'data' => 'actions',
                             'width' => '20px',
+                            'className' => 'text-center',
                             'orderable' => false,
                         ],
                     ]) }}" />

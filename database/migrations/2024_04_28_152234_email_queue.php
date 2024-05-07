@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->string('recipient_email')->nullable();
             $table->string('subject');
-            $table->text('content');
+            $table->longText('content');
             $table->timestamp('scheduled_at')->nullable();
             $table->enum('status', ['pending', 'sent', 'failed'])->default('pending');
             $table->text('error_message')->nullable();

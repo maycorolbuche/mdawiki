@@ -5,6 +5,7 @@ namespace App\Helpers;
 use Illuminate\Support\Facades\Notification;
 use App\Models\TaskLog;
 use App\Models\User;
+use App\Models\ImageHistory;
 use App\Models\EmailQueue;
 use App\Notifications\HtmlEmail;
 use Carbon\Carbon;
@@ -97,6 +98,46 @@ class MailHelper
             $html .= '</td>';
             $html .= '</tr>';
             $html .= '</table>';
+        }
+
+        return $html;
+    }
+
+    public static function imageData($page)
+    {
+        $html = '';
+
+        $image = ImageHistory::where('slug', $page)->orderBy('id', 'desc')->first();
+        if ($image) {
+            $url = route('image', ['page' => $image->url]);
+
+            if ($image->path) {
+                $base64 = 'data:' . $image->mime . ';base64,' . base64_encode(file_get_contents(storage_path('app/public/' . $image->path)));
+                $img = '<img src="' . $base64 . '" style="max-width:150px;">';
+            } else {
+                $img = '<div style="float:right;width:150px;height:150px;background:red;color:#FFF;font-weight:bold;display: flex;align-items: center;justify-content: center;">Imagem apagada</div>';
+            }
+
+
+            $html .= '<table style="width: 100%">';
+            $html .= '<tr>';
+            $html .= '<td>';
+            $html .= '<b>Imagem:</b> ' . $image->title;
+            $html .= '<br><b>URL:</b> <a href="' . $url . '" target="_blank">' . $url . '</a>';
+            $html .= '<br><b>Width:</b> ' . $image->width;
+            $html .= '<br><b>Height:</b> ' . $image->height;
+            $html .= '<br><b>Tamanho:</b> ' . $image->size;
+            $html .= '<br><b>ID Anterior:</b> ' . $image->restore_id;
+            $html .= '</td>';
+            $html .= '<td style="text-align: right;">';
+            $html .= $img;
+            $html .= '</td>';
+            $html .= '</tr>';
+            $html .= '<tr>';
+            $html .= '</table>';
+
+            $html .= '<p><h2>Usuário Responsável</h2>';
+            $html .= self::userData($image->updated_by);
         }
 
         return $html;

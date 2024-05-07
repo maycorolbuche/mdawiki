@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('image_histories', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('image_id')->nullable();
+            $table->unsignedBigInteger('restore_id')->nullable();
             $table->string('title');
             $table->string('url');
             $table->string('slug');
@@ -27,6 +28,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('image_id')->references('id')->on('images')->onDelete('set null');
+            $table->foreign('restore_id')->references('id')->on('image_histories')->onDelete('set null');
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
         });
     }

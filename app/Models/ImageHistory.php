@@ -19,6 +19,7 @@ class ImageHistory extends Model
      */
     protected $fillable = [
         'image_id',
+        'restore_id',
         'title',
         'url',
         'slug',

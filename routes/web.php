@@ -54,6 +54,7 @@ Route::prefix('@img')->group(function () {
     Route::group(['middleware' => ['auth']], function () {
         Route::post('/{page?}', 'ImageController@update')->name('image.update');
         Route::delete('/{page?}', 'ImageController@delete')->name('image.delete');
+        Route::get('/{page?}/restaurar/{id}', 'ImageController@restore')->name('image.restore');
         Route::get('/{page?}/datatable', 'ImageController@datatable')->name('image.datatable');
     });
 });
