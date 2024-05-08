@@ -44,4 +44,9 @@ import 'froala-editor/js/plugins/word_paste.min.js';
 
 import 'froala-editor/js/languages/pt_br';
 
+/* CUSTOM COMPONENTS */
+document.addEventListener('DOMContentLoaded', function () {
+    require('./froala-editor-custom/formatOL');
+});
+
 window.FroalaEditor = FroalaEditor;
