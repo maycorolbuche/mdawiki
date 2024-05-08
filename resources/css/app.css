@@ -127,3 +127,7 @@ small,
 #fr-logo {
     display: none;
 }
+
+.fr-shortcut {
+    display: none !important;
+}
