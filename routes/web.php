@@ -59,6 +59,10 @@ Route::prefix('@img')->group(function () {
     });
 });
 
+Route::prefix('@json')->group(function () {
+    Route::get('/images', 'JsonController@images')->name('json.images');
+});
+
 
 /* *** */
 Route::get('/test', function () {
