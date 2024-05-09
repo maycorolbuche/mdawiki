@@ -119,11 +119,6 @@ small,
 
 
 /* Plugins */
-.fr-view table td,
-.fr-view table th {
-    border: 1px solid #DDD;
-}
-
 #fr-logo {
     display: none;
 }

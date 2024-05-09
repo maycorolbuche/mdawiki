@@ -12,7 +12,18 @@ class JsonController extends Controller
     {
         $perPage = 20;
 
-        $images = Image::orderBy('title', 'asc')->paginate($perPage);
+        $search = $request->input("search");
+
+        $images = Image::orderBy('title', 'asc');
+        if ($search) {
+            $keywords = explode(' ', $search);
+            $images->where(function ($query) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $query->orWhere('title', 'like', '%' . $keyword . '%');
+                }
+            });
+        }
+        $images = $images->paginate($perPage);
 
         $images->getCollection()->transform(function ($image) {
             return [

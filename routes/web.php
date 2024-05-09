@@ -44,9 +44,7 @@ Route::prefix('@')->group(function () {
 });
 
 Route::prefix('@img')->group(function () {
-    Route::get('/', function () {
-        return null;
-    });
+    Route::get('/', 'ImageController@index')->name('images');
 
     Route::get('/{page}', 'ImageController@index')->name('image');
     Route::get('/{page}/editar', 'ImageController@edit')->name('image.edit');

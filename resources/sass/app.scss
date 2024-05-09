@@ -54,9 +54,12 @@
 @import "froala-editor/css/plugins/table.css";
 @import "froala-editor/css/plugins/trim_video.css";
 @import "froala-editor/css/plugins/video.css";
+@import "froala-editor/css/plugins/video.css";
+
+@import "custom_plugins/froala-editor.css";
 
 /* Plugin ::datatables */
-@import 'datatables.net-bs5/css/dataTables.bootstrap5.min.css';
+@import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
 
 /* Plugin styles*/
 @import "5-vendor/simplebar";

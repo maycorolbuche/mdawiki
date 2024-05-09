@@ -13,10 +13,15 @@ use DataTables;
 
 class ImageController extends Controller
 {
-    protected $max_size = 500;
+    protected $max_size = 400;
 
-    public function index(Request $request, $page)
+    public function index(Request $request, $page = '')
     {
+        if ($page == '') {
+            echo "TESTE";
+            exit;
+        }
+
         $real_page = $this->realUrl($page);
         if ($page <> $real_page) {
             return redirect()->route('image', ['page' => $real_page]);
