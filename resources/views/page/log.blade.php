@@ -9,7 +9,7 @@
 @section('revised', '2024-04-10 10:06:33')
 
 @section('content')
-    <x-title>Título da Página</x-title>
+    <x-title>LOG Página</x-title>
 
     <div class="row">
         <div class="col-12">

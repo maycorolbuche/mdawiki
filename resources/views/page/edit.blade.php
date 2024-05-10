@@ -9,15 +9,29 @@
 @section('revised', '2024-04-10 10:06:33')
 
 @section('content')
-    <x-title>Título da Página</x-title>
+    <x-title>{{ $title }} <span class="badge bg-warning">Edição</span></x-title>
 
     <div class="row" style="flex: auto;">
-        <div class="col-12" style="display: flex;">
+        <form class="col-12 d-flex flex-column" id="form" method="POST"
+            action="{{ route('page.update', ['page' => $page]) }}">
             <div id="editor-container" class="editor" style="flex: auto;">
-                <div id="editor" class="editor">
-                </div>
+                <textarea id="editor" name="content" class="editor">
+                {{ $data->content_preview }}
+                </textarea>
             </div>
-        </div>
+
+            <x-card body-class="p-2">
+
+                <div class="card-actions float-end">
+                    @csrf
+                    <input type="submit" class="btn btn-info" value="Salvar">
+                    <input type="submit" class="btn btn-success" value="Visualizar">
+                    <a class="btn btn-warning" href="{{ route('image', ['page' => $page]) }}">
+                        Cancelar
+                    </a>
+                </div>
+            </x-card>
+        </form>
     </div>
 
 @endsection
@@ -252,7 +266,5 @@
 @endpush
 
 @push('scripts')
-    <script>
-       
-    </script>
+    <script></script>
 @endpush

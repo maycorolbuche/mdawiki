@@ -12,8 +12,6 @@
 @section('content')
     <x-title>Imagem: {{ $title }}</x-title>
 
-
-
     @include('layouts.partials.messages')
 
     @if ($image)

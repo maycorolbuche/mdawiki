@@ -20,7 +20,7 @@ class StringHelper
     public static function toTitle($string)
     {
         $string = urldecode($string);
-        $string = preg_replace('/[^A-Za-zÀ-ÖØ-öø-ÿ0-9\s\(\)\-]/u', ' ', $string);
+        $string = preg_replace('/[^A-Za-zÀ-ÖØ-öø-ÿ0-9\s\(\)\-\,]/u', ' ', $string);
         $string = preg_replace('/\s+/', ' ', $string);
         $string = trim($string);
         return $string;

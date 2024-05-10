@@ -142,4 +142,11 @@ class MailHelper
 
         return $html;
     }
+
+    public static function pageData($page)
+    {
+        $html = '';
+
+        return $html;
+    }
 }
