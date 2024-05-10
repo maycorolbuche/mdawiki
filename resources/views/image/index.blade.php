@@ -2,7 +2,7 @@
 @section('title', $title . ' (Imagem)')
 @section('description', 'Imagem - ' . $title)
 @if ($image)
-    @section('image', $image->full_url)
+    @section('image', $image->image_url)
     @section('image-type', $image->mime)
     @section('image-width', $image->width)
     @section('image-height', $image->height)
@@ -31,7 +31,7 @@
                     </div>
 
                     <div class="text-center">
-                        <img src="{{ $image->full_url }}" class="img-thumbnail rounded me-2 mb-2">
+                        <img src="{{ $image->image_url }}" class="img-thumbnail rounded me-2 mb-2">
                     </div>
                 </x-content>
             </div>
@@ -62,7 +62,7 @@
                             @foreach ($image_histories as $image)
                                 <tr>
                                     <td class="bg-white">
-                                        <x-change-card type="image" img="{{ $image->full_url }}"
+                                        <x-change-card type="image" img="{{ $image->image_url }}"
                                             name="{{ $image->user->name }}" datetime="{{ $image->updated_at_formatted }}"
                                             avatar="{{ $image->user->avatar }}" />
                                     </td>

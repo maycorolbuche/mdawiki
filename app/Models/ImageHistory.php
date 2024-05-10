@@ -21,7 +21,7 @@ class ImageHistory extends Model
         'image_id',
         'restore_id',
         'title',
-        'url',
+        'name',
         'slug',
         'path',
         'width',
@@ -43,7 +43,7 @@ class ImageHistory extends Model
         return Carbon::parse($this->updated_at)->format('d/m/Y H:i:s');
     }
 
-    public function getFullUrlAttribute()
+    public function getImageUrlAttribute()
     {
         if ($this->attributes['path']) {
             return asset('storage/' . $this->attributes['path']);

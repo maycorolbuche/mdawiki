@@ -62,6 +62,19 @@ Route::prefix('@json')->group(function () {
 });
 
 
+
+Route::get('/{page}', 'PageController@index')->name('page');
+Route::get('/{page}/editar', 'PageController@edit')->name('page.edit');
+Route::get('/{page}/historico', 'PageController@history')->name('page.log');
+Route::group(['middleware' => ['auth']], function () {
+    Route::post('/{page}', 'PageController@update')->name('page.update');
+    Route::delete('/{page}', 'PageController@delete')->name('page.delete');
+    Route::get('/{page}/restaurar/{id}', 'PageController@restore')->name('page.restore');
+    Route::get('/{page}/datatable', 'PageController@datatable')->name('page.datatable');
+});
+
+
+
 /* *** */
 Route::get('/test', function () {
     return view('home');

@@ -3,7 +3,7 @@
 @section('description', 'Imagem - ' . $title)
 @section('robots', 'noindex,nofollow')
 @if ($image)
-    @section('image', $image->full_url)
+    @section('image', $image->image_url)
     @section('image-type', $image->mime)
     @section('image-width', $image->width)
     @section('image-height', $image->height)
@@ -49,7 +49,7 @@
                 </x-content>
             </div>
             <div class="col-12 col-sm-4 col-md-4 col-lg-4 col-xl-3 col-xxl-2">
-                <x-card title="Imagem Atual" img="{{ $image->full_url }}">
+                <x-card title="Imagem Atual" img="{{ $image->image_url }}">
                     <div class='text-center'>
                         <form id="form" method="POST" action="{{ route('image.delete', ['page' => $page]) }}">
                             @csrf

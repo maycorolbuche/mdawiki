@@ -28,7 +28,8 @@ class JsonController extends Controller
         $images->getCollection()->transform(function ($image) {
             return [
                 ...$image->toArray(),
-                'full_url' => $image->full_url,
+                'image_url' => $image->image_url,
+                'url' => $image->image_url,
             ];
         });
 

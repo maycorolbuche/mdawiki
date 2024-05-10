@@ -2,7 +2,7 @@
 @section('title', $title . ' (Histórico de Imagem)')
 @section('description', 'Imagem - ' . $title)
 @if ($image)
-    @section('image', $image->full_url)
+    @section('image', $image->image_url)
     @section('image-type', $image->mime)
     @section('image-width', $image->width)
     @section('image-height', $image->height)

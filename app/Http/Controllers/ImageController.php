@@ -101,7 +101,7 @@ class ImageController extends Controller
         ImageHistory::create([
             'image_id' => $image->id,
             'title' => $image->title,
-            'url' => $image->url,
+            'name' => $image->name,
             'slug' => $image->slug,
             'updated_by' => auth()->user()->id,
         ]);
@@ -172,7 +172,7 @@ class ImageController extends Controller
             })
             ->addColumn('image', function ($row) {
                 if ($row->path <> "") {
-                    return "<img src='" . $row->fullUrl . "' class='avatar img-fluid rounded' style='object-fit: cover;'>";
+                    return "<img src='" . $row->image_url . "' class='avatar img-fluid rounded' style='object-fit: cover;'>";
                 } else {
                     return "<span class='badge bg-danger'>Imagem Excluída</span>";
                 }
@@ -195,7 +195,7 @@ class ImageController extends Controller
 
         $data['title'] = StringHelper::toTitle($page);
         $data['slug'] = $slug;
-        $data['url'] = StringHelper::toUrl($page);
+        $data['name'] = StringHelper::toUrl($page);
         $data['updated_by'] = auth()->user()->id;
 
         $image = Image::where('slug', $slug)->first();
@@ -226,8 +226,8 @@ class ImageController extends Controller
         $slug = StringHelper::toSlug($page);
         $data = Image::where('slug', $slug)->first();
         if ($data) {
-            if ($page <> $data->url) {
-                return  $data->url;
+            if ($page <> $data->name) {
+                return  $data->name;
             }
         }
 

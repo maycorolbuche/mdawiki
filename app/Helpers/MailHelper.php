@@ -109,7 +109,7 @@ class MailHelper
 
         $image = ImageHistory::where('slug', $page)->orderBy('id', 'desc')->first();
         if ($image) {
-            $url = route('image', ['page' => $image->url]);
+            $url = route('image', ['page' => $image->name]);
 
             if ($image->path) {
                 $base64 = 'data:' . $image->mime . ';base64,' . base64_encode(file_get_contents(storage_path('app/public/' . $image->path)));

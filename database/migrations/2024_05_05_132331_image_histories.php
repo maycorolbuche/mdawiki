@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('image_id')->nullable();
             $table->unsignedBigInteger('restore_id')->nullable();
             $table->string('title');
-            $table->string('url');
+            $table->string('name');
             $table->string('slug');
             $table->string('path')->nullable();
             $table->integer('width')->nullable();

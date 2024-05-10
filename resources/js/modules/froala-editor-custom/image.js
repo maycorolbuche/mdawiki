@@ -133,7 +133,7 @@ FroalaEditor.PLUGINS.customManageImagePlugin = function (editor) {
             let width = (data.width > max_width ? max_width : data.width);
 
             editor.html.insert('<img ' +
-                'src="' + data.full_url + '" ' +
+                'src="' + data.url + '" ' +
                 'data-slug="' + data.slug + '" ' +
                 'alt="' + data.title + '"' +
                 'style="width:' + width + 'px;max-width:' + max_width + 'px"' +
@@ -143,7 +143,7 @@ FroalaEditor.PLUGINS.customManageImagePlugin = function (editor) {
         });
 
         a.innerHTML = '<div class="card p-0 m-0">' +
-            '<img class="card-img" src="' + data.full_url + '" alt="' + data.title +
+            '<img class="card-img" src="' + data.url + '" alt="' + data.title +
             '" style="height:140px;object-fit: cover;">' +
             '</div>';
 

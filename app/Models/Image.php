@@ -18,7 +18,7 @@ class Image extends Model
      */
     protected $fillable = [
         'title',
-        'url',
+        'name',
         'slug',
         'path',
         'width',
@@ -28,7 +28,7 @@ class Image extends Model
         'updated_by',
     ];
 
-    public function getFullUrlAttribute()
+    public function getImageUrlAttribute()
     {
         if ($this->attributes['path']) {
             return asset('storage/' . $this->attributes['path']);
