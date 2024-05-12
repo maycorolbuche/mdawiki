@@ -6,8 +6,10 @@ class PageHelper
 {
     public static function process($content)
     {
+        $content = self::toEditor($content);
+
         $data = [
-            'editor' => self::toEditor($content),
+            'editor' => $content,
             'preview' => self::toPreview($content),
             'text' => self::toText($content),
             'markdown' => self::toText($content),
