@@ -104,7 +104,7 @@ FroalaEditor.PLUGINS.customFormatOLStartIn = function (editor) {
 
         editor.popups.setContainer('customFormatOLStartIn.popup', editor.$tb);
 
-        var $btn = editor.$tb.find('.fr-command[data-cmd="myButton"]');
+        var $btn = editor.$tb.find('.fr-command[data-cmd="formatOL"]');
         var left = $btn.offset().left + $btn.outerWidth() / 2;
         var top = $btn.offset().top + (editor.opts.toolbarBottom ? 10 : $btn.outerHeight() - 10);
         editor.popups.show('customFormatOLStartIn.popup', left, top, $btn.outerHeight());
@@ -150,10 +150,4 @@ FroalaEditor.RegisterCommand('formatOL', {
     },
     plugin: "lists",
 });
-
-setTimeout(function () {
-    document.querySelector('#dropdown-menu-formatOLOptions-1 [data-param1="start"]')
-        .style
-        .borderTop = "1px solid #ebebeb";
-}, 1000);
 

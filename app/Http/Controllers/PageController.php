@@ -7,6 +7,7 @@ use App\Models\Page;
 use App\Models\PageHistory;
 use App\Helpers\StringHelper;
 use App\Helpers\MailHelper;
+use App\Helpers\PageHelper;
 use Carbon\Carbon;
 use DataTables;
 
@@ -179,7 +180,13 @@ class PageController extends Controller
         $data['name'] = StringHelper::toUrl($page);
         $data['updated_by'] = auth()->user()->id;
 
-        $data['content_preview'] = $data['content_editor'];
+        $content_data = PageHelper::process($data['content_editor']);
+
+        $data['content_editor'] = $content_data['editor'];
+        $data['content_preview'] = $content_data['preview'];
+        $data['content_text'] = $content_data['text'];
+        $data['content_markdown'] = $content_data['markdown'];
+        $data['content_pdf'] = $content_data['pdf'];
 
         $page = Page::where('slug', $slug)->first();
         if ($page) {

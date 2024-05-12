@@ -26,7 +26,7 @@
                     @csrf
                     <input type="submit" class="btn btn-info" value="Salvar">
                     <input type="submit" class="btn btn-success" value="Visualizar">
-                    <a class="btn btn-warning" href="{{ route('image', ['page' => $page]) }}">
+                    <a class="btn btn-warning" href="{{ route('page', ['page' => $page]) }}">
                         Cancelar
                     </a>
                 </div>
@@ -43,11 +43,11 @@
         document.querySelector('.container-fluid').style.display = 'flex';
         document.querySelector('.container-fluid').style.flexDirection = 'column';
 
-
+        var editor;
         document.addEventListener("DOMContentLoaded", () => {
-            const editor = new FroalaEditor('#editor', {
+            editor = new FroalaEditor('#editor', {
                 language: 'pt_br',
-                height: document.getElementById('editor-container').offsetHeight - 190,
+                height: 100,
 
                 toolbarButtons: [
                     [
@@ -131,6 +131,9 @@
                 //htmlAllowedEmptyTags: ['mprescripts', 'none'],
             });
 
+            setTimeout(function() {
+                resizeEditor();
+            }, 100);
             console.log(editor);
         });
 
@@ -254,6 +257,16 @@
                 table.parentNode.removeChild(table);
             }
         });
+
+
+
+        function resizeEditor() {
+            editor.opts.height = document.getElementById('editor-container').offsetHeight - document
+                .querySelector(
+                    '.fr-toolbar').offsetHeight - 40;
+            editor.destroy();
+            editor = new FroalaEditor('#editor', editor.opts);
+        }
     </script>
 @endpush
 
@@ -262,6 +275,9 @@
 
 @push('styles')
     <style>
+        [id^="dropdown-menu-formatOLOptions-"] [data-param1="start"] {
+            border-top: 1px solid #ebebeb;
+        }
     </style>
 @endpush
 
