@@ -25,6 +25,32 @@ class StringHelper
         $string = trim($string);
         return $string;
     }
+    public static function numberToLetter($number)
+    {
+        $letter = '';
+        while ($number > 0) {
+            $remainder = ($number - 1) % 26;
+            $letter = chr(65 + $remainder) . $letter;
+            $number = floor(($number - $remainder) / 26);
+        }
+        return strtolower($letter);
+    }
+    public static function getStyle($styleString, $property)
+    {
+        $styles = explode(';', $styleString);
+        foreach ($styles as $pair) {
+            $parts = explode(':', $pair);
+
+            $propertyTrimmed = trim($parts[0]);
+            $valueTrimmed = trim($parts[1] ?? null);
+
+            if ($propertyTrimmed === $property) {
+                return $valueTrimmed;
+            }
+        }
+
+        return null;
+    }
     public static function removeAccents($string)
     {
         if (!preg_match('/[\x80-\xff]/', $string))
