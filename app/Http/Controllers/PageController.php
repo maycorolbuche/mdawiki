@@ -29,7 +29,9 @@ class PageController extends Controller
             ->take(5)
             ->get();
 
-        return view('page.index', compact('page', 'title', 'data', 'data_histories'));
+        $description = ($data ? StringHelper::substring($data->content_text,150) : 'Página inexistente');
+
+        return view('page.index', compact('page', 'title', 'data', 'data_histories', 'description'));
     }
 
     public function edit(Request $request, $page)

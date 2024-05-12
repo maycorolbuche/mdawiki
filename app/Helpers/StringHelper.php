@@ -51,6 +51,16 @@ class StringHelper
 
         return null;
     }
+    public static function removeTag($html, $tag)
+    {
+        $pattern = '%<' . $tag . '(.*?)>|</' . $tag . '>%s';
+        $html_replace = preg_replace($pattern, '', $html);
+        return $html_replace;
+    }
+    public static function substring($text, $len = 100)
+    {
+        return substr($text, 1, $len) . (strlen($text) > $len ? '...' : '');
+    }
     public static function removeAccents($string)
     {
         if (!preg_match('/[\x80-\xff]/', $string))

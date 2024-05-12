@@ -1,4 +1,5 @@
 <?php
+//https://simplehtmldom.sourceforge.io/docs/1.9/index.html
 
 namespace App\Helpers;
 
@@ -23,6 +24,14 @@ class PageHelper
     }
     public static function toEditor($content)
     {
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("li > p") as $el) {
+            $el->parent()->innertext = StringHelper::removeTag($el->parent()->innertext, 'p');
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+
         return $content;
     }
     public static function toPreview($content)
@@ -54,7 +63,7 @@ class PageHelper
                             if ($param['type'] == 'lower-alpha') {
                                 $number = StringHelper::numberToLetter($number);
                             }
-                            $text .= PHP_EOL . str_repeat(' ', $level) . $number . '. ' . $param['type'] . $node->innertext;
+                            $text .= PHP_EOL . str_repeat(' ', $level - 1) . $number . '. ' . $node->innertext;
                         }
                         break;
                     case 'p':
@@ -69,10 +78,12 @@ class PageHelper
         }
 
         $dom = HtmlDomParser::str_get_html($content);
-        $text = nodeToText($dom->root->children);
+        $content = nodeToText($dom->root->children);
         $dom->clear();
 
-        return $text;
+        $content = str_replace('&nbsp;', ' ', $content);
+
+        return $content;
     }
     public static function toMarkdown($content)
     {
