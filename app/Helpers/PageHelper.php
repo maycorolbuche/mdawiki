@@ -12,7 +12,7 @@ class PageHelper
             'editor' => $content,
             'preview' => self::toPreview($content),
             'text' => self::toText($content),
-            'markdown' => self::toText($content),
+            'markdown' => self::toMarkdown($content),
             'pdf' => self::toPdf($content),
         ];
 
