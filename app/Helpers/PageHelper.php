@@ -7,6 +7,7 @@ use Drnxloc\LaravelHtmlDom\HtmlDomParser;
 use App\Helpers\StringHelper;
 use App\Helpers\HtmlHelper;
 use App\Models\Page;
+use App\Models\PageTitle;
 
 class PageHelper
 {
@@ -20,6 +21,9 @@ class PageHelper
             'text' => self::toText($content),
             'markdown' => self::toMarkdown($content),
             'pdf' => self::toPdf($content),
+            'components' => [
+                'titles' => self::getTitles($content),
+            ],
         ];
 
         return $data;
@@ -37,6 +41,25 @@ class PageHelper
             $page['content_pdf'] = $content_data['pdf'];
 
             $page->save();
+
+            $id = $page->id;
+            $slug = $page->slug;
+
+            PageTitle::where('page_id', $id)->delete();
+            foreach ($content_data["components"]["titles"] as $title) {
+                $title["title"] = html_entity_decode($title["title"]);
+
+                $data = [
+                    'page_id' => $id,
+                    'slug' => $slug,
+                    'header' => $title["title"],
+                    'header_slug' => StringHelper::toSlug($title["title"]),
+                    'level' => $title["level"],
+                    'sequence' => $title["sequence"],
+                    'content' => $title["content"],
+                ];
+                PageTitle::create($data);
+            }
         }
     }
     public static function toEditor($content)
@@ -59,6 +82,43 @@ class PageHelper
     }
     public static function toPreview($content)
     {
+        /* Ajusta Títulos *********************************************************************/
+        $dom = HtmlDomParser::str_get_html($content);
+        $i = 0;
+        $items = [];
+        foreach ($dom->find("h1,h2,h3,h4,h5,h6") as $el) {
+            $i++;
+            $name = $i . "_" . StringHelper::toSlug(html_entity_decode($el->innertext));
+            $items[] = [
+                "tag" => $el->tag,
+                "level" => +preg_replace('/\D/', '', $el->tag),
+                "title" => $el->innertext,
+                "name" => $name,
+            ];
+            $el->setAttribute("name", $name);
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+        $html = "";
+        $level = 0;
+        foreach ($items as $item) {
+            if ($item["level"] > $level) {
+                $html .= str_repeat("<ol>", $item["level"] - $level);
+            }
+            if ($item["level"] < $level) {
+                $html .= str_repeat("</ol>", $level - $item["level"]);
+            }
+            $html .= "<li><a href='javascript:' onclick=\"nav_page('" . $item["name"] . "')\">" . $item["title"] . "</a></li>";
+            $level = $item["level"];
+        }
+        $html .= str_repeat("</ol>", $level);
+
+        $content = $html . $content;
+
+        /******************************************************************************/
+
+
         return $content;
     }
     public static function toText($content)
@@ -115,5 +175,27 @@ class PageHelper
     public static function toPdf($content)
     {
         return $content;
+    }
+
+    public static function getTitles($content)
+    {
+        $ret = [];
+        $sequence = 0;
+        for ($i = 1; $i <= 4; $i++) {
+            $hs = explode("<h$i", $content);
+            foreach ($hs as $h) {
+                if (strpos($h, "</h$i>") !== false) {
+                    $sequence++;
+                    $e = explode("</h$i>", $h);
+                    $ret[] = [
+                        "title" => strip_tags("</h$i" . $e[0]),
+                        "content" => $e[1],
+                        "level" => $i,
+                        "sequence" => $sequence,
+                    ];
+                }
+            }
+        }
+        return $ret;
     }
 }

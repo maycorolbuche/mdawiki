@@ -6,5 +6,7 @@ import "./modules/interactjs";
 import "./modules/froala-editor";
 import "./modules/datatables";
 
+import "./functions";
+
 import 'bootstrap';
 import '@popperjs/core';

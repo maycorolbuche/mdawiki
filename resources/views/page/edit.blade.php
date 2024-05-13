@@ -16,7 +16,7 @@
             action="{{ route('page.update', ['page' => $page]) }}">
             <div id="editor-container" class="editor" style="flex: auto;">
                 <textarea id="editor" name="content" class="editor">
-                {{ $data->content_editor }}
+                {{ $data->content_editor ?? '' }}
                 </textarea>
             </div>
 
