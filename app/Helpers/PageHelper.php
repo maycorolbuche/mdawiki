@@ -102,6 +102,13 @@ class PageHelper
 
         $html = "";
         $level = 0;
+
+        $html .= "<nav class='anchors sidebar-item border mb-3'>";
+        $html .= "<div data-bs-target='#anchors-nav' data-bs-toggle='collapse' class='header p-2 ps-3 cursor-pointer'>";
+        $html .= "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-menu'><line x1='3' y1='12' x2='21' y2='12'></line><line x1='3' y1='6' x2='21' y2='6'></line><line x1='3' y1='18' x2='21' y2='18'></line></svg>";
+        $html .= "<span class='ps-2 align-middle h5'>Tópicos</span>";
+        $html .= "</div>";
+        $html .= "<div id='anchors-nav' class='collapse p-3'>";
         foreach ($items as $item) {
             if ($item["level"] > $level) {
                 $html .= str_repeat("<ol>", $item["level"] - $level);
@@ -109,10 +116,12 @@ class PageHelper
             if ($item["level"] < $level) {
                 $html .= str_repeat("</ol>", $level - $item["level"]);
             }
-            $html .= "<li><a href='javascript:' onclick=\"nav_page('" . $item["name"] . "')\">" . $item["title"] . "</a></li>";
+            $html .= "<li><a href='#" . $item["name"] . "'>" . $item["title"] . "</a></li>";
             $level = $item["level"];
         }
         $html .= str_repeat("</ol>", $level);
+        $html .= "</div>";
+        $html .= "</nav>";
 
         $content = $html . $content;
 

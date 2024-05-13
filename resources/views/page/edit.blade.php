@@ -9,7 +9,7 @@
 @section('revised', '2024-04-10 10:06:33')
 
 @section('content')
-    <x-title>{{ $title }} <span class="badge bg-warning">Edição</span></x-title>
+    <x-title>{{ $title }} <span class="badge bg-warning small">Edição</span></x-title>
 
     <div class="row" style="flex: auto;">
         <form class="col-12 d-flex flex-column" id="form" method="POST"

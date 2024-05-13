@@ -1,6 +1,6 @@
 @switch($level)
     @case(1)
-        <h1 class="mb-3">{{ $slot }}</h1>
+        <h1>{{ $slot }}</h1>
     @break
 
     @case(2)

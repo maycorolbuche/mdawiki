@@ -10,22 +10,24 @@
 @endif
 
 @section('content')
-    <x-title>{{ $title }}</x-title>
+    <div class="d-flex align-items-center">
+        <x-title>{{ $title }}</x-title>
+        <div class="ms-auto"></div>
+        <a class="btn btn-sm btn-info m-1" href="{{ route('page.log', ['page' => $page]) }}">
+            Histórico
+        </a>
+        @if ($data)
+            <a class="btn btn-sm btn-primary m-1" href="{{ route('page.edit', ['page' => $page]) }}">
+                Editar Página
+            </a>
+        @endif
+    </div>
 
     <div class="row">
         <div class="col-12">
+
             <x-content body-class="page">
                 @include('layouts.partials.messages')
-                <div class="card-actions float-end mb-3">
-                    <a class="btn btn-sm btn-info" href="{{ route('page.log', ['page' => $page]) }}">
-                        Histórico
-                    </a>
-                    @if ($data)
-                        <a class="btn btn-sm btn-primary" href="{{ route('page.edit', ['page' => $page]) }}">
-                            Editar Página
-                        </a>
-                    @endif
-                </div>
 
                 @if (!$data)
                     <p>Esta página não existe. Seja o primeiro a criar esta página!</p>
@@ -39,13 +41,20 @@
                     {!! $data->content_preview !!}
                 @endif
             </x-content>
+
         </div>
     </div>
 @endsection
 
 
+@push('styles')
+    <style>
+        .page nav.anchors .header {
+            background: #f9f6f6;
+        }
+    </style>
+@endpush
+
 @push('scripts')
-    <script>
-       
-    </script>
+    <script></script>
 @endpush

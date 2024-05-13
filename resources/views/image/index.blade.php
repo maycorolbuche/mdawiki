@@ -10,30 +10,41 @@
 @endif
 
 @section('content')
-    <x-title>Imagem: {{ $title }}</x-title>
+    <div class="d-flex align-items-center">
+        <x-title>Imagem: {{ $title }}</x-title>
+        <div class="ms-auto"></div>
+        <a class="btn btn-sm btn-info m-1" href="{{ route('image.log', ['page' => $page]) }}">
+            Histórico
+        </a>
+        @if ($image)
+            <a class="btn btn-sm btn-primary m-1" href="{{ route('image.edit', ['page' => $page]) }}">
+                Editar Imagem
+            </a>
+        @endif
+    </div>
 
     @include('layouts.partials.messages')
 
-    @if ($image)
-        <div class="row">
-            <div class="col-12 col-sm-6 col-md-8 col-lg-7 col-xl-8 col-xxl-9">
-                <x-content>
-
-                    <div class="card-actions float-end mb-3">
-                        <a class="btn btn-sm btn-info" href="{{ route('image.log', ['page' => $page]) }}">
-                            Histórico
-                        </a>
-                        <a class="btn btn-sm btn-primary" href="{{ route('image.edit', ['page' => $page]) }}">
-                            Editar Imagem
-                        </a>
-                    </div>
-
+    <div class="row">
+        <div class="col-12 col-sm-6 col-md-8 col-lg-7 col-xl-8 col-xxl-9">
+            <x-content>
+                @if ($image)
                     <div class="text-center">
                         <img src="{{ $image->image_url }}" class="img-thumbnail rounded me-2 mb-2">
                     </div>
-                </x-content>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4 col-lg-5 col-xl-4 col-xxl-3">
+                @else
+                    <p>Esta imagem não existe. Seja o primeiro a criar esta imagem!</p>
+
+                    <div class='text-center'>
+                        <a href="{{ route('image.edit', ['page' => $page]) }}" class="btn btn-primary btn-lg">
+                            Adicionar Imagem
+                        </a>
+                    </div>
+                @endif
+            </x-content>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4 col-lg-5 col-xl-4 col-xxl-3">
+            @if ($image)
                 <x-card title="Informações da Imagem" body-class="p-0">
                     <table class="table table-borderless my-0">
                         <tbody>
@@ -53,7 +64,9 @@
                         </tbody>
                     </table>
                 </x-card>
+            @endif
 
+            @if (count($image_histories) > 0)
                 <x-card title="Últimas Modificações" body-class="p-0">
                     <table class="table table-borderless my-0">
                         <tbody>
@@ -69,31 +82,11 @@
                         </tbody>
                     </table>
                 </x-card>
+            @endif
 
-            </div>
         </div>
-    @else
-        <div class="row">
-            <div class="col-12">
-                <x-content>
+    </div>
 
-                    <div class="card-actions float-end mb-3">
-                        <a class="btn btn-sm btn-info" href="{{ route('image.log', ['page' => $page]) }}">
-                            Histórico
-                        </a>
-                    </div>
-
-                    <p>Esta imagem não existe. Seja o primeiro a criar esta imagem!</p>
-
-                    <div class='text-center'>
-                        <a href="{{ route('image.edit', ['page' => $page]) }}" class="btn btn-primary btn-lg">
-                            Adicionar Imagem
-                        </a>
-                    </div>
-                </x-content>
-            </div>
-        </div>
-    @endif
 
 
 @endsection

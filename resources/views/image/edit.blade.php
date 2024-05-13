@@ -11,21 +11,20 @@
 @endif
 
 @section('content')
-    <x-title>Imagem: {{ $title }} <span class="badge bg-warning">Edição</span></x-title>
+    <div class="d-flex align-items-center">
+        <x-title>Imagem: {{ $title }} <span class="badge bg-warning small">Edição</span></x-title>
+        <div class="ms-auto"></div>
+        <a class="btn btn-sm btn-warning" href="{{ route('image', ['page' => $page]) }}">
+            Cancelar
+        </a>
+    </div>
+
+
 
     @if ($image)
         <div class="row">
             <div class="col-12 col-sm-8 col-md-8 col-lg-8 col-xl-9 col-xxl-10">
                 <x-content>
-
-                    <div class="card-actions float-end mb-3">
-                        <a class="btn btn-sm btn-warning" href="{{ route('image', ['page' => $page]) }}">
-                            Cancelar
-                        </a>
-                    </div>
-
-                    <div style="clear: both"></div>
-
                     @include('layouts.partials.messages')
 
                     <div id="image-preview" class='text-center mb-4'>
