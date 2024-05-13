@@ -126,3 +126,82 @@ small,
 .fr-shortcut {
     display: none !important;
 }
+
+
+/* Editor e Página */
+
+.page h1,
+.editor .fr-wrapper h1 {
+    font-size: 24px !important;
+    border-bottom: 1px solid #EEE !important;
+    margin-top: 20px !important;
+}
+
+.page h2,
+.editor .fr-wrapper h2 {
+    font-size: 18px !important;
+    font-weight: 200 !important;
+    color: #666 !important;
+    line-height: 1.1 !important;
+    margin-bottom: 10px !important;
+    margin-top: 20px !important;
+}
+
+.page h3,
+.editor .fr-wrapper h3 {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #666 !important;
+    line-height: 1.1 !important;
+    margin-bottom: 10px !important;
+    margin-top: 20px !important;
+}
+
+.page h4,
+.editor .fr-wrapper h4 {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #666 !important;
+    line-height: 1.1 !important;
+    margin-bottom: 10px !important;
+    margin-top: 20px !important;
+}
+
+
+.editor .fr-wrapper h1,
+.editor .fr-wrapper h2,
+.editor .fr-wrapper h3,
+.editor .fr-wrapper h4 {
+    background: #ffffe7;
+    padding: 5px;
+}
+
+.editor .fr-wrapper h1::after,
+.editor .fr-wrapper h2::after,
+.editor .fr-wrapper h3::after,
+.editor .fr-wrapper h4::after {
+    background: #dddddd;
+    float: right;
+    font-size: 12px;
+    padding: 2px 10px;
+    border: 1px solid #CCC;
+    border-radius: 5px;
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+.editor .fr-wrapper h1::after {
+    content: "Título 1";
+}
+
+.editor .fr-wrapper h2::after {
+    content: "Título 2";
+}
+
+.editor .fr-wrapper h3::after {
+    content: "Título 3";
+}
+
+.editor .fr-wrapper h4::after {
+    content: "Título 4";
+}

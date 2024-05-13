@@ -35,28 +35,6 @@ class StringHelper
         }
         return strtolower($letter);
     }
-    public static function getStyle($styleString, $property)
-    {
-        $styles = explode(';', $styleString);
-        foreach ($styles as $pair) {
-            $parts = explode(':', $pair);
-
-            $propertyTrimmed = trim($parts[0]);
-            $valueTrimmed = trim($parts[1] ?? null);
-
-            if ($propertyTrimmed === $property) {
-                return $valueTrimmed;
-            }
-        }
-
-        return null;
-    }
-    public static function removeTag($html, $tag)
-    {
-        $pattern = '%<' . $tag . '(.*?)>|</' . $tag . '>%s';
-        $html_replace = preg_replace($pattern, '', $html);
-        return $html_replace;
-    }
     public static function substring($text, $len = 100)
     {
         return substr($text, 1, $len) . (strlen($text) > $len ? '...' : '');

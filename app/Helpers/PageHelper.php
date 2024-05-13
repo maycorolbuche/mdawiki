@@ -5,6 +5,8 @@ namespace App\Helpers;
 
 use Drnxloc\LaravelHtmlDom\HtmlDomParser;
 use App\Helpers\StringHelper;
+use App\Helpers\HtmlHelper;
+use App\Models\Page;
 
 class PageHelper
 {
@@ -22,15 +24,36 @@ class PageHelper
 
         return $data;
     }
+    public static function refresh($slug)
+    {
+        $page = Page::where('slug', $slug)->first();
+        if ($page) {
+            $content_data = PageHelper::process($page['content_editor']);
+
+            $page['content_editor'] = $content_data['editor'];
+            $page['content_preview'] = $content_data['preview'];
+            $page['content_text'] = $content_data['text'];
+            $page['content_markdown'] = $content_data['markdown'];
+            $page['content_pdf'] = $content_data['pdf'];
+
+            $page->save();
+        }
+    }
     public static function toEditor($content)
     {
         $dom = HtmlDomParser::str_get_html($content);
         foreach ($dom->find("li > p") as $el) {
-            $el->parent()->innertext = StringHelper::removeTag($el->parent()->innertext, 'p');
+            $el->parent()->innertext = HtmlHelper::removeTag($el->parent()->innertext, 'p');
         }
         $content = $dom->save();
         $dom->clear();
 
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("h1,h2,h3,h4,h5,h6") as $el) {
+            $el->innertext = strip_tags($el->innertext);
+        }
+        $content = $dom->save();
+        $dom->clear();
 
         return $content;
     }
@@ -52,7 +75,7 @@ class PageHelper
                         break;
                     case 'ol':
                         $p['start'] =  $node->attr['start'] ?? 1;
-                        $p['type'] =  StringHelper::getStyle($node->attr['style'] ?? '', 'list-style-type') ?? 'decimal';
+                        $p['type'] =  HtmlHelper::getStyle($node->attr['style'] ?? '', 'list-style-type') ?? 'decimal';
                         break;
                     case 'li':
                         if ($param['parent_tag'] == 'ul') {

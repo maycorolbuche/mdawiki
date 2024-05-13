@@ -29,7 +29,7 @@ class PageController extends Controller
             ->take(5)
             ->get();
 
-        $description = ($data ? StringHelper::substring($data->content_text,150) : 'Página inexistente');
+        $description = ($data ? StringHelper::substring($data->content_text, 150) : 'Página inexistente');
 
         return view('page.index', compact('page', 'title', 'data', 'data_histories', 'description'));
     }
@@ -58,6 +58,15 @@ class PageController extends Controller
         $real_page = $this->realUrl($page);
         if ($page <> $real_page) {
             return redirect()->route('page.edit', ['page' => $real_page])->withError('URL inválida!');
+        }
+
+        $slug = StringHelper::toSlug($page);
+        $p = Page::where('slug', $slug)->first();
+        if ($p) {
+            if ($p["content_editor"] == $request->input('content')) {
+                PageHelper::refresh($slug);
+                return redirect()->route('page', ['page' => $page])->withWarning('Nenhuma alteração foi feita!');
+            }
         }
 
         $this->save($page, [
@@ -182,14 +191,6 @@ class PageController extends Controller
         $data['name'] = StringHelper::toUrl($page);
         $data['updated_by'] = auth()->user()->id;
 
-        $content_data = PageHelper::process($data['content_editor']);
-
-        $data['content_editor'] = $content_data['editor'];
-        $data['content_preview'] = $content_data['preview'];
-        $data['content_text'] = $content_data['text'];
-        $data['content_markdown'] = $content_data['markdown'];
-        $data['content_pdf'] = $content_data['pdf'];
-
         $page = Page::where('slug', $slug)->first();
         if ($page) {
             $page->update($data);
@@ -201,6 +202,8 @@ class PageController extends Controller
             $mail_subject = '[new_page]';
             $mail_text = 'Nova página cadastrada!';
         }
+
+        PageHelper::refresh($slug);
 
         $data["page_id"] = $page->id;
 
