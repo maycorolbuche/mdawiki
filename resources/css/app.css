@@ -328,3 +328,7 @@ small,
 .page nav.anchors ol[data-level="6"]>li::before {
     content: counter(level1) "." counter(level2) "." counter(level3) "." counter(level4) "." counter(level5) "." counter(level6) ". ";
 }
+
+img[onclick] {
+    cursor: pointer;
+}

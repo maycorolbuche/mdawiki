@@ -54,5 +54,9 @@
 @endpush
 
 @push('scripts')
-    <script></script>
+    <script>
+        function open_url(url) {
+            window.location.href = url;
+        }
+    </script>
 @endpush

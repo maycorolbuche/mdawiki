@@ -8,6 +8,8 @@ use App\Helpers\StringHelper;
 use App\Helpers\HtmlHelper;
 use App\Models\Page;
 use App\Models\PageTitle;
+use App\Models\PageImage;
+use App\Models\Image;
 
 class PageHelper
 {
@@ -23,6 +25,7 @@ class PageHelper
             'pdf' => self::toPdf($content),
             'components' => [
                 'titles' => self::getTitles($content),
+                'images' => self::getImages($content),
             ],
         ];
 
@@ -60,6 +63,20 @@ class PageHelper
                 ];
                 PageTitle::create($data);
             }
+
+            PageImage::where('page_id', $id)->delete();
+            foreach ($content_data["components"]["images"] as $image) {
+                $data = [
+                    'page_id' => $id,
+                    'slug' => $slug,
+                    'image_slug' => StringHelper::toSlug($image["slug"]),
+                    'image_path' => $image["path"],
+                    'image_exists' => $image["exists"],
+                    'is_error' => $image["is_error"],
+                    'sequence' => $image["sequence"],
+                ];
+                PageImage::create($data);
+            }
         }
     }
     public static function toEditor($content)
@@ -87,6 +104,33 @@ class PageHelper
             }
             $el->innertext = strip_tags($el->innertext);
             $n = $level;
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+        // Verifica imagens
+        $dom = HtmlDomParser::str_get_html($content);
+        $n = 0;
+        foreach ($dom->find("img") as $el) {
+            $slug = $el->getAttribute('data-slug');
+            if (!$slug) {
+                $el->setAttribute('src', route('image.text', ['text' => 'Não é permitido|imagens externas']));
+                $el->setAttribute('data-slug', '');
+                $el->setAttribute('alt', '');
+            } else {
+                $image = Image::where('slug', $slug)->first();
+                if ($image) {
+                    $el->setAttribute('src', $image->image_url);
+                    $el->setAttribute('data-exists', true);
+                    $el->setAttribute('data-path', $image->path);
+                    $el->setAttribute('data-name', $image->name);
+                    $el->setAttribute('alt', $image->title);
+                } else {
+                    $el->setAttribute('src', route('image.text', ['text' => 'Imagem não|encontrada']));
+                    $el->setAttribute('data-exists', false);
+                    $el->setAttribute('alt', '');
+                }
+            }
         }
         $content = $dom->save();
         $dom->clear();
@@ -142,6 +186,19 @@ class PageHelper
             $content = $html . $content;
         }
 
+
+        /* Ajusta Imagens *********************************************************************/
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("img") as $el) {
+            $slug = $el->getAttribute("data-slug");
+            if ($slug) {
+                $name = $el->getAttribute("data-name");
+                $page = $name ?: $slug;
+                $el->setAttribute("onclick", "open_url('" . route("image", ["page" => $page]) . "')");
+            }
+        }
+        $content = $dom->save();
+        $dom->clear();
         /******************************************************************************/
 
         return $content;
@@ -221,6 +278,34 @@ class PageHelper
                 }
             }
         }
+        return $ret;
+    }
+    public static function getImages($content)
+    {
+        $ret = [];
+
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("img") as $sequence => $el) {
+            $slug = $el->getAttribute("data-slug");
+            $data = [
+                "slug" => $slug,
+                "path" => "",
+                "exists" => false,
+                "is_error" => true,
+                "sequence" => $sequence + 1,
+            ];
+            if ($slug <> "") {
+                $data["is_error"] = false;
+                if ($el->getAttribute("data-exists")) {
+                    $data["path"] = $el->getAttribute("data-path");
+                    $data["exists"] = true;
+                }
+            }
+            $ret[] = $data;
+        }
+        $content = $dom->save();
+        $dom->clear();
+
         return $ret;
     }
 }

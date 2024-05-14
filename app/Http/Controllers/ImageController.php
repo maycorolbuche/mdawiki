@@ -219,8 +219,6 @@ class ImageController extends Controller
 
     public function text($text)
     {
-        header("Content-Type: image/svg+xml");
-
         $width = 250;
         $height = 200;
 
@@ -252,7 +250,7 @@ class ImageController extends Controller
 
         $svg .= '</svg>';
 
-        return $svg;
+        return response($svg)->header("Content-Type", "image/svg+xml");
     }
 
     public function realUrl($page)

@@ -64,14 +64,6 @@
             <div class="col-12">
                 <x-content>
 
-                    <div class="card-actions float-end mb-3">
-                        <a class="btn btn-sm btn-warning" href="{{ route('image', ['page' => $page]) }}">
-                            Cancelar
-                        </a>
-                    </div>
-
-                    <div style="clear: both"></div>
-
                     @include('layouts.partials.messages')
 
                     <div id="image-preview" class='text-center mb-4'>
