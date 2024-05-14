@@ -64,6 +64,11 @@ class PageHelper
     }
     public static function toEditor($content)
     {
+        //Remove tags maliciosas, scripts ou css
+        $content = HtmlHelper::removeTag($content, 'style');
+        $content = HtmlHelper::removeTag($content, 'script');
+
+        // Remove tags <p> dentro de listas <li>
         $dom = HtmlDomParser::str_get_html($content);
         foreach ($dom->find("li > p") as $el) {
             $el->parent()->innertext = HtmlHelper::removeTag($el->parent()->innertext, 'p');
@@ -71,9 +76,17 @@ class PageHelper
         $content = $dom->save();
         $dom->clear();
 
+        // Ajusta ordem dos títulos e limpa formatação dentro deles
         $dom = HtmlDomParser::str_get_html($content);
+        $n = 0;
         foreach ($dom->find("h1,h2,h3,h4,h5,h6") as $el) {
+            $level = +preg_replace('/\D/', '', $el->tag);
+            if ($level - $n > 1) {
+                $level = ($n + 1);
+                $el->tag = "h" . $level;
+            }
             $el->innertext = strip_tags($el->innertext);
+            $n = $level;
         }
         $content = $dom->save();
         $dom->clear();
@@ -111,12 +124,12 @@ class PageHelper
         $html .= "<div id='anchors-nav' class='collapse p-3'>";
         foreach ($items as $item) {
             if ($item["level"] > $level) {
-                $html .= str_repeat("<ol>", $item["level"] - $level);
+                $html .= str_repeat("<ol data-level=" . $item["level"] . ">", $item["level"] - $level);
             }
             if ($item["level"] < $level) {
                 $html .= str_repeat("</ol>", $level - $item["level"]);
             }
-            $html .= "<li><a href='#" . $item["name"] . "'>" . $item["title"] . "</a></li>";
+            $html .= "<li data-level=" . $item["level"] . "><a href='#" . $item["name"] . "'>" . $item["title"] . "</a></li>";
             $level = $item["level"];
         }
         $html .= str_repeat("</ol>", $level);
@@ -126,7 +139,6 @@ class PageHelper
         $content = $html . $content;
 
         /******************************************************************************/
-
 
         return $content;
     }

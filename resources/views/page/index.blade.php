@@ -49,9 +49,7 @@
 
 @push('styles')
     <style>
-        .page nav.anchors .header {
-            background: #f9f6f6;
-        }
+      
     </style>
 @endpush
 

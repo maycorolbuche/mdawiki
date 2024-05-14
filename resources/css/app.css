@@ -171,7 +171,9 @@ small,
 .editor .fr-wrapper h1,
 .editor .fr-wrapper h2,
 .editor .fr-wrapper h3,
-.editor .fr-wrapper h4 {
+.editor .fr-wrapper h4,
+.editor .fr-wrapper h5,
+.editor .fr-wrapper h6 {
     background: #ffffe7;
     padding: 5px;
 }
@@ -179,7 +181,9 @@ small,
 .editor .fr-wrapper h1::after,
 .editor .fr-wrapper h2::after,
 .editor .fr-wrapper h3::after,
-.editor .fr-wrapper h4::after {
+.editor .fr-wrapper h4::after,
+.editor .fr-wrapper h5::after,
+.editor .fr-wrapper h6::after {
     background: #dddddd;
     float: right;
     font-size: 12px;
@@ -191,17 +195,110 @@ small,
 }
 
 .editor .fr-wrapper h1::after {
-    content: "Título 1";
+    content: "Nível 1";
 }
 
 .editor .fr-wrapper h2::after {
-    content: "Título 2";
+    content: "Nível 2";
 }
 
 .editor .fr-wrapper h3::after {
-    content: "Título 3";
+    content: "Nível 3";
 }
 
 .editor .fr-wrapper h4::after {
-    content: "Título 4";
+    content: "Nível 4";
+}
+
+.editor .fr-wrapper h5::after {
+    content: "Nível 5";
+}
+
+.editor .fr-wrapper h6::after {
+    content: "Nível 6";
+}
+
+
+/* Página - Tópicos */
+
+.page nav.anchors .header {
+    background: #f9f6f6;
+}
+
+.page nav.anchors ol[data-level="1"] {
+    counter-reset: level1;
+    list-style-type: none;
+}
+
+.page nav.anchors ol[data-level="1"]>li {
+    counter-increment: level1;
+}
+
+.page nav.anchors ol[data-level="1"]>li::before {
+    content: counter(level1) ". ";
+}
+
+.page nav.anchors ol[data-level="2"] {
+    counter-reset: level2;
+    list-style-type: none;
+}
+
+.page nav.anchors ol[data-level="2"]>li {
+    counter-increment: level2;
+}
+
+.page nav.anchors ol[data-level="2"]>li::before {
+    content: counter(level1) "." counter(level2) ". ";
+}
+
+.page nav.anchors ol[data-level="3"] {
+    counter-reset: level3;
+    list-style-type: none;
+}
+
+.page nav.anchors ol[data-level="3"]>li {
+    counter-increment: level3;
+}
+
+.page nav.anchors ol[data-level="3"]>li::before {
+    content: counter(level1) "." counter(level2) "." counter(level3) ". ";
+}
+
+.page nav.anchors ol[data-level="4"] {
+    counter-reset: level4;
+    list-style-type: none;
+}
+
+.page nav.anchors ol[data-level="4"]>li {
+    counter-increment: level4;
+}
+
+.page nav.anchors ol[data-level="4"]>li::before {
+    content: counter(level1) "." counter(level2) "." counter(level3) "." counter(level4) ". ";
+}
+
+.page nav.anchors ol[data-level="5"] {
+    counter-reset: level5;
+    list-style-type: none;
+}
+
+.page nav.anchors ol[data-level="5"]>li {
+    counter-increment: level5;
+}
+
+.page nav.anchors ol[data-level="5"]>li::before {
+    content: counter(level1) "." counter(level2) "." counter(level3) "." counter(level4) "." counter(level5) ". ";
+}
+
+.page nav.anchors ol[data-level="6"] {
+    counter-reset: level6;
+    list-style-type: none;
+}
+
+.page nav.anchors ol[data-level="6"]>li {
+    counter-increment: level6;
+}
+
+.page nav.anchors ol[data-level="6"]>li::before {
+    content: counter(level1) "." counter(level2) "." counter(level3) "." counter(level4) "." counter(level5) "." counter(level6) ". ";
 }

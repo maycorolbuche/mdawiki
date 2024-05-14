@@ -15,7 +15,7 @@
         <form class="col-12 d-flex flex-column" id="form" method="POST"
             action="{{ route('page.update', ['page' => $page]) }}">
             <div id="editor-container" class="editor" style="flex: auto;">
-                <textarea id="editor" name="content" class="editor">
+                <textarea id="editor" name="content" class="editor d-none">
                 {{ $data->content_editor ?? '' }}
                 </textarea>
             </div>
@@ -48,6 +48,7 @@
             editor = new FroalaEditor('#editor', {
                 language: 'pt_br',
                 height: 100,
+                pastePlain: true,
 
                 toolbarButtons: [
                     [
@@ -130,6 +131,7 @@
                 //htmlAllowedAttrs: [' .* '],
                 //htmlAllowedEmptyTags: ['mprescripts', 'none'],
             });
+
 
             setTimeout(function() {
                 resizeEditor();
@@ -279,8 +281,4 @@
             border-top: 1px solid #ebebeb;
         }
     </style>
-@endpush
-
-@push('scripts')
-    <script></script>
 @endpush
