@@ -115,6 +115,7 @@ class PageHelper
 
         $html = "";
         $level = 0;
+        $qtd = 0;
 
         $html .= "<nav class='anchors sidebar-item border mb-3'>";
         $html .= "<div data-bs-target='#anchors-nav' data-bs-toggle='collapse' class='header p-2 ps-3 cursor-pointer'>";
@@ -123,6 +124,7 @@ class PageHelper
         $html .= "</div>";
         $html .= "<div id='anchors-nav' class='collapse p-3'>";
         foreach ($items as $item) {
+            $qtd++;
             if ($item["level"] > $level) {
                 $html .= str_repeat("<ol data-level=" . $item["level"] . ">", $item["level"] - $level);
             }
@@ -136,7 +138,9 @@ class PageHelper
         $html .= "</div>";
         $html .= "</nav>";
 
-        $content = $html . $content;
+        if ($qtd >= 3) {
+            $content = $html . $content;
+        }
 
         /******************************************************************************/
 
