@@ -217,6 +217,44 @@ class ImageController extends Controller
         MailHelper::addToQueue('notify_update_page', $mail_subject . ' ' . $data['title'], $mail_text . MailHelper::imageData($page));
     }
 
+    public function text($text)
+    {
+        header("Content-Type: image/svg+xml");
+
+        $width = 250;
+        $height = 200;
+
+        $parts = explode("|", $text);
+        $line_height = 30;
+
+
+        $svg = '';
+        $svg .= '<svg xmlns="http://www.w3.org/2000/svg" width="' . $width . '" height="' . $height . '" viewBox="0 0 ' . $width . ' ' . $height . '">' .
+            '<style>' .
+            '   svg {' .
+            '       background-color: black;' .
+            '   }' .
+            '   text {' .
+            '       fill: white;' .
+            '       font-family: Arial;' .
+            '       font-size: 24px;' .
+            '       dominant-baseline: middle;' .
+            '       text-anchor: middle;' .
+            '       alignment-baseline: middle;' .
+            '   }' .
+            '</style>' .
+            '<rect x="0" y="0" width="100%" height="100%" fill="black"/>';
+
+        foreach ($parts as $i => $part) {
+            $y = $height / 2 - (count($parts) - 1) * $line_height / 2 + $i * $line_height;
+            $svg .= '<text x="50%" y="' . $y . '" text-anchor="middle">' . $part . '</text>';
+        }
+
+        $svg .= '</svg>';
+
+        return $svg;
+    }
+
     public function realUrl($page)
     {
         if ($page <> StringHelper::toUrl($page)) {

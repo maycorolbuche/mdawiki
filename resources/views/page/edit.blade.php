@@ -280,5 +280,10 @@
         [id^="dropdown-menu-formatOLOptions-"] [data-param1="start"] {
             border-top: 1px solid #ebebeb;
         }
+
+        .editor img:not([data-slug]) {
+            background-color: #DDD;
+            opacity: .2;
+        }
     </style>
 @endpush

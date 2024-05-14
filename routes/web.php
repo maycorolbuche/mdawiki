@@ -46,6 +46,8 @@ Route::prefix('@')->group(function () {
 Route::prefix('@img')->group(function () {
     Route::get('/', 'ImageController@index')->name('images');
 
+    Route::get('/@message/{text}', 'ImageController@text')->name('image.text');
+
     Route::get('/{page}', 'ImageController@index')->name('image');
     Route::get('/{page}/editar', 'ImageController@edit')->name('image.edit');
     Route::get('/{page}/historico', 'ImageController@history')->name('image.log');
@@ -72,4 +74,3 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/{page}/restaurar/{id}', 'PageController@restore')->name('page.restore');
     Route::get('/{page}/datatable', 'PageController@datatable')->name('page.datatable');
 });
-
