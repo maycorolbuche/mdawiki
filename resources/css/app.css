@@ -329,6 +329,10 @@ small,
     content: counter(level1) "." counter(level2) "." counter(level3) "." counter(level4) "." counter(level5) "." counter(level6) ". ";
 }
 
+.page .figure-caption {
+    font-size: 11px;
+}
+
 img[onclick] {
     cursor: pointer;
 }

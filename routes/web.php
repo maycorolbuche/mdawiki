@@ -66,6 +66,7 @@ Route::prefix('@json')->group(function () {
 
 
 Route::get('/{page}', 'PageController@index')->name('page');
+Route::get('/{page}/atualizar', 'PageController@refresh')->name('page.refresh');
 Route::get('/{page}/editar', 'PageController@edit')->name('page.edit');
 Route::get('/{page}/historico', 'PageController@history')->name('page.log');
 Route::group(['middleware' => ['auth']], function () {

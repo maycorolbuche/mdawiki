@@ -103,6 +103,7 @@ class PageHelper
                 $el->tag = "h" . $level;
             }
             $el->innertext = strip_tags($el->innertext);
+            $el->removeAttribute("style");
             $n = $level;
         }
         $content = $dom->save();
@@ -196,9 +197,46 @@ class PageHelper
                 $page = $name ?: $slug;
                 $el->setAttribute("onclick", "open_url('" . route("image", ["page" => $page]) . "')");
             }
+
+            if ($el->parent()->parent()->tag == "span" && strpos($el->parent()->parent()->class, 'fr-img-caption') !== false) {
+                $el_parent = $el->parent()->parent();
+                $el_image = $el_parent->find("img")[0]->outertext;
+                if ($el_parent->find(".fr-inner")) {
+                    $el_caption = $el_parent->find(".fr-inner")[0]->innertext;
+                } else {
+                    $el_caption = "";
+                }
+            } else {
+                $el_parent = $el;
+                $el_image = $el_parent->outertext;
+                $el_caption = "";
+            }
+            $class = "";
+            $class .= (strpos($el_parent->class, 'fr-fir') !== false ? "float-end" : "");
+            $class .= (strpos($el_parent->class, 'fr-fil') !== false ? "float-start" : "");
+
+            $break = (strpos($el_parent->class, 'fr-dib') !== false);
+
+
+            $html = "";
+            if ($break) {
+                $html .= "<div class='d-inline-block text-center w-100'>";
+            }
+            $html .= "<figure class='figure m-3 " . $class . " text-center'>";
+            $html .= $el_image;
+            if ($el_caption <> "") {
+                $html .= "<figcaption class='figure-caption text-center'>" . $el_caption . "</figcaption>";
+            }
+            $html .= "</figure>";
+            if ($break) {
+                $html .= "</div>";
+            }
+
+            $el_parent->outertext = $html;
         }
         $content = $dom->save();
         $dom->clear();
+
         /******************************************************************************/
 
         return $content;

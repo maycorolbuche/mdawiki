@@ -16,6 +16,9 @@
         <a class="btn btn-sm btn-info m-1" href="{{ route('page.log', ['page' => $page]) }}">
             Histórico
         </a>
+        <a class="btn btn-sm btn-warning m-1" href="{{ route('page.refresh', ['page' => $page]) }}">
+            Atualizar
+        </a>
         @if ($data)
             <a class="btn btn-sm btn-primary m-1" href="{{ route('page.edit', ['page' => $page]) }}">
                 Editar Página
@@ -54,9 +57,5 @@
 @endpush
 
 @push('scripts')
-    <script>
-        function open_url(url) {
-            window.location.href = url;
-        }
-    </script>
+    <script></script>
 @endpush

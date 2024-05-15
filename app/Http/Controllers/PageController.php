@@ -76,6 +76,18 @@ class PageController extends Controller
 
         return redirect()->route('page', ['page' => $page]);
     }
+
+    public function refresh(Request $request, $page)
+    {
+        $real_page = $this->realUrl($page);
+        if ($page <> $real_page) {
+            return redirect()->route('page', ['page' => $real_page])->withError('URL inválida!');
+        }
+
+        $slug = StringHelper::toSlug($page);
+        PageHelper::refresh($slug);
+        return redirect()->route('page', ['page' => $page])->withWarning('Página atualizada!');
+    }
     /*
     public function delete($page)
     {

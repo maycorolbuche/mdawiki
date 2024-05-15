@@ -14,3 +14,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
+function open_url(url) {
+    window.location.href = url;
+}
+
+window.open_url = open_url;
