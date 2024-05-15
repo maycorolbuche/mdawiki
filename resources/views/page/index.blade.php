@@ -13,17 +13,15 @@
     <div class="d-flex align-items-center">
         <x-title>{{ $title }}</x-title>
         <div class="ms-auto"></div>
-        <a class="btn btn-sm btn-info m-1" href="{{ route('page.log', ['page' => $page]) }}">
-            Histórico
-        </a>
-        <a class="btn btn-sm btn-warning m-1" href="{{ route('page.refresh', ['page' => $page]) }}">
-            Atualizar
-        </a>
         @if ($data)
-            <a class="btn btn-sm btn-primary m-1" href="{{ route('page.edit', ['page' => $page]) }}">
-                Editar Página
-            </a>
+            <x-button type="edit" route="{{ route('page.edit', ['page' => $page]) }}" />
         @endif
+        <x-button type="history" route="{{ route('page.log', ['page' => $page]) }}" />
+        @if ($data)
+            <x-button type="refresh" route="{{ route('page.refresh', ['page' => $page]) }}" />
+            <x-button type="print" route="{{ route('page.refresh', ['page' => $page]) }}" />
+        @endif
+
     </div>
 
     <div class="row">

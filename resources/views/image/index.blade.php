@@ -13,14 +13,10 @@
     <div class="d-flex align-items-center">
         <x-title>Imagem: {{ $title }}</x-title>
         <div class="ms-auto"></div>
-        <a class="btn btn-sm btn-info m-1" href="{{ route('image.log', ['page' => $page]) }}">
-            Histórico
-        </a>
         @if ($image)
-            <a class="btn btn-sm btn-primary m-1" href="{{ route('image.edit', ['page' => $page]) }}">
-                Editar Imagem
-            </a>
+            <x-button type="edit" route="{{ route('image.edit', ['page' => $page]) }}" />
         @endif
+        <x-button type="history" route="{{ route('image.log', ['page' => $page]) }}" />
     </div>
 
     @include('layouts.partials.messages')

@@ -14,9 +14,7 @@
     <div class="d-flex align-items-center">
         <x-title>Imagem: {{ $title }} <span class="badge bg-warning small">Histórico</span></x-title>
         <div class="ms-auto"></div>
-        <a class="btn btn-sm btn-warning" href="{{ route('image', ['page' => $page]) }}">
-            Cancelar
-        </a>
+        <x-button type="cancel" route="{{ route('image', ['page' => $page]) }}" />
     </div>
 
 
