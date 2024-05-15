@@ -86,7 +86,7 @@ class PageController extends Controller
 
         $slug = StringHelper::toSlug($page);
         PageHelper::refresh($slug);
-        return redirect()->route('page', ['page' => $page])->withWarning('Página atualizada!');
+        return redirect()->route('page', ['page' => $page])->withSuccess('Página atualizada!');
     }
     /*
     public function delete($page)
@@ -136,6 +136,23 @@ class PageController extends Controller
 
         return view('page.log', compact('page', 'title', 'page'));
     }
+    
+    public function pdf(Request $request, $page)
+    {
+        $real_page = $this->realUrl($page);
+        if ($page <> $real_page) {
+            return redirect()->route('page.log', ['page' => $real_page]);
+        }
+
+        $title = StringHelper::toTitle($page);
+        $slug = StringHelper::toSlug($page);
+
+        $page = Page::where('slug', $slug)->first();
+
+        return "PDF";
+        //return view('page.log', compact('page', 'title', 'page'));
+    }
+
     public function restore($page, $id)
     {
         $real_page = $this->realUrl($page);

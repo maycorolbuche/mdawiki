@@ -19,7 +19,7 @@
         <x-button type="history" route="{{ route('page.log', ['page' => $page]) }}" />
         @if ($data)
             <x-button type="refresh" route="{{ route('page.refresh', ['page' => $page]) }}" />
-            <x-button type="print" route="{{ route('page.refresh', ['page' => $page]) }}" />
+            <x-button type="print" route="{{ route('page.pdf', ['page' => $page]) }}" />
         @endif
 
     </div>

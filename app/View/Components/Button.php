@@ -8,7 +8,7 @@ use Illuminate\View\Component;
 
 class Button extends Component
 {
-    public $layout, $label, $icon;
+    public $layout, $label, $icon, $target;
     /**
      * Create a new component instance.
      */
@@ -18,6 +18,7 @@ class Button extends Component
         string $layout = '',
         string $label = '',
         string $icon = '',
+        string $target = '',
     ) {
 
         switch ($type) {
@@ -40,6 +41,7 @@ class Button extends Component
                 $layout = ($layout ?: "danger");
                 $label = ($label ?: "Imprimir");
                 $icon = ($icon ?: "printer");
+                $target = ($target ?: "_blank");
                 break;
             case "cancel":
                 $layout = ($layout ?: "warning");
@@ -55,6 +57,7 @@ class Button extends Component
         $this->layout = $layout;
         $this->label = $label;
         $this->icon = $icon;
+        $this->target = $target;
     }
 
     /**
