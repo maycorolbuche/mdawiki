@@ -290,7 +290,7 @@ class PageHelper
     }
     public static function toMarkdown($content)
     {
-        return $content;
+        return '';
     }
     public static function toPdf($content)
     {
