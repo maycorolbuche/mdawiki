@@ -150,8 +150,10 @@ class PageController extends Controller
 
         $data = Page::where('slug', $slug)->first();
 
-        //return view('pdf.page', $page);
-        $pdf = Pdf::loadView('pdf.page', compact('data', 'page', 'slug', 'title'));
+        $params = compact('data', 'page', 'slug', 'title');
+
+        //return view('pdf.page', $params);
+        $pdf = Pdf::loadView('pdf.page', $params);
         $pdf->setPaper('a4');
 
         return $pdf->stream($title . '.pdf');

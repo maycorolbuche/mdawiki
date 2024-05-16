@@ -14,6 +14,9 @@
 
 <main>
     @if ($data)
+        <h1 class="text-center" style="font-size: 26px !important;border-bottom:1px solid #000 !important;">
+            {{ $title }}
+        </h1>
         {!! $data->content_pdf !!}
     @else
         Página não encontrada!

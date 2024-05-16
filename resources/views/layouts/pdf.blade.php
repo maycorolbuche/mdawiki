@@ -8,43 +8,114 @@
         {{ $_ENV['APP_NAME'] }}
     </title>
 
+    <link href="css/pdf.css" rel="stylesheet">
+
     <style>
         @page {
-            margin: 1cm 1cm;
+            margin: 1cm 1cm !important;
         }
 
-        header {
-            position: fixed;
-            top: -1cm;
-            left: 0px;
-            right: 0px;
-            height: 50px;
+        html,
+        body {
+            font-family: "Open Sans", Helvetica, Arial, sans-serif !important;
         }
+
+        /*header {
+            position: fixed !important;
+            top: -1cm !important;
+            left: 0px !important;
+            right: 0px !important;
+            height: 50px !important;
+        }*/
 
         footer {
-            position: fixed;
-            bottom: -1cm;
-            left: 0px;
-            right: 0px;
-            height: 50px;
+            border-top: 1px solid #CCC;
+            position: fixed !important;
+            bottom: -1cm !important;
+            left: 0px !important;
+            right: 0px !important;
+            height: 50px !important;
         }
 
         .pagenum:before {
-            content: counter(page);
+            content: counter(page) !important;
         }
 
+        html,
         body {
-            font-family: "Open Sans", Helvetica, Arial, sans-serif;
-            font-size: 11px;
-            font-weight: 400;
-            line-height: 1.5;
-            color: #000;
-            background: $FFF;
+            font-size: 11px !important;
+            font-weight: 400 !important;
+            line-height: 1.5 !important;
+            color: #000 !important;
+            background: #FFF !important;
         }
 
-        a {
-            text-decoration: none;
+
+        h1,
+        .h1,
+        h2,
+        .h2,
+        h3,
+        .h3,
+        h4,
+        .h4,
+        h5,
+        .h5,
+        h6,
+        .h6,
+        {
+        font-weight: 0;
         }
+
+        h1,
+        .h1 {
+            font-size: 22px !important;
+            border-bottom: 1px solid #EEE !important;
+            margin-top: 20px !important;
+        }
+
+        h2,
+        .h2 {
+            font-size: 20px !important;
+            margin-bottom: 10px !important;
+            margin-top: 20px !important;
+        }
+
+        h3,
+        .h3 {
+            font-size: 18px !important;
+            line-height: 1.1 !important;
+            margin-bottom: 10px !important;
+            margin-top: 20px !important;
+        }
+
+        h4,
+        .h4 {
+            font-size: 16px !important;
+            line-height: 1.1 !important;
+            margin-bottom: 10px !important;
+            margin-top: 20px !important;
+        }
+
+        h5,
+        .h5 {
+            font-size: 15px !important;
+            line-height: 1.1 !important;
+            margin-bottom: 10px !important;
+            margin-top: 20px !important;
+        }
+
+        h6,
+        .h6 {
+            font-size: 14px !important;
+            line-height: 1.1 !important;
+            margin-bottom: 10px !important;
+            margin-top: 20px !important;
+        }
+
+        /*  a {
+            text-decoration: none !important;
+        }*/
     </style>
 </head>
 

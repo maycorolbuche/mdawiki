@@ -167,6 +167,26 @@ small,
     margin-top: 20px !important;
 }
 
+.page h5,
+.editor .fr-wrapper h5 {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: #666 !important;
+    line-height: 1.1 !important;
+    margin-bottom: 10px !important;
+    margin-top: 20px !important;
+}
+
+.page h6,
+.editor .fr-wrapper h6 {
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    color: #666 !important;
+    line-height: 1.1 !important;
+    margin-bottom: 10px !important;
+    margin-top: 20px !important;
+}
+
 
 .editor .fr-wrapper h1,
 .editor .fr-wrapper h2,

@@ -15,14 +15,19 @@ class PageHelper
 {
     public static function process($content)
     {
-        $content = self::toEditor($content);
+        $content_editor = self::toEditor($content);
+        $content_preview = self::toPreview($content_editor);
+        $content_preview_no_topics = self::toPreview($content_editor, false);
+        $content_text = self::toText($content_preview_no_topics);
+        $content_markdown = self::toMarkdown($content_preview_no_topics);
+        $content_pdf = self::toPdf($content_preview_no_topics);
 
         $data = [
-            'editor' => $content,
-            'preview' => self::toPreview($content),
-            'text' => self::toText($content),
-            'markdown' => self::toMarkdown($content),
-            'pdf' => self::toPdf($content),
+            'editor' => $content_editor,
+            'preview' => $content_preview,
+            'text' => $content_text,
+            'markdown' => $content_markdown,
+            'pdf' => $content_pdf,
             'components' => [
                 'titles' => self::getTitles($content),
                 'images' => self::getImages($content),
@@ -117,6 +122,8 @@ class PageHelper
             if (!$slug) {
                 $el->setAttribute('src', route('image.text', ['text' => 'Não é permitido|imagens externas']));
                 $el->setAttribute('data-slug', '');
+                $el->setAttribute('data-path', '');
+                $el->setAttribute('data-name', '');
                 $el->setAttribute('alt', '');
             } else {
                 $image = Image::where('slug', $slug)->first();
@@ -129,6 +136,8 @@ class PageHelper
                 } else {
                     $el->setAttribute('src', route('image.text', ['text' => 'Imagem não|encontrada']));
                     $el->setAttribute('data-exists', false);
+                    $el->setAttribute('data-path', '');
+                    $el->setAttribute('data-name', '');
                     $el->setAttribute('alt', '');
                 }
             }
@@ -138,7 +147,7 @@ class PageHelper
 
         return $content;
     }
-    public static function toPreview($content)
+    public static function toPreview($content, $topics = true)
     {
         /* Ajusta Títulos *********************************************************************/
         $dom = HtmlDomParser::str_get_html($content);
@@ -162,29 +171,31 @@ class PageHelper
         $level = 0;
         $qtd = 0;
 
-        $html .= "<nav class='anchors sidebar-item border mb-3'>";
-        $html .= "<div data-bs-target='#anchors-nav' data-bs-toggle='collapse' class='header p-2 ps-3 cursor-pointer'>";
-        $html .= "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-menu'><line x1='3' y1='12' x2='21' y2='12'></line><line x1='3' y1='6' x2='21' y2='6'></line><line x1='3' y1='18' x2='21' y2='18'></line></svg>";
-        $html .= "<span class='ps-2 align-middle h5'>Tópicos</span>";
-        $html .= "</div>";
-        $html .= "<div id='anchors-nav' class='collapse p-3'>";
-        foreach ($items as $item) {
-            $qtd++;
-            if ($item["level"] > $level) {
-                $html .= str_repeat("<ol data-level=" . $item["level"] . ">", $item["level"] - $level);
+        if ($topics) {
+            $html .= "<nav class='anchors sidebar-item border mb-3'>";
+            $html .= "<div data-bs-target='#anchors-nav' data-bs-toggle='collapse' class='header p-2 ps-3 cursor-pointer'>";
+            $html .= "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-menu'><line x1='3' y1='12' x2='21' y2='12'></line><line x1='3' y1='6' x2='21' y2='6'></line><line x1='3' y1='18' x2='21' y2='18'></line></svg>";
+            $html .= "<span class='ps-2 align-middle h5'>Tópicos</span>";
+            $html .= "</div>";
+            $html .= "<div id='anchors-nav' class='collapse p-3'>";
+            foreach ($items as $item) {
+                $qtd++;
+                if ($item["level"] > $level) {
+                    $html .= str_repeat("<ol data-level=" . $item["level"] . ">", $item["level"] - $level);
+                }
+                if ($item["level"] < $level) {
+                    $html .= str_repeat("</ol>", $level - $item["level"]);
+                }
+                $html .= "<li data-level=" . $item["level"] . "><a href='#" . $item["name"] . "'>" . $item["title"] . "</a></li>";
+                $level = $item["level"];
             }
-            if ($item["level"] < $level) {
-                $html .= str_repeat("</ol>", $level - $item["level"]);
-            }
-            $html .= "<li data-level=" . $item["level"] . "><a href='#" . $item["name"] . "'>" . $item["title"] . "</a></li>";
-            $level = $item["level"];
-        }
-        $html .= str_repeat("</ol>", $level);
-        $html .= "</div>";
-        $html .= "</nav>";
+            $html .= str_repeat("</ol>", $level);
+            $html .= "</div>";
+            $html .= "</nav>";
 
-        if ($qtd >= 3) {
-            $content = $html . $content;
+            if ($qtd >= 3) {
+                $content = $html . $content;
+            }
         }
 
 
@@ -294,8 +305,66 @@ class PageHelper
     }
     public static function toPdf($content)
     {
+        /* Ajusta Imagens *********************************************************************/
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("img") as $el) {
+            $el->removeAttribute("onclick");
+            $el->setAttribute("src", 'storage/' . $el->getAttribute("data-path"));
+            if (!$el->getAttribute("data-path")) {
+                $url_image = route('image.text', ['text' => 'Erro ao|exibir imagem']);
+                $src = str_replace(asset(''), '', $url_image);
+                $el->setAttribute("src", $src);
+            }
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+
+        /* Ajusta Títulos *********************************************************************/
+        /*$dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("h1,h2,h3,h4,h5,h6") as $el) {
+            $class = "p" . $el->tag;
+            $el->tag = "div";
+            $el->class = $class . " " . $el->class;
+        }
+        $content = $dom->save();
+        $dom->clear();*/
+
+
+        /* Ajusta Estilos *********************************************************************/
+        $dom = HtmlDomParser::str_get_html($content);
+
+        $classToStyleMap = [
+            /*   'text-center' => 'text-align: center;',
+            'text-left' => 'text-align: left;',
+            'text-right' => 'text-align: right;',
+            'float-start' => 'float: left;',
+            'float-end' => 'float: right;',
+            'd-inline-block' => 'display: inline-block; background:red;',
+            'figure' => 'display: inline-block;',
+            'w-100' => 'width: 100%;',*/];
+
+        foreach ($classToStyleMap as $class => $style) {
+            foreach ($dom->find('.' . $class) as $element) {
+                $element->class = str_replace($class, '', $element->class);
+
+                if (isset($element->style)) {
+                    $element->style .= ' ' . $style;
+                } else {
+                    $element->style = $style;
+                }
+
+                $element->class = trim($element->class);
+            }
+        }
+
+        $content = $dom->save();
+        $dom->clear();
+
         return $content;
     }
+
+    /* ********************************************************************* */
 
     public static function getTitles($content)
     {
