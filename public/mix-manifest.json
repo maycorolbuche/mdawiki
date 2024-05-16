@@ -1,6 +1,7 @@
 {
     "/js/app.js": "/js/app.js",
     "/css/app.css": "/css/app.css",
+    "/css/pdf.css": "/css/pdf.css",
     "/img/avatars/default.png": "/img/avatars/default.png",
     "/img/icons/favicon.png": "/img/icons/favicon.png"
 }

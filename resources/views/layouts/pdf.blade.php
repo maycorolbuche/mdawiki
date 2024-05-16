@@ -4,7 +4,8 @@
     <title>@yield('title')
         @if (!empty(trim($__env->yieldContent('title'))))
             ::
-        @endif View Informática
+        @endif
+        {{ $_ENV['APP_NAME'] }}
     </title>
 
     <style>
@@ -32,8 +33,6 @@
             content: counter(page);
         }
 
-
-
         body {
             font-family: "Open Sans", Helvetica, Arial, sans-serif;
             font-size: 11px;
@@ -43,43 +42,8 @@
             background: $FFF;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            border-spacing: 0;
-        }
-
-        blockquote {
-            padding: 5px 0 5px 15px;
-            margin: 0;
-            border-left: 3px solid #AAA;
-        }
-
-        h2 {
-            font-weight: inherit;
-        }
-
-        .table th,
-        .table td {
-            padding: 5px 10px;
-            border: 1px solid #000;
-        }
-
-        .table thead th,
-        .table thead td {
-            background-color: #BBB;
-        }
-
-        .table tbody tr:nth-child(even) {
-            background-color: #DDD;
-        }
-
-        .table .text-right {
-            text-align: right;
-        }
-
-        .table .text-center {
-            text-align: center;
+        a {
+            text-decoration: none;
         }
     </style>
 </head>

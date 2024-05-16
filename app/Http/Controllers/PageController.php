@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Page;
 use App\Models\PageHistory;
 use App\Helpers\StringHelper;
@@ -136,7 +137,7 @@ class PageController extends Controller
 
         return view('page.log', compact('page', 'title', 'page'));
     }
-    
+
     public function pdf(Request $request, $page)
     {
         $real_page = $this->realUrl($page);
@@ -147,10 +148,13 @@ class PageController extends Controller
         $title = StringHelper::toTitle($page);
         $slug = StringHelper::toSlug($page);
 
-        $page = Page::where('slug', $slug)->first();
+        $data = Page::where('slug', $slug)->first();
 
-        return "PDF";
-        //return view('page.log', compact('page', 'title', 'page'));
+        //return view('pdf.page', $page);
+        $pdf = Pdf::loadView('pdf.page', compact('data', 'page', 'slug', 'title'));
+        $pdf->setPaper('a4');
+
+        return $pdf->stream($title . '.pdf');
     }
 
     public function restore($page, $id)
