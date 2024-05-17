@@ -77,8 +77,6 @@
                     [
                         /*'table',*/
                         'insertTable',
-                        '|', 'insertImage',
-                        '|', 'imageManager',
                         '|', 'image',
                     ],
                     [
@@ -103,8 +101,9 @@
                 tableResizingLimit: 50,
                 //tableEditButtons: ['imageDisplay', 'imageAlign', 'imageInfo', 'imageRemove'],
                 tableStyles: {
-                    class1: 'Tabela listrada',
-                    class2: 'Class 2'
+                    table: 'Destacado',
+                    dinamic: 'Dinâmica',
+                    //table table-striped table-sm table-hover
                 },
                 tableCellStyles: {
                     class1: 'Célula Destacada',
@@ -281,9 +280,5 @@
             border-top: 1px solid #ebebeb;
         }
 
-        .editor img:not([data-slug]) {
-            background-color: #DDD;
-            opacity: .2;
-        }
     </style>
 @endpush

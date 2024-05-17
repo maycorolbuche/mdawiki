@@ -356,3 +356,44 @@ small,
 img[onclick] {
     cursor: pointer;
 }
+
+.editor img:not([data-slug]) {
+    background-color: #DDD;
+    opacity: .2;
+}
+
+
+.editor .fr-view table tfoot td,
+.editor .fr-view table th {
+    background: initial;
+}
+
+
+.editor .table,
+.editor .table td,
+.page .table,
+.page .table td {
+    background: #FFF;
+}
+
+.editor .table,
+.editor .table th,
+.editor .table td,
+.page .table,
+.page .table th,
+.page .table td {
+    padding: .25rem !important;
+}
+
+.editor .table th,
+.editor .table tfoot td,
+.page .table th,
+.page .table tfoot td {
+    background: #f9f6f6 !important;
+}
+
+.editor .table>tbody>tr:hover>*,
+.page .table>tbody>tr:hover>* {
+    --bs-table-color-state: var(--bs-table-hover-color) !important;
+    --bs-table-bg-state: var(--bs-table-hover-bg) !important;
+}

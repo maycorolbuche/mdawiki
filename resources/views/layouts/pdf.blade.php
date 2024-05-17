@@ -113,9 +113,32 @@
             margin-top: 20px !important;
         }
 
-        /*  a {
-            text-decoration: none !important;
-        }*/
+
+        .table,
+        .table td {
+            background: #FFF;
+        }
+
+        .table,
+        .table th,
+        .table td {
+            padding: .25rem !important;
+        }
+
+        .table th,
+        .table tfoot td {
+            background: #f9f6f6 !important;
+        }
+
+        .table tbody,
+        .table td,
+        .table tfoot,
+        .table th,
+        .table thead,
+        .table tr,
+        .table>:not(:last-child)>:last-child>* {
+            border-bottom:1px solid #dee2e6;
+        }
     </style>
 </head>
 
