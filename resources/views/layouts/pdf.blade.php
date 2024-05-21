@@ -137,7 +137,22 @@
         .table thead,
         .table tr,
         .table>:not(:last-child)>:last-child>* {
-            border-bottom:1px solid #dee2e6;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        table .border {
+            border: 2px solid #000 !important;
+        }
+
+        .page table.dynamic tr {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page table.dynamic tr td {
+            padding: 2px;
         }
     </style>
 </head>

@@ -250,6 +250,23 @@ class PageHelper
 
         /******************************************************************************/
 
+        /* Tabelas Dinâmicas *********************************************************************/
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("table.dynamic") as $el) {
+            $html = "";
+            foreach ($el->find("th,td") as $td) {
+                $td->tag = "td";
+                $td->removeAttribute("style");
+                $td->removeAttribute("colspan");
+                $html .= $td->outertext;
+            }
+            $el->innertext = "<tr>" . $html . "</tr>";
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+        /******************************************************************************/
+
         return $content;
     }
     public static function toText($content)
@@ -316,48 +333,6 @@ class PageHelper
                 $el->setAttribute("src", $src);
             }
         }
-        $content = $dom->save();
-        $dom->clear();
-
-
-        /* Ajusta Títulos *********************************************************************/
-        /*$dom = HtmlDomParser::str_get_html($content);
-        foreach ($dom->find("h1,h2,h3,h4,h5,h6") as $el) {
-            $class = "p" . $el->tag;
-            $el->tag = "div";
-            $el->class = $class . " " . $el->class;
-        }
-        $content = $dom->save();
-        $dom->clear();*/
-
-
-        /* Ajusta Estilos *********************************************************************/
-        $dom = HtmlDomParser::str_get_html($content);
-
-        $classToStyleMap = [
-            /*   'text-center' => 'text-align: center;',
-            'text-left' => 'text-align: left;',
-            'text-right' => 'text-align: right;',
-            'float-start' => 'float: left;',
-            'float-end' => 'float: right;',
-            'd-inline-block' => 'display: inline-block; background:red;',
-            'figure' => 'display: inline-block;',
-            'w-100' => 'width: 100%;',*/];
-
-        foreach ($classToStyleMap as $class => $style) {
-            foreach ($dom->find('.' . $class) as $element) {
-                $element->class = str_replace($class, '', $element->class);
-
-                if (isset($element->style)) {
-                    $element->style .= ' ' . $style;
-                } else {
-                    $element->style = $style;
-                }
-
-                $element->class = trim($element->class);
-            }
-        }
-
         $content = $dom->save();
         $dom->clear();
 

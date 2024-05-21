@@ -54,6 +54,13 @@ class PageController extends Controller
         return view('page.edit', compact('page', 'title', 'data'));
     }
 
+    public function preview(Request $request)
+    {
+        $content = PageHelper::process($request->input('content'))['preview'];
+
+        return view('page.preview', compact('content'));
+    }
+
     public function update(Request $request, $page)
     {
         $real_page = $this->realUrl($page);

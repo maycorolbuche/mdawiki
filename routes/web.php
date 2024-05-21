@@ -65,6 +65,7 @@ Route::prefix('@json')->group(function () {
 
 
 
+Route::post('/visualizar', 'PageController@preview')->name('page.preview');
 Route::get('/{page}', 'PageController@index')->name('page');
 Route::get('/{page}/atualizar', 'PageController@refresh')->name('page.refresh');
 Route::get('/{page}/editar', 'PageController@edit')->name('page.edit');

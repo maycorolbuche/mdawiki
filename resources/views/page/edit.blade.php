@@ -25,7 +25,8 @@
                 <div class="card-actions float-end">
                     @csrf
                     <input type="submit" class="btn btn-info" value="Salvar">
-                    <input type="submit" class="btn btn-success" value="Visualizar">
+                    <input type="button" class="btn btn-success" value="Visualizar" data-bs-toggle="modal"
+                        data-bs-target="#previewModal">
                     <a class="btn btn-warning" href="{{ route('page', ['page' => $page]) }}">
                         Cancelar
                     </a>
@@ -33,6 +34,52 @@
             </x-card>
         </form>
     </div>
+
+    <x-modal id="previewModal" title="Visualizar Página" script="loadModal();" body-class="m-0 p-0">
+        <div id="loading-message" class="w-100 h-100 position-absolute bg-white" style="display: none;">
+            <div class="d-flex align-items-center justify-content-center w-100 h-100">
+                <div class="spinner-grow text-primary me-2" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+            </div>
+        </div>
+        <iframe id="preview" class="w-100" style="height: calc(100vh - 120px);"></iframe>
+        @push('scripts')
+            <script>
+                function loadModal() {
+                    const url = '{{ route('page.preview') }}';
+                    const data = {
+                        _token: '{{ csrf_token() }}',
+                        content: document.getElementById("editor").value
+                    };
+                    const loadingMessage = document.getElementById('loading-message');
+
+                    loadingMessage.style.display = 'block';
+
+                    fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        })
+                        .then(response => response.text())
+                        .then(html => {
+                            const iframe = document.getElementById('preview');
+                            iframe.contentDocument.open();
+                            iframe.contentDocument.write(html);
+                            iframe.contentDocument.close();
+
+                            loadingMessage.style.display = 'none';
+                        })
+                        .catch(error => {
+                            console.error('Erro:', error);
+                            loadingMessage.style.display = 'none';
+                        });
+                }
+            </script>
+        @endpush
+    </x-modal>
 
 @endsection
 
@@ -102,12 +149,11 @@
                 //tableEditButtons: ['imageDisplay', 'imageAlign', 'imageInfo', 'imageRemove'],
                 tableStyles: {
                     table: 'Destacado',
-                    dinamic: 'Dinâmica',
+                    dynamic: 'Dinâmica',
                     //table table-striped table-sm table-hover
                 },
                 tableCellStyles: {
-                    class1: 'Célula Destacada',
-                    class2: 'Class 2'
+                    border: 'Borda'
                 },
 
                 /* Image */
@@ -279,6 +325,5 @@
         [id^="dropdown-menu-formatOLOptions-"] [data-param1="start"] {
             border-top: 1px solid #ebebeb;
         }
-
     </style>
 @endpush

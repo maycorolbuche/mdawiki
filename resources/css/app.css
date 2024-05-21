@@ -397,3 +397,30 @@ img[onclick] {
     --bs-table-color-state: var(--bs-table-hover-color) !important;
     --bs-table-bg-state: var(--bs-table-hover-bg) !important;
 }
+
+.page table .border {
+    border: 2px solid #000 !important;
+}
+
+.editor table .border {
+    border: 2px solid #000 !important;
+}
+
+.editor table.dynamic {
+    border: 2px dashed orange !important;
+}
+
+.editor table.dynamic tr td {
+    padding: 4px;
+}
+
+.page table.dynamic tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.page table.dynamic tr td {
+    padding: 2px;
+}
