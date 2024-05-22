@@ -16,5 +16,6 @@ mix
     .postCss('resources/css/fonts/open_sans.css', 'public/css/app.css')
     .sass('resources/sass/app.scss', 'public/css')
     .postCss('resources/css/app.css', 'public/css')
+    .postCss('resources/css/sidebar.css', 'public/css/app.css')
     .sass('resources/sass/pdf.scss', 'public/css')
     .copyDirectory('resources/img', 'public/img');

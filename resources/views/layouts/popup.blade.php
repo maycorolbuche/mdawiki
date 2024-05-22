@@ -19,6 +19,8 @@
             background: #FFF !important;
         }
     </style>
+
+    @stack('styles')
 </head>
 
 <body>
@@ -31,6 +33,7 @@
     </main>
 
     <script src="{{ asset('js/app.js') }}"></script>
+    @stack('scripts')
 </body>
 
 </html>

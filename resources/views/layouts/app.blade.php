@@ -21,7 +21,7 @@
     @stack('styles')
 </head>
 
-<body>
+<body d_ata-sidebar-layout="compact">
     <div class="wrapper">
 
         @include('layouts.partials.sidebar')
