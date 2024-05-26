@@ -1,9 +1,14 @@
 <nav id="sidebar" class="sidebar js-sidebar">
     <div class="sidebar-content js-simplebar">
-        <a class="sidebar-brand" href="index.html">
-            <span class="align-middle default">AdminKit</span>
-            <span class="align-middle compact">A</span>
-        </a>
+        <div class="sidebar-header-logo d-flex align-items-center justify-content-between">
+            <a class="sidebar-brand" href="index.html">
+                <span class="align-middle default">AdminKit</span>
+                <span class="align-middle compact">A</span>
+            </a>
+            <a class="m-0 p-0 js-sidebar-link-compact sidebar-link" href="javascript:">
+                <x-icon value="chevron-left" />
+            </a>
+        </div>
 
         <ul class="sidebar-nav">
             <li class="sidebar-header">
@@ -11,9 +16,16 @@
             </li>
 
             <li class="sidebar-item">
-                <a class="sidebar-link" href="index.html">
-                    <i class="align-middle" data-feather="sliders"></i> <span class="align-middle">Dashboard</span>
+                <a data-bs-target="#dashboards" data-bs-toggle="collapse" class="sidebar-link collapsed">
+                    <i class="align-middle" data-feather="sliders"></i> <span class="align-middle">Dashboards</span>
                 </a>
+                <ul id="dashboards" class="sidebar-dropdown list-unstyled collapse " data-bs-parent="#sidebar">
+                    <li class="sidebar-item"><a class='sidebar-link' href='/'>Analytics</a></li>
+                    <li class="sidebar-item"><a class='sidebar-link' href='/dashboard-ecommerce'>E-Commerce <span
+                                class="sidebar-badge badge bg-primary">Pro</span></a></li>
+                    <li class="sidebar-item"><a class='sidebar-link' href='/dashboard-crypto'>Crypto <span
+                                class="sidebar-badge badge bg-primary">Pro</span></a></li>
+                </ul>
             </li>
 
             <li class="sidebar-item">
