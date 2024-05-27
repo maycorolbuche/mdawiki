@@ -9,6 +9,7 @@ use App\Helpers\HtmlHelper;
 use App\Models\Page;
 use App\Models\PageTitle;
 use App\Models\PageImage;
+use App\Models\PageLink;
 use App\Models\Image;
 
 class PageHelper
@@ -31,6 +32,7 @@ class PageHelper
             'components' => [
                 'titles' => self::getTitles($content),
                 'images' => self::getImages($content),
+                'links' => self::getLinks($content_preview_no_topics),
             ],
         ];
 
@@ -81,6 +83,21 @@ class PageHelper
                     'sequence' => $image["sequence"],
                 ];
                 PageImage::create($data);
+            }
+
+            PageLink::where('page_id', $id)->delete();
+            foreach ($content_data["components"]["links"] as $link) {
+                $data = [
+                    'page_id' => $id,
+                    'slug' => $slug,
+                    'link_slug' => ($link["slug"] <> "" ? StringHelper::toSlug($link["slug"]) : null),
+                    'link_text' => $link["text"],
+                    'href' => $link["href"],
+                    'page_exists' => ($link["external"] ? null : $link["exists"]),
+                    'external' => $link["external"],
+                    'sequence' => $link["sequence"],
+                ];
+                PageLink::create($data);
             }
         }
     }
@@ -145,11 +162,55 @@ class PageHelper
         $content = $dom->save();
         $dom->clear();
 
+        //Verifica Urls sem link
+        $content = self::convertUrls($content);
+
+        //Ajusta Links
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("a") as $el) {
+            if ($el->innertext == '') {
+                $el->outertext = '';
+            } else {
+                $url_app = asset('');
+                $href = trim($el->getAttribute("href"));
+                $href = urldecode($href);
+
+                if (substr($href, 0, strlen($url_app)) == $url_app) {
+                    $href = substr($href, strlen($url_app), strlen($href));
+                    $e = explode("/", $href);
+                    $href = $e[0];
+                }
+
+                if (substr($href, 0, 7) != "http://" && substr($href, 0, 8) != "https://") {
+                    $href = StringHelper::toSlug($href);
+                }
+                $el->setAttribute("href", $href);
+
+                $nbsp_after = false;
+                if (substr($el->innertext, -6) == "&nbsp;" || substr($el->innertext, -1) == " ") {
+                    $nbsp_after = true;
+                    if (substr($el->innertext, -6) == "&nbsp;") {
+                        $el->innertext = substr($el->innertext, 0, -6);
+                    } else {
+                        $el->innertext = substr($el->innertext, 0, -1);
+                    }
+                }
+
+                if ($nbsp_after) {
+                    $el->outertext = $el->outertext . ' ';
+                }
+            }
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+
         return $content;
     }
     public static function toPreview($content, $topics = true)
     {
         /* Ajusta Títulos *********************************************************************/
+
         $dom = HtmlDomParser::str_get_html($content);
         $i = 0;
         $items = [];
@@ -167,39 +228,10 @@ class PageHelper
         $content = $dom->save();
         $dom->clear();
 
-        $html = "";
-        $level = 0;
-        $qtd = 0;
-
-        if ($topics) {
-            $html .= "<nav class='anchors sidebar-item border mb-3'>";
-            $html .= "<div data-bs-target='#anchors-nav' data-bs-toggle='collapse' class='header p-2 ps-3 cursor-pointer'>";
-            $html .= "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-menu'><line x1='3' y1='12' x2='21' y2='12'></line><line x1='3' y1='6' x2='21' y2='6'></line><line x1='3' y1='18' x2='21' y2='18'></line></svg>";
-            $html .= "<span class='ps-2 align-middle h5'>Tópicos</span>";
-            $html .= "</div>";
-            $html .= "<div id='anchors-nav' class='collapse p-3'>";
-            foreach ($items as $item) {
-                $qtd++;
-                if ($item["level"] > $level) {
-                    $html .= str_repeat("<ol data-level=" . $item["level"] . ">", $item["level"] - $level);
-                }
-                if ($item["level"] < $level) {
-                    $html .= str_repeat("</ol>", $level - $item["level"]);
-                }
-                $html .= "<li data-level=" . $item["level"] . "><a href='#" . $item["name"] . "'>" . $item["title"] . "</a></li>";
-                $level = $item["level"];
-            }
-            $html .= str_repeat("</ol>", $level);
-            $html .= "</div>";
-            $html .= "</nav>";
-
-            if ($qtd >= 3) {
-                $content = $html . $content;
-            }
-        }
-
+        /******************************************************************************/
 
         /* Ajusta Imagens *********************************************************************/
+
         $dom = HtmlDomParser::str_get_html($content);
         foreach ($dom->find("img") as $el) {
             $slug = $el->getAttribute("data-slug");
@@ -251,6 +283,7 @@ class PageHelper
         /******************************************************************************/
 
         /* Tabelas Dinâmicas *********************************************************************/
+
         $dom = HtmlDomParser::str_get_html($content);
         foreach ($dom->find("table.dynamic") as $el) {
             $html = "";
@@ -264,6 +297,83 @@ class PageHelper
         }
         $content = $dom->save();
         $dom->clear();
+
+        /******************************************************************************/
+
+        /* Ajusta Links *********************************************************************/
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("a") as $el) {
+            $href = trim($el->getAttribute("href"));
+            $page = "";
+            $external = false;
+
+            if (substr($href, 0, 7) == "http://" || substr($href, 0, 8) == "https://") {
+                $external = true;
+            } else {
+                $external = false;
+            }
+
+
+            if ($external) {
+                $el->setAttribute("target", "_blank");
+                $el->setAttribute("class", "external");
+                $el->setAttribute("href", $href);
+            } else {
+                $el->removeAttribute("target");
+
+                $class = "";
+                $page = $href;
+                $page = StringHelper::toSlug($page);
+                $data = Page::where('slug', $page)->first();
+                if ($data) {
+                    $href = $data->name;
+                } else {
+                    $class = "no-exists text-danger";
+                }
+
+                $href = asset($href);
+                $el->setAttribute("class", "internal $class");
+                $el->setAttribute("href", $href);
+                $el->setAttribute("data-page", $page);
+            }
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+        /******************************************************************************/
+
+        /* Ajusta Tópicos *********************************************************************/
+
+        if ($topics) {
+            $html = "";
+            $level = 0;
+            $qtd = 0;
+
+            $html .= "<nav class='anchors sidebar-item border mb-3'>";
+            $html .= "<div data-bs-target='#anchors-nav' data-bs-toggle='collapse' class='header p-2 ps-3 cursor-pointer'>";
+            $html .= "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-menu'><line x1='3' y1='12' x2='21' y2='12'></line><line x1='3' y1='6' x2='21' y2='6'></line><line x1='3' y1='18' x2='21' y2='18'></line></svg>";
+            $html .= "<span class='ps-2 align-middle h5'>Tópicos</span>";
+            $html .= "</div>";
+            $html .= "<div id='anchors-nav' class='collapse p-3'>";
+            foreach ($items as $item) {
+                $qtd++;
+                if ($item["level"] > $level) {
+                    $html .= str_repeat("<ol data-level=" . $item["level"] . ">", $item["level"] - $level);
+                }
+                if ($item["level"] < $level) {
+                    $html .= str_repeat("</ol>", $level - $item["level"]);
+                }
+                $html .= "<li data-level=" . $item["level"] . "><a href='#" . $item["name"] . "'>" . $item["title"] . "</a></li>";
+                $level = $item["level"];
+            }
+            $html .= str_repeat("</ol>", $level);
+            $html .= "</div>";
+            $html .= "</nav>";
+
+            if ($qtd >= 3) {
+                $content = $html . $content;
+            }
+        }
 
         /******************************************************************************/
 
@@ -336,6 +446,14 @@ class PageHelper
         $content = $dom->save();
         $dom->clear();
 
+        /* Remove Links *********************************************************************/
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("a") as $el) {
+            $el->outertext = $el->innertext;
+        }
+        $content = $dom->save();
+        $dom->clear();
+
         return $content;
     }
 
@@ -389,5 +507,39 @@ class PageHelper
         $dom->clear();
 
         return $ret;
+    }
+    public static function getLinks($content)
+    {
+        $ret = [];
+
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("a") as $sequence => $el) {
+            $data = [
+                "slug" => $el->getAttribute("data-page"),
+                "text" => $el->innertext,
+                "href" => $el->getAttribute("href"),
+                "external" => $el->hasClass("external"),
+                "exists" => $el->hasClass("internal") && !$el->hasClass("no-exists"),
+                "sequence" => $sequence + 1,
+            ];
+            $ret[] = $data;
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+        return $ret;
+    }
+
+    /* ********************************************************************* */
+
+    public static function convertUrls($text)
+    {
+        $urlPattern = '/(?<!href=["\']|src=["\'])\bhttps?:\/\/[^\s<>"\']+\b(?![^<]*(<\/a>|<\/src>))/i';
+
+        $callback = function ($matches) {
+            return "<a href='" . $matches[0] . "'>" . $matches[0] . "</a>";
+        };
+
+        return preg_replace_callback($urlPattern, $callback, $text);
     }
 }

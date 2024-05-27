@@ -29,7 +29,6 @@
 
             <x-content body-class="page">
                 @include('layouts.partials.messages')
-
                 @if (!$data)
                     <p>Esta página não existe. Seja o primeiro a criar esta página!</p>
 
@@ -50,7 +49,7 @@
 
 @push('styles')
     <style>
- 
+
     </style>
 @endpush
 

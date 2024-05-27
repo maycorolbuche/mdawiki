@@ -2,7 +2,9 @@
 @section('title', 'Visualizar Página')
 
 @section('content')
-    {!! $content !!}
+    <div class="page">
+        {!! $content !!}
+    </div>
 @endsection
 
 @push('scripts')
