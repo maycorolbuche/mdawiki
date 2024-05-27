@@ -48,6 +48,7 @@ import 'froala-editor/js/languages/pt_br';
 document.addEventListener('DOMContentLoaded', function () {
     require('./froala-editor-custom/formatOL');
     require('./froala-editor-custom/image');
+    require('./froala-editor-custom/link');
 });
 
 window.FroalaEditor = FroalaEditor;

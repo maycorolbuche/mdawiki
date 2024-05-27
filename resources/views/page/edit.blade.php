@@ -105,7 +105,7 @@
                     ],
                     [
                         'bold', 'italic', 'underline', 'strikeThrough',
-                        '|', 'insertLink',
+                        '|', 'insertLink', 'convertLink',
                         '|', 'subscript', 'superscript',
                         '|', 'specialCharacters',
                         '|', 'clearFormatting',
@@ -146,12 +146,19 @@
                 /* Table */
                 tableResizerOffset: 10,
                 tableResizingLimit: 50,
-                //tableEditButtons: ['imageDisplay', 'imageAlign', 'imageInfo', 'imageRemove'],
+                tableEditButtons: ['tableHeader',
+                    '|', 'tableRows', 'tableColumns', 'tableStyle',
+                    '-',
+                    'tableCells', 'tableCellBackground', 'tableCellVerticalAlign',
+                    'tableCellHorizontalAlign',
+                    '|', 'tableRemove',
+                ],
                 tableStyles: {
                     table: 'Destacado',
                     dynamic: 'Dinâmica',
                     //table table-striped table-sm table-hover
                 },
+                tableMultipleStyles: false,
                 tableCellStyles: {
                     border: 'Borda'
                 },
@@ -161,20 +168,31 @@
                     'imageAlign',
                     'imageCaption',
                     'imageDisplay',
-                    //'imageStyle',
                     '|', 'imageRemove',
                 ],
-                /*imageStyles: {
-                    class1: 'Tabela listrada',
-                    class2: 'Class 2'
-                },*/
                 imageManagerLoadURL: "{{ route('json.images') }}",
                 imageManagerNewImage: "{{ route('images') }}",
+
+                linkAutoPrefix: '',
+                linkList: [],
+                linkEditButtons: ['linkEdit', 'linkRemove'],
+                linkConvertEmailAddress: false,
 
                 //imageEditButtons: ['wirisEditor', 'wirisChemistry'],
                 //htmlAllowedTags: [' .* '],
                 //htmlAllowedAttrs: [' .* '],
                 //htmlAllowedEmptyTags: ['mprescripts', 'none'],
+
+                events: {
+                    contentChanged: function() {
+                        /* let html = editor.html.get();
+                         console.log(html);
+                         html_transform = transformLinks(html);
+                         if (html != html_transform) {
+                             editor.html.set(html_transform);
+                         }*/
+                    },
+                }
             });
 
 
@@ -183,7 +201,6 @@
             }, 100);
             console.log(editor);
         });
-
 
 
 
@@ -314,6 +331,65 @@
             editor.destroy();
             editor = new FroalaEditor('#editor', editor.opts);
         }
+
+        function transformLinks(content) {
+            const urlRegex = /https?:\/\/[^\s]+/g;
+
+            // Função para criar um link HTML a partir de uma URL
+            function createLink(url) {
+                return `<a href="${url}" target="_blank">${url}</a>`;
+            }
+
+            // Criar um contêiner temporário para manipular o HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+
+            // Função para verificar e transformar links
+            function checkAndTransform(node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const urls = node.textContent.match(urlRegex);
+                    if (urls) {
+                        const parent = node.parentNode;
+                        let remainingText = node.textContent;
+                        urls.forEach(url => {
+                            const urlIndex = remainingText.indexOf(url);
+                            const beforeUrl = remainingText.slice(0, urlIndex);
+                            const afterUrl = remainingText.slice(urlIndex + url.length);
+
+                            if (beforeUrl) {
+                                parent.insertBefore(document.createTextNode(beforeUrl), node);
+                            }
+
+                            parent.insertBefore(createLinkElement(url), node);
+                            remainingText = afterUrl;
+                        });
+
+                        if (remainingText) {
+                            parent.insertBefore(document.createTextNode(remainingText), node);
+                        }
+
+                        parent.removeChild(node);
+                    }
+                } else if (node.nodeType === Node.ELEMENT_NODE && node.nodeName !== 'A') {
+                    Array.from(node.childNodes).forEach(child => checkAndTransform(child));
+                }
+            }
+
+            // Função para criar um elemento de link
+            function createLinkElement(url) {
+                const link = document.createElement('a');
+                link.href = url;
+                link.textContent = url;
+                link.target = '_blank';
+                return link;
+            }
+
+            // Percorrer e transformar links no conteúdo do contêiner temporário
+            Array.from(tempDiv.childNodes).forEach(child => checkAndTransform(child));
+
+            // Retornar o conteúdo HTML transformado
+            return tempDiv.innerHTML;
+        }
     </script>
 @endpush
 
@@ -324,6 +400,11 @@
     <style>
         [id^="dropdown-menu-formatOLOptions-"] [data-param1="start"] {
             border-top: 1px solid #ebebeb;
+        }
+
+        .fr-link-insert-layer .fr-checkbox-line,
+        button[data-cmd="linkList"] {
+            display: none !important;
         }
     </style>
 @endpush
