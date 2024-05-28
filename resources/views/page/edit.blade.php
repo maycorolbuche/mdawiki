@@ -211,8 +211,9 @@
             undo: false,
             refreshAfterCallback: true,
             options: {
-                'v1': 'Option 1',
-                'v2': 'Option 2'
+                'v1': 'Especialidade de Desbravadores',
+                'v2': 'Especialidade de Aventureiros',
+                'v3': 'Redirecionamento'
             },
             callback: function(cmd, val) {
                 console.log(val);
@@ -230,7 +231,6 @@
                                     <div class="table-cell">Header 1</div>
                                     <div class="table-cell">Header 2</div>
                                     <div class="table-cell">Header 3</div>
-                                    <div class="table-cell"><button class="delete-row-btn">Delete</button></div>
                                 </div>
                                 <!-- Mais linhas podem ser adicionadas aqui conforme necessário -->
                             </div>
@@ -248,14 +248,15 @@
         })
 
 
-        /*
-                document.addEventListener('click', function(event) {
-                    if (event.target.classList.contains('delete-table-btn')) {
-                        const table = event.target.closest('.custom-table');
-                        table.parentNode.removeChild(table);
-                    }
-                });
-        */
+
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('delete-table-btn')) {
+                const table = event.target.closest('.custom-table');
+                table.parentNode.removeChild(table);
+            }
+            event.preventDefault();
+        });
+
 
 
         function resizeEditor() {
