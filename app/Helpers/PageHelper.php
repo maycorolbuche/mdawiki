@@ -103,9 +103,17 @@ class PageHelper
     }
     public static function toEditor($content)
     {
-        //Remove tags maliciosas, scripts ou css
+        // Remove tags maliciosas, scripts ou css
         $content = HtmlHelper::removeTag($content, 'style');
         $content = HtmlHelper::removeTag($content, 'script');
+
+        // Remove tarja licença Froala
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("[data-f-id='pbf']") as $el) {
+            $el->outertext = '';
+        }
+        $content = $dom->save();
+        $dom->clear();
 
         // Remove tags <p> dentro de listas <li>
         $dom = HtmlDomParser::str_get_html($content);
@@ -162,10 +170,10 @@ class PageHelper
         $content = $dom->save();
         $dom->clear();
 
-        //Verifica Urls sem link
+        // Verifica Urls sem link
         $content = self::convertUrls($content);
 
-        //Ajusta Links
+        // Ajusta Links
         $dom = HtmlDomParser::str_get_html($content);
         foreach ($dom->find("a") as $el) {
             if ($el->innertext == '') {

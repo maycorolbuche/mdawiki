@@ -119,10 +119,6 @@ small,
 
 
 /* Plugins */
-#fr-logo {
-    display: none;
-}
-
 .fr-shortcut {
     display: none !important;
 }
@@ -435,4 +431,16 @@ img[onclick] {
     background-size: contain;
     background-repeat: no-repeat;
     vertical-align: middle;
+}
+
+.editor a[id="fr-logo"] {
+    display: none !important;
+}
+
+.editor p[data-f-id="pbf"] {
+    display: none !important;
+}
+
+.editor a[href*="www.froala.com"] {
+    display: none !important;
 }

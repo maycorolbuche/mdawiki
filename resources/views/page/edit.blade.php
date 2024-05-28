@@ -128,7 +128,7 @@
                     ],
                     [
                         //'wirisEditor', 'wirisChemistry',
-                        'custom_insert', 'myButton',
+                        'components',
                         '|',
                     ],
                 ],
@@ -178,7 +178,6 @@
                 linkEditButtons: ['linkEdit', 'linkRemove'],
                 linkConvertEmailAddress: false,
 
-                //imageEditButtons: ['wirisEditor', 'wirisChemistry'],
                 //htmlAllowedTags: [' .* '],
                 //htmlAllowedAttrs: [' .* '],
                 //htmlAllowedEmptyTags: ['mprescripts', 'none'],
@@ -200,92 +199,25 @@
 
 
 
-
-        FroalaEditor.POPUP_TEMPLATES["customPlugin.popup"] = '[_BUTTONS_][_CUSTOM_LAYER_]';
-        FroalaEditor.PLUGINS.customPlugin = function(editor) {
-            // Create custom popup.
-            function initPopup() {
-                // Popup buttons.
-                var popup_buttons = '';
-
-                // Create the list of buttons.
-                popup_buttons += '<div class="fr-buttons">';
-                popup_buttons += editor.button.buildList(['custom_insert', '|', 'custom_insert']);
-                popup_buttons += '</div>';
-
-                return editor.popups.create('customPlugin.popup', {
-                    buttons: popup_buttons,
-                    custom_layer: '<div class="custom-layer">Hello World!</div>'
-                });
-            }
-
-            // Show the popup
-            function showPopup() {
-                // Get the popup object defined above.
-                var $popup = editor.popups.get('customPlugin.popup');
-
-                // If popup doesn't exist then create it.
-                // To improve performance it is best to create the popup when it is first needed
-                // and not when the editor is initialized.
-                if (!$popup) $popup = initPopup();
-
-                // Set the editor toolbar as the popup's container.
-                editor.popups.setContainer('customPlugin.popup', editor.$tb);
-
-                // This will trigger the refresh event assigned to the popup.
-                // editor.popups.refresh('customPlugin.popup');
-
-                // This custom popup is opened by pressing a button from the editor's toolbar.
-                // Get the button's object in order to place the popup relative to it.
-                var $btn = editor.$tb.find('.fr-command[data-cmd="myButton"]');
-
-                // Set the popup's position.
-                var left = $btn.offset().left + $btn.outerWidth() / 2;
-                var top = $btn.offset().top + (editor.opts.toolbarBottom ? 10 : $btn.outerHeight() - 10);
-
-                // Show the custom popup.
-                // The button's outerHeight is required in case the popup needs to be displayed above it.
-                editor.popups.show('customPlugin.popup', left, top, $btn.outerHeight());
-            }
-
-            // Hide the custom popup.
-            function hidePopup() {
-                editor.popups.hide('customPlugin.popup');
-            }
-
-            // Methods visible outside the plugin.
-            return {
-                showPopup: showPopup,
-                hidePopup: hidePopup
-            }
-        }
-
-        FroalaEditor.DefineIcon('buttonIcon', {
-            NAME: 'star',
-            SVG_KEY: 'star'
+        FroalaEditor.DefineIcon('insertMore', {
+            NAME: 'insertMore',
+            SVG_KEY: "insertMore"
         })
-        FroalaEditor.RegisterCommand('myButton', {
-            title: 'Show Popup',
-            icon: 'buttonIcon',
-            undo: false,
+        FroalaEditor.RegisterCommand('components', {
+            title: 'Inserir Elementos',
+            icon: 'insertMore',
+            type: 'dropdown',
             focus: false,
-            plugin: 'customPlugin',
-            callback: function() {
-                this.customPlugin.showPopup();
-            }
-        });
-
-        FroalaEditor.DefineIcon('custom_insert', {
-            NAME: 'plus',
-            SVG_KEY: 'add'
-        });
-        FroalaEditor.RegisterCommand('custom_insert', {
-            title: 'Insert HTML',
-            focus: true,
-            undo: true,
+            undo: false,
             refreshAfterCallback: true,
-            callback: function() {
-                const tableHTML = `
+            options: {
+                'v1': 'Option 1',
+                'v2': 'Option 2'
+            },
+            callback: function(cmd, val) {
+                console.log(val);
+                if (val == "v1") {
+                    const tableHTML = `
                         <div class="custom-table" style='background:red;'>
                             <div class="table-header">
                                 <div contenteditable="false" class="table-header-cell">Header 1</div>
@@ -304,19 +236,26 @@
                             </div>
                         </div>
                     `;
-                this.html.insert(tableHTML);
+                    this.html.insert(tableHTML);
+                }
+            },
+            refresh: function($btn) {
+                console.log('do refresh');
+            },
+            refreshOnShow: function($btn, $dropdown) {
+                console.log('do refresh when show');
             }
-        });
+        })
 
 
-
-        document.addEventListener('click', function(event) {
-            if (event.target.classList.contains('delete-table-btn')) {
-                const table = event.target.closest('.custom-table');
-                table.parentNode.removeChild(table);
-            }
-        });
-
+        /*
+                document.addEventListener('click', function(event) {
+                    if (event.target.classList.contains('delete-table-btn')) {
+                        const table = event.target.closest('.custom-table');
+                        table.parentNode.removeChild(table);
+                    }
+                });
+        */
 
 
         function resizeEditor() {
