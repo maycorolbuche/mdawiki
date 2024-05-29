@@ -22,14 +22,17 @@
 
             <x-card body-class="p-2">
 
+                <div class="row pb-2">
+                    <x-input id="categories" label="Categorias" type="tags"
+                        data-server="{{ route('json.categories_input', ['page' => $page]) }}" />
+                </div>
+
                 <div class="card-actions float-end">
                     @csrf
                     <input type="submit" class="btn btn-info" value="Salvar">
                     <input type="button" class="btn btn-success" value="Visualizar" data-bs-toggle="modal"
                         data-bs-target="#previewModal">
-                    <a class="btn btn-warning" href="{{ route('page', ['page' => $page]) }}">
-                        Cancelar
-                    </a>
+                    <a class="btn btn-warning" href="{{ route('page', ['page' => $page]) }}">Cancelar</a>
                 </div>
             </x-card>
         </form>
@@ -254,7 +257,6 @@
                 const table = event.target.closest('.custom-table');
                 table.parentNode.removeChild(table);
             }
-            event.preventDefault();
         });
 
 

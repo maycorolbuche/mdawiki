@@ -63,6 +63,7 @@ Route::prefix('@img')->group(function () {
 
 Route::prefix('@json')->group(function () {
     Route::get('/images', 'JsonController@images')->name('json.images');
+    Route::get('/categories_input/{page?}', 'JsonController@categories_input')->name('json.categories_input');
 });
 
 

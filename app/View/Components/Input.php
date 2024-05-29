@@ -25,6 +25,7 @@ class Input extends Component
         public string $label = '',
         public string $placeholder = '',
         public int $rows = 2,
+        public string $dataServer = '',
         public $min = '',
         public $max = '',
         public bool $required = false,

@@ -71,18 +71,21 @@ class PageController extends Controller
         $slug = StringHelper::toSlug($page);
         $p = Page::where('slug', $slug)->first();
         if ($p) {
-            if ($p["content_editor"] == $request->input('content')) {
-                PageHelper::refresh($slug);
-                return redirect()->route('page', ['page' => $page])->withWarning('Nenhuma alteração foi feita!');
+            if (PageHelper::toEditor($p["content_editor"]) == PageHelper::toEditor($request->input('content'))) {
+                if (json_encode($request->input('categories')) == json_encode($p["categories"])) {
+                    PageHelper::refresh($slug);
+                    return redirect()->route('page', ['page' => $page])->withWarning('Nenhuma alteração foi feita!');
+                }
             }
         }
 
         $this->save($page, [
             'path' => $page,
             'content_editor' => $request->input('content'),
+            'categories' => $request->input("categories"),
         ]);
 
-        return redirect()->route('page', ['page' => $page]);
+        return redirect()->route('page', ['page' => $page])->withSuccess('Página salva com sucesso!');
     }
 
     public function refresh(Request $request, $page)

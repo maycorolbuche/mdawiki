@@ -10,6 +10,7 @@ use App\Models\Page;
 use App\Models\PageTitle;
 use App\Models\PageImage;
 use App\Models\PageLink;
+use App\Models\PageCategory;
 use App\Models\Image;
 
 class PageHelper
@@ -54,6 +55,34 @@ class PageHelper
 
             $id = $page->id;
             $slug = $page->slug;
+
+            PageCategory::where('page_id', $id)->delete();
+            if ($page["categories"]) {
+                foreach ($page["categories"] as $key => $category) {
+                    $category_slug = StringHelper::toSlug($category);
+                    $category_name = StringHelper::toUrl($category);
+                    $category_title = $category;
+                    $page_exists = false;
+
+                    $category_data = Page::where('slug', $category_slug)->first();
+                    if ($category_data) {
+                        $category_slug = $category_data["slug"];
+                        $category_name = $category_data["name"];
+                        $category_title = $category_data["title"];
+                        $page_exists = true;
+                    }
+
+                    PageCategory::create([
+                        'page_id' => $id,
+                        'slug' => $slug,
+                        'category_slug' => $category_slug,
+                        'category_name' => $category_name,
+                        'category_title' => $category_title,
+                        'page_exists' => $page_exists,
+                        'sequence' => $key + 1,
+                    ]);
+                }
+            }
 
             PageTitle::where('page_id', $id)->delete();
             foreach ($content_data["components"]["titles"] as $title) {

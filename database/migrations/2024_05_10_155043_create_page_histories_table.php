@@ -23,6 +23,7 @@ return new class extends Migration
             $table->longText('content_text')->nullable();
             $table->longText('content_markdown')->nullable();
             $table->longText('content_pdf')->nullable();
+            $table->longText('categories')->nullable();
             $table->boolean('pending_update')->default(0);
 
             $table->unsignedBigInteger('updated_by')->nullable();

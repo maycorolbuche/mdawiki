@@ -112,6 +112,21 @@
             @endpush
 
         </div>
+    @elseif($type == 'tags')
+        <label for="{{ $id }}" class="form-label">{!! $label !!}</label>
+        <select id="{{ $id }}" name="{{ $name }}[]" class="form-select" id="validationTags" multiple
+            data-not-found-message="Aperte ENTER para adicionar" data-allow-new="true"
+            data-server="{{ $dataServer }}" multiple>
+            <option selected disabled hidden value="">Escolha um item...</option>
+        </select>
+
+        @push('scripts')
+            <script>
+                Tags.init("#{{ $id }}", {
+                    allowClear: true,
+                });
+            </script>
+        @endpush
     @else
         <label for="{{ $id }}" class="form-label">{!! $label !!}</label>
         <input type="{{ $type }}" id="{{ $id }}" name="{{ $name }}"

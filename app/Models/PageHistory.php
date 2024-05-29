@@ -28,10 +28,14 @@ class PageHistory extends Model
         'content_text',
         'content_markdown',
         'content_pdf',
+        'categories',
         'pending_update',
         'updated_by',
     ];
 
+    protected $casts = [
+        'categories' => 'array',
+    ];
 
     public function user()
     {

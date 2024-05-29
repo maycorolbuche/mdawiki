@@ -5,6 +5,7 @@ import "./modules/feather";
 import "./modules/interactjs";
 import "./modules/froala-editor";
 import "./modules/datatables";
+import "./modules/bootstrap5-tags";
 
 import "./functions";
 
