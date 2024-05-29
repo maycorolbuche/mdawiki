@@ -61,7 +61,7 @@ class PageHelper
                 foreach ($page["categories"] as $key => $category) {
                     $category_slug = StringHelper::toSlug($category);
                     $category_name = StringHelper::toUrl($category);
-                    $category_title = $category;
+                    $category_title = StringHelper::toTitle($category);
                     $page_exists = false;
 
                     $category_data = Page::where('slug', $category_slug)->first();

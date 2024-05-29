@@ -21,10 +21,14 @@
             </div>
 
             <x-card body-class="p-2">
-
                 <div class="row pb-2">
                     <x-input id="categories" label="Categorias" type="tags"
-                        data-server="{{ route('json.categories_input', ['page' => $page]) }}" />
+                        data-server="{{ route('json.categories_input', ['page' => $page]) }}">
+                        @foreach ($data->page_categories as $category)
+                            <option selected value="{{ $category->category_title }}">
+                                {{ $category->category_title }}</option>
+                        @endforeach
+                    </x-input>
                 </div>
 
                 <div class="card-actions float-end">

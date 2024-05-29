@@ -33,4 +33,9 @@ class Page extends Model
     protected $casts = [
         'categories' => 'array',
     ];
+
+    public function page_categories()
+    {
+        return $this->hasMany(PageCategory::class);
+    }
 }

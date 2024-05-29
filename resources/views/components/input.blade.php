@@ -116,15 +116,14 @@
         <label for="{{ $id }}" class="form-label">{!! $label !!}</label>
         <select id="{{ $id }}" name="{{ $name }}[]" class="form-select" id="validationTags" multiple
             data-not-found-message="Aperte ENTER para adicionar" data-allow-new="true"
-            data-server="{{ $dataServer }}" multiple>
+            data-server="{{ $dataServer }}" d-ata-live-server="1" data-allow-clear="true" multiple>
             <option selected disabled hidden value="">Escolha um item...</option>
+            {{ $slot }}
         </select>
 
         @push('scripts')
             <script>
-                Tags.init("#{{ $id }}", {
-                    allowClear: true,
-                });
+                Tags.init("#{{ $id }}");
             </script>
         @endpush
     @else
@@ -143,5 +142,7 @@
         </div>
     @endif
 
-    {{ $slot }}
+    @if ($type != 'tags')
+        {{ $slot }}
+    @endif
 </div>

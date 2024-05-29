@@ -49,7 +49,7 @@ class PageController extends Controller
         $title = StringHelper::toTitle($page);
         $slug = StringHelper::toSlug($page);
 
-        $data = Page::where('slug', $slug)->first();
+        $data = Page::where('slug', $slug)->with('page_categories')->first();
 
         return view('page.edit', compact('page', 'title', 'data'));
     }
