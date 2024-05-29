@@ -39,16 +39,12 @@ class JsonController extends Controller
         return response()->json($images);
     }
 
-    public function categories_input(Request $request, $page = '')
+    public function categories_input(Request $request)
     {
         $array = [];
         $categories = PageCategory::select(['category_title as value', 'category_title as label'])->distinct()->get();
         if ($categories) {
             $array = $categories->toArray();
-
-            $slug = StringHelper::toSlug($page);
-            $categories_selected = PageCategory::where('slug', $slug)->select(['category_title as value', 'category_title as label', DB::raw('"true" as selected')])->distinct()->get();
-            $array = array_merge($array, $categories_selected->toArray());
         }
         return response()->json($array);
     }

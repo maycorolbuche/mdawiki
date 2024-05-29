@@ -3,7 +3,7 @@
     $label = $label . ($required ? ' <span class="text-danger">*</span>' : '');
 @endphp
 
-<div
+<div data-input-group="{{ $id }}"
     class="{{ $colXs ? " col-$colXs " : '' }} {{ $colSm ? " col-sm-$colSm " : '' }}{{ $colMd ? " col-md-$colMd " : '' }}{{ $colLg ? " col-lg-$colLg " : '' }}{{ $colXl ? " col-xl-$colXl " : '' }}{{ $colXxl ? " col-xxl-$colXxl " : '' }}">
 
     @if ($type == 'captcha')
@@ -114,16 +114,34 @@
         </div>
     @elseif($type == 'tags')
         <label for="{{ $id }}" class="form-label">{!! $label !!}</label>
-        <select id="{{ $id }}" name="{{ $name }}[]" class="form-select" id="validationTags" multiple
-            data-not-found-message="Aperte ENTER para adicionar" data-allow-new="true"
-            data-server="{{ $dataServer }}" d-ata-live-server="1" data-allow-clear="true" multiple>
-            <option selected disabled hidden value="">Escolha um item...</option>
+        <select id="{{ $id }}" name="{{ $name }}[]" class="form-select" id="validationTags"
+            multiple>
             {{ $slot }}
         </select>
 
         @push('scripts')
             <script>
-                Tags.init("#{{ $id }}");
+                Tags.init("#{{ $id }}", {
+                    notFoundMessage: "Aperte ENTER para adicionar",
+                    placeholder: "Escolha um item...",
+                    allowNew: true,
+                    addOnBlur: true,
+                    server: "{{ $dataServer }}",
+                    allowClear: true,
+                    clearEnd: true,
+                    selected: {!! $value != '' ? html_entity_decode($value) : '[]' !!},
+                    onServerResponse: (response, inst) => {
+                        document.querySelectorAll("[data-input-group='{{ $id }}'] .tags-badge").forEach(
+                            function(
+                                element) {
+                                element.remove();
+                            });
+
+
+                        return response.json();
+                    },
+
+                });
             </script>
         @endpush
     @else

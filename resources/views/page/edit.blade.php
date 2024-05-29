@@ -23,9 +23,10 @@
             <x-card body-class="p-2">
                 <div class="row pb-2">
                     <x-input id="categories" label="Categorias" type="tags"
-                        data-server="{{ route('json.categories_input', ['page' => $page]) }}">
+                        data-server="{{ route('json.categories_input') }}"
+                        value="{{ json_encode($data->page_categories->pluck('category_title')->toArray()) }}">
                         @foreach ($data->page_categories as $category)
-                            <option selected value="{{ $category->category_title }}">
+                            <option value="{{ $category->category_title }}">
                                 {{ $category->category_title }}</option>
                         @endforeach
                     </x-input>
@@ -230,14 +231,12 @@
                             <div class="table-header">
                                 <div contenteditable="false" class="table-header-cell">Header 1</div>
                                 <div contenteditable="false" class="table-header-cell">Header 2</div>
-                                <div contenteditable="false" class="table-header-cell">Header 3</div>
                                 <div contenteditable="false" class="table-header-cell"><button class="delete-table-btn">Delete</button></div>
                             </div>
                             <div class="table-body">
                                 <div class="table-row">
-                                    <div class="table-cell">Header 1</div>
+                                    <div class="table-cell">Header 1<input type='text' value='s'></div>
                                     <div class="table-cell">Header 2</div>
-                                    <div class="table-cell">Header 3</div>
                                 </div>
                                 <!-- Mais linhas podem ser adicionadas aqui conforme necessário -->
                             </div>
@@ -287,6 +286,16 @@
         .fr-link-insert-layer .fr-checkbox-line,
         button[data-cmd="linkList"] {
             display: none !important;
+        }
+
+        .form-select.is-loading {
+            background: #EEE;
+        }
+
+        .form-select.is-loading button,
+        .form-select.is-loading input,
+        .form-select.is-loading .dropdown-menu {
+            display: none;
         }
     </style>
 @endpush
