@@ -14,14 +14,16 @@
     <div class="row" style="flex: auto;">
         <form class="col-12 d-flex flex-column" id="form" method="POST"
             action="{{ route('page.update', ['page' => $page]) }}">
-            <div id="editor-container" class="editor" style="flex: auto;">
-                <textarea id="editor" name="content" class="editor d-none">
+            <x-card body-class="p-2">
+
+                <div id="editor-container" class="editor" style="flex: auto;">
+                    <textarea id="editor" name="content" class="editor d-none">
                 {{ $data->content_editor ?? '' }}
                 </textarea>
-            </div>
+                </div>
 
-            <x-card body-class="p-2">
-                <div class="row pb-2">
+
+                <div class="row py-2">
                     <x-input id="categories" label="Categorias" type="tags"
                         data-server="{{ route('json.categories_input') }}"
                         value="{{ json_encode($data->page_categories->pluck('category_title')->toArray()) }}">
@@ -93,18 +95,17 @@
 
 @push('scripts')
     <script>
-        document.querySelector('.content').style.display = 'flex';
-        document.querySelector('.content').style.alignItems = 'stretch';
-        document.querySelector('.container-fluid').style.display = 'flex';
-        document.querySelector('.container-fluid').style.flexDirection = 'column';
+        //document.querySelector('.content').style.display = 'flex';
+        //document.querySelector('.content').style.alignItems = 'stretch';
+        //document.querySelector('.container-fluid').style.display = 'flex';
+        //document.querySelector('.container-fluid').style.flexDirection = 'column';
 
         var editor;
         document.addEventListener("DOMContentLoaded", () => {
             editor = new FroalaEditor('#editor', {
                 language: 'pt_br',
-                height: 100,
                 pastePlain: true,
-
+                toolbarSticky: false,
                 toolbarButtons: [
                     [
                         'undo', 'redo',
@@ -191,17 +192,44 @@
                 //htmlAllowedEmptyTags: ['mprescripts', 'none'],
 
                 events: {
-                    contentChanged: function() {
-                        //
-                    },
+                    'initialized': function() {
+
+                        const toolbarObserver = new MutationObserver((mutationList) => {
+                            for (const mutation of mutationList) {
+                                if (mutation.type === 'attributes' && mutation.attributeName ===
+                                    'style') {
+                                    onResize();
+                                }
+                            }
+                        });
+                        toolbarObserver.observe(document.querySelector('.fr-toolbar'), {
+                            subtree: true,
+                            attributeOldValue: true
+                        });
+
+                        onResize();
+                    }
                 }
             });
 
 
-            setTimeout(function() {
-                resizeEditor();
-            }, 100);
-            console.log(editor);
+
+
+
+            document.addEventListener('click', function(event) {
+                if (event.target.classList.contains('delete-table-btn')) {
+                    const table = event.target.closest('.custom-table');
+                    table.parentNode.removeChild(table);
+                }
+            });
+
+            const resizeObserver = new ResizeObserver(onResize);
+            resizeObserver.observe(document.querySelector('.card'));
+
+
+            document.querySelector("body").addEventListener("scroll", (event) => {
+                onScroll();
+            });
         });
 
 
@@ -255,21 +283,41 @@
 
 
 
-        document.addEventListener('click', function(event) {
-            if (event.target.classList.contains('delete-table-btn')) {
-                const table = event.target.closest('.custom-table');
-                table.parentNode.removeChild(table);
+
+
+
+        function onResize() {
+            console.log("RESIZE");
+            let toolbar = document.querySelector('.fr-toolbar');
+            if (toolbar) {
+                toolbar.style.position = 'sticky';
+                toolbar.style.top = document.querySelector("nav.navbar").offsetHeight + 'px';
+                toolbar.style.zIndex = '10';
             }
-        });
+        }
 
 
+        function onScroll() {
+            let toolbar = document.querySelector('.fr-toolbar');
+            let navbar = document.querySelector("nav.navbar");
+            if (toolbar) {
+                if (toolbar.getBoundingClientRect().top <= document.querySelector("nav.navbar").offsetHeight) {
+                    toolbar.classList.add('toolbar-sticky')
+                } else {
+                    toolbar.classList.remove('toolbar-sticky')
+                }
+            }
+            /* var toolbarRect = toolbar.getBoundingClientRect();
+             var toolbarParentRect = toolbar.parentNode.getBoundingClientRect();
 
-        function resizeEditor() {
-            editor.opts.height = document.getElementById('editor-container').offsetHeight - document
-                .querySelector(
-                    '.fr-toolbar').offsetHeight - 40;
-            editor.destroy();
-            editor = new FroalaEditor('#editor', editor.opts);
+             // Verifica se o topo do toolbar está colado ao topo da viewport
+             var isFloating = toolbarRect.top === toolbarParentRect.top;
+
+             if (isFloating) {
+                 console.log('O elemento .fr-toolbar está flutuando (fixo).');
+             } else {
+                 console.log('O elemento .fr-toolbar não está flutuando.');
+             }*/
         }
     </script>
 @endpush
@@ -296,6 +344,15 @@
         .form-select.is-loading input,
         .form-select.is-loading .dropdown-menu {
             display: none;
+        }
+
+        .tags-badge {
+            padding: 10px !important;
+        }
+
+        .toolbar-sticky {
+            border-radius: 0 !important;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
         }
     </style>
 @endpush
