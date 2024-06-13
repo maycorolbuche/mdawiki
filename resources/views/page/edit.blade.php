@@ -233,8 +233,6 @@
         });
 
 
-
-
         FroalaEditor.DefineIcon('insertMore', {
             NAME: 'insertMore',
             SVG_KEY: "insertMore"
@@ -282,12 +280,7 @@
         })
 
 
-
-
-
-
         function onResize() {
-            console.log("RESIZE");
             let toolbar = document.querySelector('.fr-toolbar');
             if (toolbar) {
                 toolbar.style.position = 'sticky';
@@ -307,17 +300,6 @@
                     toolbar.classList.remove('toolbar-sticky')
                 }
             }
-            /* var toolbarRect = toolbar.getBoundingClientRect();
-             var toolbarParentRect = toolbar.parentNode.getBoundingClientRect();
-
-             // Verifica se o topo do toolbar está colado ao topo da viewport
-             var isFloating = toolbarRect.top === toolbarParentRect.top;
-
-             if (isFloating) {
-                 console.log('O elemento .fr-toolbar está flutuando (fixo).');
-             } else {
-                 console.log('O elemento .fr-toolbar não está flutuando.');
-             }*/
         }
     </script>
 @endpush
