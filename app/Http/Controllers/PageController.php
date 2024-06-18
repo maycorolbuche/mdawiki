@@ -9,6 +9,7 @@ use App\Models\PageHistory;
 use App\Helpers\StringHelper;
 use App\Helpers\MailHelper;
 use App\Helpers\PageHelper;
+use App\Helpers\ComponentHelper;
 use Carbon\Carbon;
 use DataTables;
 
@@ -50,8 +51,9 @@ class PageController extends Controller
         $slug = StringHelper::toSlug($page);
 
         $data = Page::where('slug', $slug)->with('page_categories')->first();
+        $components = ComponentHelper::list();
 
-        return view('page.edit', compact('page', 'title', 'data'));
+        return view('page.edit', compact('page', 'title', 'data', 'components'));
     }
 
     public function preview(Request $request)

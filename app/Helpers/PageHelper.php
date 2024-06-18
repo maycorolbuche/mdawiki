@@ -6,6 +6,7 @@ namespace App\Helpers;
 use Drnxloc\LaravelHtmlDom\HtmlDomParser;
 use App\Helpers\StringHelper;
 use App\Helpers\HtmlHelper;
+use App\Helpers\ComponentHelper;
 use App\Models\Page;
 use App\Models\PageTitle;
 use App\Models\PageImage;
@@ -144,6 +145,14 @@ class PageHelper
         $content = $dom->save();
         $dom->clear();
 
+        // Ajusta os Componentes
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find(".custom-component") as $el) {
+            $el->outertext = ComponentHelper::refresh($el->getAttribute("data-component-name") ?: '', $el->innertext);
+        }
+        $content = $dom->save();
+        $dom->clear();
+
         // Remove tags <p> dentro de listas <li>
         $dom = HtmlDomParser::str_get_html($content);
         foreach ($dom->find("li > p") as $el) {
@@ -261,6 +270,16 @@ class PageHelper
                 "name" => $name,
             ];
             $el->setAttribute("name", $name);
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+        /******************************************************************************/
+
+        /* Ajusta os Componentes *********************************************************************/
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find(".custom-component") as $el) {
+            $el->outertext = ComponentHelper::componentToPreview($el->getAttribute("data-component-name") ?: '', $el->innertext);
         }
         $content = $dom->save();
         $dom->clear();

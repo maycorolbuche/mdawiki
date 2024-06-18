@@ -214,15 +214,6 @@
 
 
 
-
-
-            document.addEventListener('click', function(event) {
-                if (event.target.classList.contains('delete-table-btn')) {
-                    const table = event.target.closest('.custom-table');
-                    table.parentNode.removeChild(table);
-                }
-            });
-
             const resizeObserver = new ResizeObserver(onResize);
             resizeObserver.observe(document.querySelector('.card'));
 
@@ -245,39 +236,111 @@
             undo: false,
             refreshAfterCallback: true,
             options: {
-                'v1': 'Especialidade de Desbravadores',
-                'v2': 'Especialidade de Aventureiros',
-                'v3': 'Redirecionamento'
+                @foreach ($components as $component)
+                    '{{ $component['name'] }}': '{{ $component['title'] }}',
+                @endforeach
             },
             callback: function(cmd, val) {
                 console.log(val);
-                if (val == "v1") {
-                    const tableHTML = `
-                        <div class="custom-table" style='background:red;'>
-                            <div class="table-header">
-                                <div contenteditable="false" class="table-header-cell">Header 1</div>
-                                <div contenteditable="false" class="table-header-cell">Header 2</div>
-                                <div contenteditable="false" class="table-header-cell"><button class="delete-table-btn">Delete</button></div>
-                            </div>
-                            <div class="table-body">
-                                <div class="table-row">
-                                    <div class="table-cell">Header 1<input type='text' value='s'></div>
-                                    <div class="table-cell">Header 2</div>
-                                </div>
-                                <!-- Mais linhas podem ser adicionadas aqui conforme necessário -->
-                            </div>
-                        </div>
-                    `;
-                    this.html.insert(tableHTML);
-                }
+                @foreach ($components as $component)
+                    if (val == "{{ $component['name'] }}") {
+                        const tableHTML = `{!! $component['component'] !!}`;
+                        this.html.insert(tableHTML);
+                    }
+                @endforeach
             },
             refresh: function($btn) {
-                console.log('do refresh');
+                if (this.selection.element().closest('.custom-component')) {
+                    this.componentsPlugin.show();
+
+                    document.querySelectorAll('.custom-component').forEach(div => {
+                        div.querySelectorAll('input').forEach(input => {
+                            input.setAttribute('value', input.value);
+                            input.setAttribute('data-value', input.value);
+                        });
+                    });
+                } else {
+                    this.componentsPlugin.hide();
+                }
+                console.log('do refresh', this.selection.element().closest('.custom-component'));
             },
             refreshOnShow: function($btn, $dropdown) {
                 console.log('do refresh when show');
             }
         })
+
+
+        /* POPUP - INÍCIO */
+        Object.assign(FroalaEditor.POPUP_TEMPLATES, {
+            'componentsPlugin.popup': '[_BUTTONS_]'
+        });
+
+        Object.assign(FroalaEditor.DEFAULTS, {
+            popupButtons: ['removeComponent'],
+        });
+
+        FroalaEditor.PLUGINS.componentsPlugin = function(editor) {
+            function initPopup() {
+                var template = FroalaEditor.POPUP_TEMPLATES.customPopup;
+                if (typeof template == 'function') template = template.apply(editor);
+
+                var popup_buttons = '';
+
+                popup_buttons += '<div class="fr-buttons">';
+                popup_buttons += editor.button.buildList(editor.opts.popupButtons);
+                popup_buttons += '</div>';
+
+                var template = {
+                    buttons: popup_buttons
+                };
+
+                var $popup = editor.popups.create('componentsPlugin.popup', template);
+
+                return $popup;
+            }
+
+            function show() {
+                var $popup = editor.popups.get('componentsPlugin.popup');
+
+                if (!$popup) $popup = initPopup();
+
+                editor.popups.setContainer('componentsPlugin.popup', editor.$tb);
+
+                var rect = editor.selection.element().getBoundingClientRect();
+
+                var left = rect.left + rect.width / 2;
+                var top = rect.top + rect.height - 10;
+
+                editor.popups.show('componentsPlugin.popup', left, top, 10);
+            }
+
+            function hide() {
+                editor.popups.hide('componentsPlugin.popup');
+            }
+
+            return {
+                show: show,
+                hide: hide
+            }
+        }
+
+
+        FroalaEditor.DefineIcon('removeComponent', {
+            NAME: 'trash',
+            SVG_KEY: "removeTable"
+        });
+        FroalaEditor.RegisterCommand('removeComponent', {
+            title: 'Remover Elemento',
+            undo: false,
+            focus: false,
+            callback: function() {
+                let element = this.selection.element().closest('.custom-component');
+                element.parentNode.removeChild(element);
+            }
+        });
+
+        /* POPUP - FIM */
+
 
 
         function onResize() {
@@ -335,6 +398,23 @@
         .toolbar-sticky {
             border-radius: 0 !important;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+
+        .editor .custom-component {
+            border: 2px dashed green !important;
+            margin: 16px 0 5px 0;
+            padding: 10px 5px 5px 5px;
+        }
+
+        .editor .custom-component .title-component {
+            background: green;
+            color: #FFF;
+            padding: 0px 15px;
+            border-radius: 5px;
+            margin-top: -20px;
+            position: absolute;
+            font-size: 12px;
         }
     </style>
 @endpush
