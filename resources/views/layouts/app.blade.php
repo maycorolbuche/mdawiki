@@ -15,6 +15,7 @@
     <link rel="canonical" href="{{ url()->current() }}" />
 
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/components.css') }}" rel="stylesheet">
 
     @include('layouts.partials.analytics')
 

@@ -13,7 +13,7 @@
 
     <div class="row" style="flex: auto;">
         <form class="col-12 d-flex flex-column" id="form" method="POST"
-            action="{{ route('page.update', ['page' => $page]) }}">
+            action="{{ route('page.update', ['page' => $page]) }}" onsubmit="return beforeSaving()">
             <x-card body-class="p-2">
 
                 <div id="editor-container" class="editor" style="flex: auto;">
@@ -34,7 +34,7 @@
                     </x-input>
                 </div>
 
-                <div class="card-actions float-end">
+                <div class="card-actions float-end editor-card-actions editor-card-actions-sticky">
                     @csrf
                     <input type="submit" class="btn btn-info" value="Salvar">
                     <input type="button" class="btn btn-success" value="Visualizar" data-bs-toggle="modal"
@@ -95,11 +95,6 @@
 
 @push('scripts')
     <script>
-        //document.querySelector('.content').style.display = 'flex';
-        //document.querySelector('.content').style.alignItems = 'stretch';
-        //document.querySelector('.container-fluid').style.display = 'flex';
-        //document.querySelector('.container-fluid').style.flexDirection = 'column';
-
         var editor;
         document.addEventListener("DOMContentLoaded", () => {
             editor = new FroalaEditor('#editor', {
@@ -208,6 +203,7 @@
                         });
 
                         onResize();
+                        onScroll();
                     }
                 }
             });
@@ -220,6 +216,14 @@
 
             document.querySelector("body").addEventListener("scroll", (event) => {
                 onScroll();
+            });
+
+
+            document.getElementById('editor-container').addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    return false;
+                }
             });
         });
 
@@ -241,7 +245,6 @@
                 @endforeach
             },
             callback: function(cmd, val) {
-                console.log(val);
                 @foreach ($components as $component)
                     if (val == "{{ $component['name'] }}") {
                         const tableHTML = `{!! $component['component'] !!}`;
@@ -252,21 +255,10 @@
             refresh: function($btn) {
                 if (this.selection.element().closest('.custom-component')) {
                     this.componentsPlugin.show();
-
-                    document.querySelectorAll('.custom-component').forEach(div => {
-                        div.querySelectorAll('input').forEach(input => {
-                            input.setAttribute('value', input.value);
-                            input.setAttribute('data-value', input.value);
-                        });
-                    });
                 } else {
                     this.componentsPlugin.hide();
                 }
-                console.log('do refresh', this.selection.element().closest('.custom-component'));
             },
-            refreshOnShow: function($btn, $dropdown) {
-                console.log('do refresh when show');
-            }
         })
 
 
@@ -276,7 +268,7 @@
         });
 
         Object.assign(FroalaEditor.DEFAULTS, {
-            popupButtons: ['removeComponent'],
+            popupButtons: ['spaceTop', 'spaceBottom', '|', 'removeComponent'],
         });
 
         FroalaEditor.PLUGINS.componentsPlugin = function(editor) {
@@ -325,8 +317,33 @@
         }
 
 
+        FroalaEditor.DefineIcon('spaceTop', {
+            SVG_KEY: "tableHeader"
+        });
+        FroalaEditor.RegisterCommand('spaceTop', {
+            title: 'Adicionar Linha Acima',
+            undo: false,
+            focus: false,
+            callback: function() {
+                let element = this.selection.element().closest('.custom-component');
+                let br = document.createElement('br');
+                element.parentNode.insertBefore(br, element);
+            }
+        });
+        FroalaEditor.DefineIcon('spaceBottom', {
+            SVG_KEY: "tableFooter"
+        });
+        FroalaEditor.RegisterCommand('spaceBottom', {
+            title: 'Adicionar Linha Abaixo',
+            undo: false,
+            focus: false,
+            callback: function() {
+                let element = this.selection.element().closest('.custom-component');
+                let br = document.createElement('br');
+                element.insertAdjacentElement('afterend', br);
+            }
+        });
         FroalaEditor.DefineIcon('removeComponent', {
-            NAME: 'trash',
             SVG_KEY: "removeTable"
         });
         FroalaEditor.RegisterCommand('removeComponent', {
@@ -350,6 +367,12 @@
                 toolbar.style.top = document.querySelector("nav.navbar").offsetHeight + 'px';
                 toolbar.style.zIndex = '10';
             }
+            let actions = document.querySelector('.editor-card-actions');
+            if (actions) {
+                actions.style.position = 'sticky';
+                actions.style.bottom = 0;
+                actions.style.zIndex = '10';
+            }
         }
 
 
@@ -363,6 +386,41 @@
                     toolbar.classList.remove('toolbar-sticky')
                 }
             }
+
+            let actions = document.querySelector('.editor-card-actions');
+            if (actions) {
+                if (window.innerHeight - actions.getBoundingClientRect().bottom <= 0) {
+                    actions.classList.add('editor-card-actions-sticky')
+                } else {
+                    actions.classList.remove('editor-card-actions-sticky')
+                }
+            }
+        }
+
+
+        function beforeSaving() {
+
+            document.querySelectorAll('.custom-component').forEach(div => {
+                div.querySelectorAll('input, select').forEach(element => {
+                    if (element.tagName.toLowerCase() === 'input') {
+                        element.setAttribute('value', element.value);
+                        element.setAttribute('data-value', element.value);
+                    } else if (element.tagName.toLowerCase() === 'select') {
+                        const selectedOption = element.options[element.selectedIndex];
+                        element.setAttribute('value', selectedOption.value);
+                        element.setAttribute('data-value', selectedOption.value);
+                        element.querySelectorAll('option').forEach(option => {
+                            if (option === selectedOption) {
+                                option.setAttribute('selected', 'selected');
+                            } else {
+                                option.removeAttribute('selected');
+                            }
+                        });
+                    }
+                });
+            });
+
+            return true;
         }
     </script>
 @endpush
@@ -400,21 +458,11 @@
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
         }
 
-
-        .editor .custom-component {
-            border: 2px dashed green !important;
-            margin: 16px 0 5px 0;
-            padding: 10px 5px 5px 5px;
-        }
-
-        .editor .custom-component .title-component {
-            background: green;
-            color: #FFF;
-            padding: 0px 15px;
+        .editor-card-actions-sticky {
+            box-shadow: 0px 0 12px 4px rgba(0, 0, 0, 0.2);
+            background: #FFF;
+            padding: 5px;
             border-radius: 5px;
-            margin-top: -20px;
-            position: absolute;
-            font-size: 12px;
         }
     </style>
 @endpush

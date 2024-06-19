@@ -126,15 +126,13 @@ small,
 
 /* Editor e Página */
 
-.page h1,
-.editor .fr-wrapper h1 {
+.page h1 {
     font-size: 24px !important;
     border-bottom: 1px solid #EEE !important;
     margin-top: 20px !important;
 }
 
-.page h2,
-.editor .fr-wrapper h2 {
+.page h2 {
     font-size: 18px !important;
     font-weight: 200 !important;
     color: #666 !important;
@@ -143,8 +141,7 @@ small,
     margin-top: 20px !important;
 }
 
-.page h3,
-.editor .fr-wrapper h3 {
+.page h3 {
     font-size: 16px !important;
     font-weight: 600 !important;
     color: #666 !important;
@@ -153,8 +150,7 @@ small,
     margin-top: 20px !important;
 }
 
-.page h4,
-.editor .fr-wrapper h4 {
+.page h4 {
     font-size: 14px !important;
     font-weight: 700 !important;
     color: #666 !important;
@@ -163,8 +159,7 @@ small,
     margin-top: 20px !important;
 }
 
-.page h5,
-.editor .fr-wrapper h5 {
+.page h5 {
     font-size: 14px !important;
     font-weight: 400 !important;
     color: #666 !important;
@@ -173,82 +168,13 @@ small,
     margin-top: 20px !important;
 }
 
-.page h6,
-.editor .fr-wrapper h6 {
+.page h6 {
     font-size: 13px !important;
     font-weight: 800 !important;
     color: #666 !important;
     line-height: 1.1 !important;
     margin-bottom: 10px !important;
     margin-top: 20px !important;
-}
-
-
-.editor .fr-wrapper h1,
-.editor .fr-wrapper h2,
-.editor .fr-wrapper h3,
-.editor .fr-wrapper h4,
-.editor .fr-wrapper h5,
-.editor .fr-wrapper h6,
-.editor .fr-wrapper pre,
-.editor .fr-wrapper code {
-    background: #ffffe7;
-    padding: 5px;
-}
-
-.editor .fr-wrapper h1::after,
-.editor .fr-wrapper h2::after,
-.editor .fr-wrapper h3::after,
-.editor .fr-wrapper h4::after,
-.editor .fr-wrapper h5::after,
-.editor .fr-wrapper h6::after,
-.editor .fr-wrapper pre::after,
-.editor .fr-wrapper code::after {
-    background: #dddddd;
-    float: right;
-    font-size: 12px;
-    padding: 2px 10px;
-    border: 1px solid #CCC;
-    border-radius: 5px;
-    font-family: monospace;
-    white-space: nowrap;
-}
-
-.editor .fr-wrapper h1::after {
-    content: "Nível 1";
-}
-
-.editor .fr-wrapper h2::after {
-    content: "Nível 2";
-}
-
-.editor .fr-wrapper h3::after {
-    content: "Nível 3";
-}
-
-.editor .fr-wrapper h4::after {
-    content: "Nível 4";
-}
-
-.editor .fr-wrapper h5::after {
-    content: "Nível 5";
-}
-
-.editor .fr-wrapper h6::after {
-    content: "Nível 6";
-}
-
-.editor .fr-wrapper pre::after,
-.editor .fr-wrapper code::after {
-    content: "Código";
-    padding: 0px 10px;
-}
-
-.editor .fr-wrapper pre,
-.editor .fr-wrapper code {
-    padding: 5px;
-    font-family: monospace;
-    border: 2px dashed red;
 }
 
 .page pre,
@@ -353,42 +279,22 @@ img[onclick] {
     cursor: pointer;
 }
 
-.editor img:not([data-slug]) {
-    background-color: #DDD;
-    opacity: .2;
-}
-
-
-.editor .fr-view table tfoot td,
-.editor .fr-view table th {
-    background: initial;
-}
-
-
-.editor .table,
-.editor .table td,
 .page .table,
 .page .table td {
     background: #FFF;
 }
 
-.editor .table,
-.editor .table th,
-.editor .table td,
 .page .table,
 .page .table th,
 .page .table td {
     padding: .25rem !important;
 }
 
-.editor .table th,
-.editor .table tfoot td,
 .page .table th,
 .page .table tfoot td {
     background: #f9f6f6 !important;
 }
 
-.editor .table>tbody>tr:hover>*,
 .page .table>tbody>tr:hover>* {
     --bs-table-color-state: var(--bs-table-hover-color) !important;
     --bs-table-bg-state: var(--bs-table-hover-bg) !important;
@@ -396,18 +302,6 @@ img[onclick] {
 
 .page table .border {
     border: 2px solid #000 !important;
-}
-
-.editor table .border {
-    border: 2px solid #000 !important;
-}
-
-.editor table.dynamic {
-    border: 2px dashed orange !important;
-}
-
-.editor table.dynamic tr td {
-    padding: 4px;
 }
 
 .page table.dynamic tr {
@@ -431,16 +325,4 @@ img[onclick] {
     background-size: contain;
     background-repeat: no-repeat;
     vertical-align: middle;
-}
-
-.editor a[id="fr-logo"] {
-    display: none !important;
-}
-
-.editor p[data-f-id="pbf"] {
-    display: none !important;
-}
-
-.editor a[href*="www.froala.com"] {
-    display: none !important;
 }

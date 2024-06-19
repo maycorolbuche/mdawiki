@@ -12,6 +12,7 @@ use App\Models\PageTitle;
 use App\Models\PageImage;
 use App\Models\PageLink;
 use App\Models\PageCategory;
+use App\Models\PageTemplate;
 use App\Models\Image;
 
 class PageHelper
@@ -32,9 +33,10 @@ class PageHelper
             'markdown' => $content_markdown,
             'pdf' => $content_pdf,
             'components' => [
-                'titles' => self::getTitles($content),
-                'images' => self::getImages($content),
+                'titles' => self::getTitles($content_preview_no_topics),
+                'images' => self::getImages($content_preview_no_topics),
                 'links' => self::getLinks($content_preview_no_topics),
+                'templates' => self::getTemplates($content_editor),
             ],
         ];
 
@@ -129,6 +131,18 @@ class PageHelper
                 ];
                 PageLink::create($data);
             }
+
+            PageTemplate::where('page_id', $id)->delete();
+            foreach ($content_data["components"]["templates"] as $template) {
+                $data = [
+                    'page_id' => $id,
+                    'slug' => $slug,
+                    'template' => $template["template"],
+                    'data' => $template["data"],
+                    'sequence' => $template["sequence"],
+                ];
+                PageTemplate::create($data);
+            }
         }
     }
     public static function toEditor($content)
@@ -181,29 +195,7 @@ class PageHelper
         $dom = HtmlDomParser::str_get_html($content);
         $n = 0;
         foreach ($dom->find("img") as $el) {
-            $slug = $el->getAttribute('data-slug');
-            if (!$slug) {
-                $el->setAttribute('src', route('image.text', ['text' => 'Não é permitido|imagens externas']));
-                $el->setAttribute('data-slug', '');
-                $el->setAttribute('data-path', '');
-                $el->setAttribute('data-name', '');
-                $el->setAttribute('alt', '');
-            } else {
-                $image = Image::where('slug', $slug)->first();
-                if ($image) {
-                    $el->setAttribute('src', $image->image_url);
-                    $el->setAttribute('data-exists', true);
-                    $el->setAttribute('data-path', $image->path);
-                    $el->setAttribute('data-name', $image->name);
-                    $el->setAttribute('alt', $image->title);
-                } else {
-                    $el->setAttribute('src', route('image.text', ['text' => 'Imagem não|encontrada']));
-                    $el->setAttribute('data-exists', false);
-                    $el->setAttribute('data-path', '');
-                    $el->setAttribute('data-name', '');
-                    $el->setAttribute('alt', '');
-                }
-            }
+            $el = self::convertImage($el);
         }
         $content = $dom->save();
         $dom->clear();
@@ -290,6 +282,7 @@ class PageHelper
 
         $dom = HtmlDomParser::str_get_html($content);
         foreach ($dom->find("img") as $el) {
+            $el = self::convertImage($el);
             $slug = $el->getAttribute("data-slug");
             if ($slug) {
                 $name = $el->getAttribute("data-name");
@@ -492,7 +485,7 @@ class PageHelper
         $dom = HtmlDomParser::str_get_html($content);
         foreach ($dom->find("img") as $el) {
             $el->removeAttribute("onclick");
-            $el->setAttribute("src", 'storage/' . $el->getAttribute("data-path"));
+            $el->setAttribute("src", 'storage/' . $el->getAttribute("data-path") . '?' . date('Ymdhis'));
             if (!$el->getAttribute("data-path")) {
                 $url_image = route('image.text', ['text' => 'Erro ao|exibir imagem']);
                 $src = str_replace(asset(''), '', $url_image);
@@ -585,12 +578,64 @@ class PageHelper
 
         return $ret;
     }
+    public static function getTemplates($content)
+    {
+        $ret = [];
+
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find(".custom-component") as $sequence => $el) {
+            $data = [
+                "template" => $el->getAttribute('data-component-name'),
+                "data" => ComponentHelper::getParams($el->innertext),
+                "sequence" => $sequence + 1,
+            ];
+            $ret[] = $data;
+            $el->outertext = ComponentHelper::refresh($el->getAttribute("data-component-name") ?: '', $el->innertext);
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+        return $ret;
+    }
 
     /* ********************************************************************* */
 
     public static function convertUrls($text)
     {
         $urlPattern = '/(?<!href=["\']|src=["\'])\bhttps?:\/\/[^\s<>"\']+\b(?![^<]*(<\/a>|<\/src>))/i';
+
+        $callback = function ($matches) {
+            return "<a href='" . $matches[0] . "'>" . $matches[0] . "</a>";
+        };
+
+        return preg_replace_callback($urlPattern, $callback, $text);
+    }
+    public static function convertImage($el)
+    {
+        $slug = $el->getAttribute('data-slug');
+        if (!$slug) {
+            $el->setAttribute('src', route('image.text', ['text' => 'Não é permitido|imagens externas']));
+            $el->setAttribute('data-slug', '');
+            $el->setAttribute('data-path', '');
+            $el->setAttribute('data-name', '');
+            $el->setAttribute('alt', '');
+        } else {
+            $image = Image::where('slug', $slug)->first();
+            if ($image) {
+                $el->setAttribute('src', $image->image_url . '?' . date('Ymdhis'));
+                $el->setAttribute('data-exists', true);
+                $el->setAttribute('data-path', $image->path);
+                $el->setAttribute('data-name', $image->name);
+                $el->setAttribute('alt', $image->title);
+            } else {
+                $el->setAttribute('src', route('image.text', ['text' => 'Imagem não|encontrada']));
+                $el->setAttribute('data-exists', false);
+                $el->setAttribute('data-path', '');
+                $el->setAttribute('data-name', '');
+                $el->setAttribute('alt', '');
+            }
+        }
+        return $el;
 
         $callback = function ($matches) {
             return "<a href='" . $matches[0] . "'>" . $matches[0] . "</a>";

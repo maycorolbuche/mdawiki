@@ -1,0 +1,226 @@
+.editor .fr-wrapper h1 {
+    font-size: 24px !important;
+    border-bottom: 1px solid #EEE !important;
+    margin-top: 20px !important;
+}
+
+.editor .fr-wrapper h2 {
+    font-size: 18px !important;
+    font-weight: 200 !important;
+    color: #666 !important;
+    line-height: 1.1 !important;
+    margin-bottom: 10px !important;
+    margin-top: 20px !important;
+}
+
+.editor .fr-wrapper h3 {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #666 !important;
+    line-height: 1.1 !important;
+    margin-bottom: 10px !important;
+    margin-top: 20px !important;
+}
+
+.editor .fr-wrapper h4 {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #666 !important;
+    line-height: 1.1 !important;
+    margin-bottom: 10px !important;
+    margin-top: 20px !important;
+}
+
+.editor .fr-wrapper h5 {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: #666 !important;
+    line-height: 1.1 !important;
+    margin-bottom: 10px !important;
+    margin-top: 20px !important;
+}
+
+.editor .fr-wrapper h6 {
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    color: #666 !important;
+    line-height: 1.1 !important;
+    margin-bottom: 10px !important;
+    margin-top: 20px !important;
+}
+
+
+.editor .fr-wrapper h1,
+.editor .fr-wrapper h2,
+.editor .fr-wrapper h3,
+.editor .fr-wrapper h4,
+.editor .fr-wrapper h5,
+.editor .fr-wrapper h6,
+.editor .fr-wrapper pre,
+.editor .fr-wrapper code {
+    background: #ffffe7;
+    padding: 5px;
+}
+
+.editor .fr-wrapper h1::after,
+.editor .fr-wrapper h2::after,
+.editor .fr-wrapper h3::after,
+.editor .fr-wrapper h4::after,
+.editor .fr-wrapper h5::after,
+.editor .fr-wrapper h6::after,
+.editor .fr-wrapper pre::after,
+.editor .fr-wrapper code::after {
+    background: #dddddd;
+    float: right;
+    font-size: 12px;
+    padding: 2px 10px;
+    border: 1px solid #CCC;
+    border-radius: 5px;
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+.editor .fr-wrapper h1::after {
+    content: "Nível 1";
+}
+
+.editor .fr-wrapper h2::after {
+    content: "Nível 2";
+}
+
+.editor .fr-wrapper h3::after {
+    content: "Nível 3";
+}
+
+.editor .fr-wrapper h4::after {
+    content: "Nível 4";
+}
+
+.editor .fr-wrapper h5::after {
+    content: "Nível 5";
+}
+
+.editor .fr-wrapper h6::after {
+    content: "Nível 6";
+}
+
+.editor .fr-wrapper pre::after,
+.editor .fr-wrapper code::after {
+    content: "Código";
+    padding: 0px 10px;
+}
+
+.editor .fr-wrapper pre,
+.editor .fr-wrapper code {
+    padding: 5px;
+    font-family: monospace;
+    border: 2px dashed red;
+}
+
+.editor img:not([data-slug]) {
+    background-color: #DDD;
+    opacity: .2;
+}
+
+
+.editor .fr-view table tfoot td,
+.editor .fr-view table th {
+    background: initial;
+}
+
+
+.editor .table,
+.editor .table td {
+    background: #FFF;
+}
+
+.editor .table,
+.editor .table th,
+.editor .table td {
+    padding: .25rem !important;
+}
+
+.editor .table th,
+.editor .table tfoot td {
+    background: #f9f6f6 !important;
+}
+
+.editor .table>tbody>tr:hover>* {
+    --bs-table-color-state: var(--bs-table-hover-color) !important;
+    --bs-table-bg-state: var(--bs-table-hover-bg) !important;
+}
+
+
+.editor table .border {
+    border: 2px solid #000 !important;
+}
+
+.editor table.dynamic {
+    border: 2px dashed orange !important;
+}
+
+.editor table.dynamic tr td {
+    padding: 4px;
+}
+
+.editor a[id="fr-logo"] {
+    display: none !important;
+}
+
+.editor p[data-f-id="pbf"] {
+    display: none !important;
+}
+
+.editor a[href*="www.froala.com"] {
+    display: none !important;
+}
+
+
+
+.editor .custom-component {
+    border: 2px dashed green !important;
+    margin: 16px 0 5px 0;
+    padding: 10px 5px 5px 5px;
+}
+
+.editor .custom-component .title-component {
+    background: green;
+    color: #FFF;
+    padding: 0px 15px;
+    border-radius: 5px;
+    margin-top: -20px;
+    position: absolute;
+    font-size: 12px;
+}
+
+.editor .custom-component .input-list-component {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.editor .custom-component .input-list-component fieldset {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid #c2e3c2;
+}
+
+.editor .custom-component .input-list-component fieldset .label-component {
+    background: #c2e3c2;
+    display: flex;
+    padding: 5px;
+    align-items: center;
+    color: #063f06;
+    font-size: 14px;
+    text-wrap: nowrap;
+}
+
+.editor .custom-component .input-list-component fieldset .input-component {
+    width: 100%;
+    border: 0;
+}
+
+.editor .custom-component .input-list-component fieldset .input-component:focus {
+    outline: none;
+}

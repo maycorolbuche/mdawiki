@@ -9,6 +9,7 @@
     </title>
 
     <link href="css/pdf.css" rel="stylesheet">
+    <link href="css/components.css" rel="stylesheet">
 
     <style>
         @page {
