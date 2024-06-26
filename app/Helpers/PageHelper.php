@@ -13,6 +13,7 @@ use App\Models\PageImage;
 use App\Models\PageLink;
 use App\Models\PageCategory;
 use App\Models\PageTemplate;
+use App\Models\PageTimeline;
 use App\Models\Image;
 
 class PageHelper
@@ -37,6 +38,7 @@ class PageHelper
                 'images' => self::getImages($content_preview_no_topics),
                 'links' => self::getLinks($content_preview_no_topics),
                 'templates' => self::getTemplates($content_editor),
+                'timeline' => self::getTimeline($content_preview_no_topics),
             ],
         ];
 
@@ -142,6 +144,25 @@ class PageHelper
                     'sequence' => $template["sequence"],
                 ];
                 PageTemplate::create($data);
+            }
+
+            PageTimeline::where('page_id', $id)->delete();
+            foreach ($content_data["components"]["timeline"] as $template) {
+                $data = [
+                    'page_id' => $id,
+                    'slug' => $slug,
+                    'type' => $template["type"],
+                    'description' => $template["description"],
+                    'description_html' => $template["description_html"],
+                    'start_day' => isset($template["start_day"]) && $template["start_day"] != '' ? $template["start_day"] : null,
+                    'start_month' => isset($template["start_month"]) && $template["start_month"] != '' ? $template["start_month"] : null,
+                    'start_year' => isset($template["start_year"]) && $template["start_year"] != '' ? $template["start_year"] : null,
+                    'end_day' => isset($template["end_day"]) && $template["end_day"] != '' ? $template["end_day"] : null,
+                    'end_month' => isset($template["end_month"]) && $template["end_month"] != '' ? $template["end_month"] : null,
+                    'end_year' => isset($template["end_year"]) && $template["end_year"] != '' ? $template["end_year"] : null,
+                    'sequence' => $template["sequence"],
+                ];
+                PageTimeline::create($data);
             }
         }
     }
@@ -590,7 +611,32 @@ class PageHelper
                 "sequence" => $sequence + 1,
             ];
             $ret[] = $data;
-            $el->outertext = ComponentHelper::refresh($el->getAttribute("data-component-name") ?: '', $el->innertext);
+            //$el->outertext = ComponentHelper::refresh($el->getAttribute("data-component-name") ?: '', $el->innertext);
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+        return $ret;
+    }
+    public static function getTimeline($content)
+    {
+        $ret = [];
+
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("[data-event]") as $sequence => $el) {
+            $data = [
+                "start_day" => $el->getAttribute('data-start-day'),
+                "start_month" => $el->getAttribute('data-start-month'),
+                "start_year" => $el->getAttribute('data-start-year'),
+                "end_day" => $el->getAttribute('data-end-day'),
+                "end_month" => $el->getAttribute('data-end-month'),
+                "end_year" => $el->getAttribute('data-end-year'),
+                "type" => $el->getAttribute('data-event-type'),
+                "description_html" => $el->getAttribute('data-event-info') ?: '',
+                "description" => strip_tags($el->getAttribute('data-event-info')),
+                "sequence" => $sequence + 1,
+            ];
+            $ret[] = $data;
         }
         $content = $dom->save();
         $dom->clear();

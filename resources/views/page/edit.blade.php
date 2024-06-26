@@ -229,8 +229,10 @@
 
 
         FroalaEditor.DefineIcon('insertMore', {
-            NAME: 'insertMore',
-            SVG_KEY: "insertMore"
+            //NAME: 'insertMore',
+            //SVG_KEY: "insertMore"
+            PATH: 'M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z',
+            template: 'svg512',
         })
         FroalaEditor.RegisterCommand('components', {
             title: 'Inserir Elementos',
@@ -255,6 +257,11 @@
             refresh: function($btn) {
                 if (this.selection.element().closest('.custom-component')) {
                     this.componentsPlugin.show();
+                    if (this.selection.element().closest('.input-list-component-multi-element')) {
+                        document.querySelector('.buttons-multi').style.display = 'block';
+                    } else {
+                        document.querySelector('.buttons-multi').style.display = 'none';
+                    }
                 } else {
                     this.componentsPlugin.hide();
                 }
@@ -269,6 +276,7 @@
 
         Object.assign(FroalaEditor.DEFAULTS, {
             popupButtons: ['spaceTop', 'spaceBottom', '|', 'removeComponent'],
+            popupButtonsMulti: ['addBefore', /*'addAfter',*/ '|', 'moveUp', 'moveDown', '|', 'removeElement'],
         });
 
         FroalaEditor.PLUGINS.componentsPlugin = function(editor) {
@@ -278,6 +286,9 @@
 
                 var popup_buttons = '';
 
+                popup_buttons += '<div class="fr-buttons buttons-multi">';
+                popup_buttons += editor.button.buildList(editor.opts.popupButtonsMulti);
+                popup_buttons += '</div>';
                 popup_buttons += '<div class="fr-buttons">';
                 popup_buttons += editor.button.buildList(editor.opts.popupButtons);
                 popup_buttons += '</div>';
@@ -317,6 +328,10 @@
         }
 
 
+        FroalaEditor.ICON_TEMPLATES = Object.assign(FroalaEditor.ICON_TEMPLATES, {
+            svg512: "<svg class=\"fr-svg\" focusable=\"false\" viewBox=\"-100 -100 712 712\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"[PATH]\"/></svg>"
+        });
+
         FroalaEditor.DefineIcon('spaceTop', {
             SVG_KEY: "tableHeader"
         });
@@ -353,6 +368,103 @@
             callback: function() {
                 let element = this.selection.element().closest('.custom-component');
                 element.parentNode.removeChild(element);
+                this.componentsPlugin.hide();
+            }
+        });
+        FroalaEditor.DefineIcon('addBefore', {
+            SVG_KEY: 'add'
+        });
+        FroalaEditor.RegisterCommand('addBefore', {
+            title: 'Adicionar Acima',
+            undo: false,
+            focus: false,
+            callback: function() {
+                let element = this.selection.element().closest('.input-list-component-multi-element');
+                let clonedElement = element.cloneNode(true);
+                clonedElement.querySelectorAll('input, textarea, select').forEach(field => {
+                    field.value = '';
+                });
+                element.parentNode.insertBefore(clonedElement, element);
+                this.componentsPlugin.hide();
+            }
+        });
+        /*  FroalaEditor.DefineIcon('addAfter', {
+              SVG_KEY: "removeTable"
+          });
+          FroalaEditor.RegisterCommand('addAfter', {
+              title: 'Adicionar Abaixo',
+              undo: false,
+              focus: false,
+              callback: function() {
+                  let element = this.selection.element().closest('.input-list-component-multi-element');
+                  let clonedElement = element.cloneNode(true);
+                  clonedElement.querySelectorAll('input, textarea, select').forEach(field => {
+                      field.value = '';
+                  });
+                  element.insertAdjacentElement('afterend', clonedElement);
+                  this.componentsPlugin.hide();
+              }
+          });*/
+        FroalaEditor.DefineIcon('removeElement', {
+            PATH: 'M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z',
+            template: 'svg512'
+        });
+        FroalaEditor.RegisterCommand('removeElement', {
+            title: 'Remover',
+            undo: false,
+            focus: false,
+            callback: function() {
+                let element_container = this.selection.element().closest('.input-list-component-multi');
+                let count = element_container.querySelectorAll('.input-list-component-multi-element').length;
+                if (count <= 1) {
+                    let element = this.selection.element().closest('.input-list-component-multi-element');
+                    let clonedElement = element.cloneNode(true);
+                    clonedElement.querySelectorAll('input, textarea, select').forEach(field => {
+                        field.value = '';
+                    });
+                    element.insertAdjacentElement('afterend', clonedElement);
+                    element.parentNode.removeChild(element);
+                } else {
+                    let element = this.selection.element().closest('.input-list-component-multi-element');
+                    element.parentNode.removeChild(element);
+                }
+                this.componentsPlugin.hide();
+            }
+        });
+        FroalaEditor.DefineIcon('moveUp', {
+            PATH: 'M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z',
+            template: 'svg512',
+        });
+        FroalaEditor.RegisterCommand('moveUp', {
+            title: 'Mover para Cima',
+            undo: false,
+            focus: false,
+            callback: function() {
+                let element = this.selection.element().closest('.input-list-component-multi-element');
+                let sibling_element = element.previousElementSibling;
+                if (sibling_element) {
+                    sibling_element.parentNode.insertBefore(element, sibling_element);
+                }
+
+                this.componentsPlugin.hide();
+            }
+        });
+        FroalaEditor.DefineIcon('moveDown', {
+            PATH: 'M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z',
+            template: 'svg512',
+        });
+        FroalaEditor.RegisterCommand('moveDown', {
+            title: 'Mover para Baixo',
+            undo: false,
+            focus: false,
+            callback: function() {
+                let element = this.selection.element().closest('.input-list-component-multi-element');
+                let sibling_element = element.nextElementSibling;
+                if (sibling_element) {
+                    element.parentNode.insertBefore(sibling_element, element);
+                }
+
+                this.componentsPlugin.hide();
             }
         });
 
@@ -423,6 +535,21 @@
             return true;
         }
     </script>
+
+    <script>
+        const Component = {
+            addBefore: function() {
+                console.log("addBefore");
+            },
+            addAfter: function() {
+                console.log("addAfter");
+            },
+
+            remove: function() {
+                alert("b");
+            }
+        };
+    </script>
 @endpush
 
 
@@ -463,6 +590,14 @@
             background: #FFF;
             padding: 5px;
             border-radius: 5px;
+        }
+
+        /* ********************************* */
+
+        .input-list-component-multi>div {
+            background: #e8f7e8;
+            padding: 10px;
+            border: 1px solid green;
         }
     </style>
 @endpush
