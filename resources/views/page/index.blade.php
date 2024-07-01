@@ -21,8 +21,14 @@
             <x-button type="refresh" route="{{ route('page.refresh', ['page' => $page]) }}" />
             <x-button type="print" route="{{ route('page.pdf', ['page' => $page]) }}" />
         @endif
-
     </div>
+
+    @if ($original_page)
+        <div class="pb-2" style="margin-top: -12px;font-size:13px;">
+            Redirecionado de <a
+                href='{{ route('page', ['page' => $original_page['name'], 'redirect' => 'no']) }}'>{{ $original_page['title'] }}</a>
+        </div>
+    @endif
 
     <div class="row">
         <div class="col-12">
@@ -50,7 +56,7 @@
 
 @push('styles')
     <style>
-       
+
     </style>
 @endpush
 

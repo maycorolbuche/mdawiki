@@ -14,6 +14,7 @@ use App\Models\PageLink;
 use App\Models\PageCategory;
 use App\Models\PageTemplate;
 use App\Models\PageTimeline;
+use App\Models\PageRedirect;
 use App\Models\Image;
 
 class PageHelper
@@ -163,6 +164,24 @@ class PageHelper
                     'sequence' => $template["sequence"],
                 ];
                 PageTimeline::create($data);
+            }
+
+            PageRedirect::where('page_id', $id)->delete();
+            $templates = PageTemplate::where(['page_id' => $id, 'template' => 'Redirect'])->get();
+            foreach ($templates as $template) {
+                $page_redirect_title = $template->data["page"];
+                $page_redirect_slug = StringHelper::toSlug($page_redirect_title);
+
+                $page_redirect = Page::where('slug', $page_redirect_slug)->first();
+                $data = [
+                    'page_id' => $id,
+                    'slug' => $slug,
+                    'page_redirect_slug' => $page_redirect_slug,
+                    'page_redirect_title' => $page_redirect_title,
+                    'page_exists' => ($page_redirect ? true : false),
+                    'sequence' => $template["sequence"],
+                ];
+                PageRedirect::create($data);
             }
         }
     }
@@ -451,45 +470,8 @@ class PageHelper
     }
     public static function toText($content)
     {
-        function nodeToText($el, $level = 0, $param = [])
-        {
-            $p = [];
-            $text = "";
-            foreach ($el as $indx => $node) {
-                $tag = $node->tag;
-                $p['parent_tag'] = $tag;
-                switch ($tag) {
-                    case 'ul':
-                        break;
-                    case 'ol':
-                        $p['start'] =  $node->attr['start'] ?? 1;
-                        $p['type'] =  HtmlHelper::getStyle($node->attr['style'] ?? '', 'list-style-type') ?? 'decimal';
-                        break;
-                    case 'li':
-                        if ($param['parent_tag'] == 'ul') {
-                            $text .= PHP_EOL . str_repeat(' ', $level) . '- ' . $node->innertext;
-                        } else {
-                            $start = $param['start'] ?? 1;
-                            $number = ($start + $indx);
-                            if ($param['type'] == 'lower-alpha') {
-                                $number = StringHelper::numberToLetter($number);
-                            }
-                            $text .= PHP_EOL . str_repeat(' ', $level - 1) . $number . '. ' . $node->innertext;
-                        }
-                        break;
-                    case 'p':
-                        $text .= PHP_EOL . $node->innertext;
-                        break;
-                    default:
-                        break;
-                }
-                $text .= nodeToText($node->children, $level + 1, $p);
-            }
-            return strip_tags($text);
-        }
-
         $dom = HtmlDomParser::str_get_html($content);
-        $content = nodeToText($dom->root->children);
+        $content = self::nodeToText($dom->root->children);
         $dom->clear();
 
         $content = str_replace('&nbsp;', ' ', $content);
@@ -660,7 +642,12 @@ class PageHelper
     {
         $slug = $el->getAttribute('data-slug');
         if (!$slug) {
-            $el->setAttribute('src', route('image.text', ['text' => 'Não é permitido|imagens externas']));
+            $src = $el->getAttribute('src');
+            if ($src == "") {
+                $el->setAttribute('src', route('image.text', ['text' => 'Imagem não|definida']));
+            } else {
+                $el->setAttribute('src', route('image.text', ['text' => 'Não é permitido|imagens externas']));
+            }
             $el->setAttribute('data-slug', '');
             $el->setAttribute('data-path', '');
             $el->setAttribute('data-name', '');
@@ -688,5 +675,41 @@ class PageHelper
         };
 
         return preg_replace_callback($urlPattern, $callback, $text);
+    }
+    public static function nodeToText($el, $level = 0, $param = [])
+    {
+        $p = [];
+        $text = "";
+        foreach ($el as $indx => $node) {
+            $tag = $node->tag;
+            $p['parent_tag'] = $tag;
+            switch ($tag) {
+                case 'ul':
+                    break;
+                case 'ol':
+                    $p['start'] =  $node->attr['start'] ?? 1;
+                    $p['type'] =  HtmlHelper::getStyle($node->attr['style'] ?? '', 'list-style-type') ?? 'decimal';
+                    break;
+                case 'li':
+                    if ($param['parent_tag'] == 'ul') {
+                        $text .= PHP_EOL . str_repeat(' ', $level) . '- ' . $node->innertext;
+                    } else {
+                        $start = $param['start'] ?? 1;
+                        $number = ($start + $indx);
+                        if ($param['type'] == 'lower-alpha') {
+                            $number = StringHelper::numberToLetter($number);
+                        }
+                        $text .= PHP_EOL . str_repeat(' ', $level - 1) . $number . '. ' . $node->innertext;
+                    }
+                    break;
+                case 'p':
+                    $text .= PHP_EOL . $node->innertext;
+                    break;
+                default:
+                    break;
+            }
+            $text .= self::nodeToText($node->children, $level + 1, $p);
+        }
+        return strip_tags($text);
     }
 }

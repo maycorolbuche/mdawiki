@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Page;
 use App\Models\PageHistory;
+use App\Models\PageRedirect;
 use App\Helpers\StringHelper;
 use App\Helpers\MailHelper;
 use App\Helpers\PageHelper;
@@ -27,13 +28,36 @@ class PageController extends Controller
         $slug = StringHelper::toSlug($page);
 
         $data = Page::where('slug', $slug)->first();
+
+        if (request()->query('redirect') <> 'no') {
+            $redirect = PageRedirect::where('slug', $slug)->with('page_to')->first();
+            if ($redirect) {
+                $page_to = '';
+                if ($redirect->page_to) {
+                    $page_to = $redirect->page_to->name;
+                } else {
+                    $page_to = StringHelper::toUrl($redirect->page_redirect_title);
+                }
+
+                $route = ['page' => $page_to];
+
+                if (StringHelper::toSlug($page_to) == $slug) {
+                    $route['redirect'] = 'no';
+                }
+
+                return redirect()->route('page', $route)->with(['original_page' => $data->toArray()]);
+            }
+        }
+
+        $original_page = session('original_page');
+
         $data_histories = PageHistory::with('user')->where('slug', $slug)->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
 
         $description = ($data ? StringHelper::substring($data->content_text, 150) : 'Página inexistente');
 
-        return view('page.index', compact('page', 'title', 'data', 'data_histories', 'description'));
+        return view('page.index', compact('page', 'title', 'data', 'data_histories', 'description', 'original_page'));
     }
 
     public function edit(Request $request, $page)
@@ -72,14 +96,14 @@ class PageController extends Controller
 
         $slug = StringHelper::toSlug($page);
         $p = Page::where('slug', $slug)->first();
-      /*  if ($p) {
+        if ($p) {
             if (PageHelper::toEditor($p["content_editor"]) == PageHelper::toEditor($request->input('content'))) {
                 if (json_encode($request->input('categories')) == json_encode($p["categories"])) {
                     PageHelper::refresh($slug);
                     return redirect()->route('page', ['page' => $page])->withWarning('Nenhuma alteração foi feita!');
                 }
             }
-        }*/
+        }
 
         $this->save($page, [
             'path' => $page,

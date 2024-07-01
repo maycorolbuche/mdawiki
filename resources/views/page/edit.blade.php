@@ -594,10 +594,5 @@
 
         /* ********************************* */
 
-        .input-list-component-multi>div {
-            background: #e8f7e8;
-            padding: 10px;
-            border: 1px solid green;
-        }
     </style>
 @endpush

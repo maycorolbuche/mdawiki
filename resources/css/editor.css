@@ -224,3 +224,29 @@
 .editor .custom-component .input-list-component fieldset .input-component:focus {
     outline: none;
 }
+
+.editor .custom-component .input-list-component-multi>div {
+    background: #e8f7e8;
+    padding: 10px;
+    border: 1px solid green;
+}
+
+
+
+.editor .custom-component[data-component-name="Redirect"] {
+    border-color: #bb0808 !important;
+    background: #ffeaea !important;
+}
+
+.editor .custom-component[data-component-name="Redirect"] .title-component {
+    background: #bb0808 !important;
+}
+
+.editor .custom-component[data-component-name="Redirect"] fieldset .label-component {
+    background: #bb0808 !important;
+    color: #ffeaea !important;
+}
+
+.editor .custom-component[data-component-name="Redirect"] .input-list-component fieldset {
+    border-bottom: 1px solid #bb0808;
+}

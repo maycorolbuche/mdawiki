@@ -12,6 +12,7 @@ class ComponentHelper
             self::PathfinderHonor(),
             self::AdventurerHonor(),
             self::People(),
+            self::Redirect(),
         ];
     }
     public static function component($name, $title, $html)
@@ -327,6 +328,7 @@ class ComponentHelper
         return $date;
     }
 
+    /* *************************************************************** */
     public static function PathfinderHonor()
     {
         $name = 'PathfinderHonor';
@@ -475,7 +477,34 @@ class ComponentHelper
             ]
         ];
     }
+    public static function Redirect()
+    {
+        $name = 'Redirect';
+        $title = 'Redirecionamento';
 
+        $component = '';
+        $component .= self::inputGroup();
+        $component .= self::input('page', 'Página');
+        $component .= self::inputGroup(false);
+        $component .= '<span>Os usuários serão redirecionados para a página informada, ao acessarem esta página.</span>';
+
+        $preview = '';
+        $preview .= '<div class="template-redirect">';
+        $preview .= '<h1>Redirecionar...</h1>';
+        $preview .= '<ul>';
+        $preview .= '<li style="list-style-type: disc;"><a href="{page}">{page}</a></li>';
+        $preview .= '</ul>';
+        $preview .= '</div>';
+
+
+        return [
+            'name' => $name,
+            'title' => $title,
+            'component' => self::component($name, $title, $component),
+            'preview' => $preview,
+        ];
+    }
+    /* *************************************************************** */
 
     public static function PathfinderHonorCategories($key = null)
     {

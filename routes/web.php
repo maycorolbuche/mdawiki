@@ -79,3 +79,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/{page}/restaurar/{id}', 'PageController@restore')->name('page.restore');
     Route::get('/{page}/datatable', 'PageController@datatable')->name('page.datatable');
 });
+
+
+/* TEMPORARIO */
+Route::get('/@/import/images', 'ImportDB\ImportImageController@run')->name('import_images');
+Route::get('/@/import/pages', 'ImportDB\ImportPageController@run')->name('import_pages');
