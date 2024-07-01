@@ -80,6 +80,9 @@ class ImportPageController extends PageController
         $content = preg_replace('/\[\[([^\|\]]+)\|([^\]]+)\]\]/i', '<a href="$1">$2</a>', $content);
         $content = preg_replace('/\[\[([^\|\]]+)\]\]/i', '<a href="$1">$1</a>', $content);
 
+        $content = preg_replace('/\'\'\'([^\']+)\'\'\'/', '<b>$1</b>', $content);
+        $content = preg_replace('/\'\'([^\']+)\'\'/', '<i>$1</i>', $content);
+
         $lines = explode(PHP_EOL, $content);
         foreach ($lines as $key => $line) {
             if (trim($line) <> '') {
