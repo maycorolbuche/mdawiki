@@ -22,6 +22,8 @@ class PageImage extends Model
         'image_slug',
         'image_path',
         'image_exists',
+        'subtitle',
+        'subtitle_html',
         'is_error',
         'sequence',
     ];

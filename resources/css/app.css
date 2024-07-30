@@ -306,6 +306,7 @@ img[onclick] {
 
 .page table.dynamic tr {
     display: flex;
+    align-items: flex-start !important;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
@@ -313,6 +314,7 @@ img[onclick] {
 
 .page table.dynamic tr td {
     padding: 2px;
+    width: 130px;
 }
 
 .page a.external::after {
@@ -325,4 +327,9 @@ img[onclick] {
     background-size: contain;
     background-repeat: no-repeat;
     vertical-align: middle;
+}
+
+b,
+strong {
+    font-weight: bold;
 }

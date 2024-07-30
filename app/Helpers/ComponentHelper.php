@@ -12,6 +12,7 @@ class ComponentHelper
             self::PathfinderHonor(),
             self::AdventurerHonor(),
             self::People(),
+            self::SimilarPage(),
             self::Redirect(),
         ];
     }
@@ -53,6 +54,7 @@ class ComponentHelper
         $component = self::$name();
         $html = $component["preview"];
         $output = $component["output"] ?? [];
+        $merge = $component["merge"] ?? false;
 
         $data = array_merge(array_fill_keys(array_keys($output), ''), $data);
         foreach ($data as $key => $param) {
@@ -97,11 +99,15 @@ class ComponentHelper
         }
 
         $html = self::setParams($html, $data);
+        if ($merge) {
+            $html = "<component-merge name='$name'>$html</component-merge>";
+        }
         return $html;
     }
 
     public static function replaceParam($key, $param, $html, $data = [], $output = null)
     {
+
         if ($output && $output <> '') {
             $expression = $output;
             $expression = str_replace("{}", $param, $expression);
@@ -111,6 +117,10 @@ class ComponentHelper
         $param = preg_replace_callback('/\[(.*?)\]/', function ($matches) {
             return "<a href='{$matches[1]}'>{$matches[1]}</a>";
         }, $param);
+
+        if (is_array($param)) {
+            $param = "";
+        }
 
         $html = str_replace("{" . $key . "}", $param, $html);
         if ($param == "") {
@@ -432,6 +442,8 @@ class ComponentHelper
         $component .= self::input('position', 'Cargo');
         $component .= self::input('start_date', 'Data Inicial', 'dmy');
         $component .= self::input('end_date', 'Data Final', 'dmy');
+        $component .= self::input('predecessor', 'Antecessor');
+        $component .= self::input('successor', 'Sucessor');
         $component .= self::inputList(false);
 
         $preview = '';
@@ -455,6 +467,14 @@ class ComponentHelper
         $preview .= '<td class="template-people-position">Mandato:</td>';
         $preview .= '<td>{start_date}<span style="{start_date:visible}{end_date:visible}">-</span>{end_date}</td>';
         $preview .= '<div style="display:none" data-event data-start-day="{start_date_day}" data-start-month="{start_date_month}" data-start-year="{start_date_year}" data-end-day="{end_date_day}" data-end-month="{end_date_month}" data-end-year="{end_date_year}" data-event-type="role" data-event-info="{position}"></div>';
+        $preview .= '</tr>';
+        $preview .= '<tr style="{predecessor:visible}">';
+        $preview .= '<td class="template-people-position">Antecessor:</td>';
+        $preview .= '<td><a href="{predecessor}">{predecessor}</a></td>';
+        $preview .= '</tr>';
+        $preview .= '<tr style="{successor:visible}">';
+        $preview .= '<td class="template-people-position">Sucessor:</td>';
+        $preview .= '<td><a href="{successor}">{successor}</a></td>';
         $preview .= '</tr>';
         $preview .= '</tbody>';
         $preview .= '</table>';
@@ -492,7 +512,9 @@ class ComponentHelper
         $preview .= '<div class="template-redirect">';
         $preview .= '<h1>Redirecionar...</h1>';
         $preview .= '<ul>';
+        $preview .= '<merge>';
         $preview .= '<li style="list-style-type: disc;"><a href="{page}">{page}</a></li>';
+        $preview .= '</merge>';
         $preview .= '</ul>';
         $preview .= '</div>';
 
@@ -502,6 +524,39 @@ class ComponentHelper
             'title' => $title,
             'component' => self::component($name, $title, $component),
             'preview' => $preview,
+            'merge' => true,
+        ];
+    }
+    public static function SimilarPage()
+    {
+        $name = 'SimilarPage';
+        $title = 'Página Semelhante';
+
+        $component = '';
+        $component .= self::inputGroup();
+        $component .= self::input('page', 'Página');
+        $component .= self::input('title', 'Texto de Exibição');
+        $component .= self::inputGroup(false);
+
+        $preview = '';
+        $preview .= '<div class="template-similar-page no-print">';
+        $preview .= '<b>Nota:</b> Talvez você esteja procurando a página ';
+        $preview .= '<merge>';
+        $preview .= '<a href="{page}">{page_text}</a>';
+        $preview .= '</merge>';
+        $preview .= '.';
+        $preview .= '</div>';
+
+
+        return [
+            'name' => $name,
+            'title' => $title,
+            'component' => self::component($name, $title, $component),
+            'preview' => $preview,
+            'merge' => true,
+            'output' => [
+                'page_text' => "(\$data['title'] <> ''?\$data['title']:\$data['page'])",
+            ]
         ];
     }
     /* *************************************************************** */

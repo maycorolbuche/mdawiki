@@ -132,7 +132,8 @@
                     ],
                     [
                         //'wirisEditor', 'wirisChemistry',
-                        'components',
+                        'html',
+                        '|', 'components',
                         '|',
                     ],
                 ],
@@ -172,6 +173,9 @@
                     'imageAlign',
                     'imageCaption',
                     'imageDisplay',
+                    '|', 'imageLink',
+                    'linkEdit',
+                    'linkRemove',
                     '|', 'imageRemove',
                 ],
                 imageManagerLoadURL: "{{ route('json.images') }}",
@@ -534,21 +538,20 @@
 
             return true;
         }
-    </script>
 
-    <script>
-        const Component = {
-            addBefore: function() {
-                console.log("addBefore");
-            },
-            addAfter: function() {
-                console.log("addAfter");
-            },
+        const editorContainer = document.getElementById('editor-container');
 
-            remove: function() {
-                alert("b");
+        editorContainer.addEventListener('click', function(event) {
+            console.log("click", event.target.tagName)
+            let element = event.target;
+            while (element && element !== editorContainer) {
+                if (element.hasAttribute('href')) {
+                    event.preventDefault();
+                    break;
+                }
+                element = element.parentElement;
             }
-        };
+        });
     </script>
 @endpush
 
@@ -593,6 +596,5 @@
         }
 
         /* ********************************* */
-
     </style>
 @endpush

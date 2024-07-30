@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('image_slug')->nullable();
             $table->string('image_path')->nullable();
             $table->boolean('image_exists');
+            $table->text('subtitle')->nullable();
+            $table->text('subtitle_html')->nullable();
             $table->boolean('is_error');
             $table->integer('sequence');
 

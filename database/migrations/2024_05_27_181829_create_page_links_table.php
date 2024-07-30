@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('page_id')->nullable();
             $table->string('slug');
             $table->string('link_slug')->nullable();
-            $table->string('link_text');
+            $table->text('link_text');
             $table->string('href')->nullable();
             $table->boolean('page_exists')->nullable();
             $table->boolean('external');

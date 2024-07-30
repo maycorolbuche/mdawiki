@@ -144,17 +144,6 @@
         table .border {
             border: 2px solid #000 !important;
         }
-
-        .page table.dynamic tr {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .page table.dynamic tr td {
-            padding: 2px;
-        }
     </style>
 </head>
 

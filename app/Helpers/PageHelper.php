@@ -4,6 +4,7 @@
 namespace App\Helpers;
 
 use Drnxloc\LaravelHtmlDom\HtmlDomParser;
+use League\HTMLToMarkdown\HtmlConverter;
 use App\Helpers\StringHelper;
 use App\Helpers\HtmlHelper;
 use App\Helpers\ComponentHelper;
@@ -114,6 +115,8 @@ class PageHelper
                     'image_slug' => StringHelper::toSlug($image["slug"]),
                     'image_path' => $image["path"],
                     'image_exists' => $image["exists"],
+                    'subtitle' => strip_tags(str_replace('<br>', ' ', $image["subtitle"])),
+                    'subtitle_html' => $image["subtitle"],
                     'is_error' => $image["is_error"],
                     'sequence' => $image["sequence"],
                 ];
@@ -316,6 +319,27 @@ class PageHelper
         $content = $dom->save();
         $dom->clear();
 
+        $dom = HtmlDomParser::str_get_html($content);
+        $merged = [];
+        foreach ($dom->find("component-merge") as $el) {
+            $name = $el->getAttribute("name");
+            if (in_array($name, $merged)) {
+                $el->outertext = "";
+            } else {
+                $merge_html = "";
+                foreach ($dom->find("component-merge[name='$name']") as $key => $child) {
+                    $merge_html .= $child->find("merge")[0]->innertext;
+                }
+                $el->find("merge")[0]->innertext = $merge_html;
+                $el->outertext = $el->innertext;
+                $dom->save();
+
+                $merged[] = $name;
+            }
+        }
+        $content = $dom->save();
+        $dom->clear();
+
         /******************************************************************************/
 
         /* Ajusta Imagens *********************************************************************/
@@ -350,11 +374,15 @@ class PageHelper
             $break = (strpos($el_parent->class, 'fr-dib') !== false);
 
 
+            $attr = "";
+            if ($el_parent->find("img")) {
+                $attr = $el_parent->find("img")[0]->getAttribute("style") ?? "";
+            }
             $html = "";
             if ($break) {
                 $html .= "<div class='d-inline-block text-center w-100'>";
             }
-            $html .= "<figure class='figure m-3 " . $class . " text-center'>";
+            $html .= "<figure class='figure m-3 " . $class . " text-center' style='" . $attr . "'>";
             $html .= $el_image;
             if ($el_caption <> "") {
                 $html .= "<figcaption class='figure-caption text-center'>" . $el_caption . "</figcaption>";
@@ -480,10 +508,23 @@ class PageHelper
     }
     public static function toMarkdown($content)
     {
-        return '';
+        $markdown = new HtmlConverter();
+        $content = $markdown->convert($content);
+
+        return $content;
     }
     public static function toPdf($content)
     {
+
+        /* Remove Elementos não imprimíveis *********************************************************************/
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find(".no-print") as $el) {
+            $el->outertext = "";
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+
         /* Ajusta Imagens *********************************************************************/
         $dom = HtmlDomParser::str_get_html($content);
         foreach ($dom->find("img") as $el) {
@@ -498,10 +539,34 @@ class PageHelper
         $content = $dom->save();
         $dom->clear();
 
+
         /* Remove Links *********************************************************************/
         $dom = HtmlDomParser::str_get_html($content);
         foreach ($dom->find("a") as $el) {
             $el->outertext = $el->innertext;
+        }
+        $content = $dom->save();
+        $dom->clear();
+
+
+        /* Tabelas Dinâmicas *********************************************************************/
+        $dom = HtmlDomParser::str_get_html($content);
+        foreach ($dom->find("table.dynamic") as $el) {
+            $html = "";
+            $c = 0;
+            foreach ($el->find("th,td") as $td) {
+                $td->tag = "td";
+                $td->removeAttribute("style");
+                $td->removeAttribute("colspan");
+                $html .= $td->outertext;
+                $c++;
+
+                if ($c >= 5) {
+                    $html .= "</tr><tr>";
+                    $c = 0;
+                }
+            }
+            $el->innertext = "<tr>" . $html . "</tr>";
         }
         $content = $dom->save();
         $dom->clear();
@@ -539,12 +604,17 @@ class PageHelper
         $dom = HtmlDomParser::str_get_html($content);
         foreach ($dom->find("img") as $sequence => $el) {
             $slug = $el->getAttribute("data-slug");
+            $subtitle = "";
+            if ($el->parent()->find("figcaption")) {
+                $subtitle = $el->parent()->find("figcaption")[0]->innertext;
+            }
             $data = [
                 "slug" => $slug,
                 "path" => "",
                 "exists" => false,
                 "is_error" => true,
                 "sequence" => $sequence + 1,
+                "subtitle" => $subtitle,
             ];
             if ($slug <> "") {
                 $data["is_error"] = false;
@@ -696,7 +766,7 @@ class PageHelper
                     } else {
                         $start = $param['start'] ?? 1;
                         $number = ($start + $indx);
-                        if ($param['type'] == 'lower-alpha') {
+                        if ($param['type'] ?? '' == 'lower-alpha') {
                             $number = StringHelper::numberToLetter($number);
                         }
                         $text .= PHP_EOL . str_repeat(' ', $level - 1) . $number . '. ' . $node->innertext;
