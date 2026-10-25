@@ -106,17 +106,6 @@ onUnmounted(() => document.removeEventListener('keydown', keyboard))
           </svg>
           Contribuir
         </BButton>
-        <BDropdown variant="link" class="header-dropdown" no-caret end aria-label="Notificações">
-          <template #button-content>
-            <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
-            </svg>
-            <span class="visually-hidden">Notificações</span>
-          </template>
-          <li class="header-notifications" role="status">
-            Nenhuma notificação nesta demonstração.
-          </li>
-        </BDropdown>
         <BDropdown variant="link" class="header-dropdown" no-caret end aria-label="Menu do usuário">
           <template #button-content>
             <span class="header-avatar" aria-hidden="true">MW</span>
