@@ -1,8 +1,18 @@
+<script setup>
+import { pageLocation } from '@/utils/wikiRoutes'
+defineProps({ site: { type: Object, required: true } })
+</script>
 <template>
   <footer class="site-footer">
-    <strong>MDAWiki</strong> · Conhecimento que se compartilha.
-    <p class="mb-0 mt-1">
-      Prévia com dados fictícios. Conteúdos sujeitos à conferência nas fontes oficiais.
-    </p>
+    <strong>{{ site.name }}</strong> · {{ site.footer.text }}
+    <p v-if="site.footer.notice" class="mb-0 mt-1">{{ site.footer.notice }}</p>
+    <nav class="d-flex gap-3 mt-2" aria-label="Rodapé">
+      <RouterLink
+        v-for="link in site.footer.links"
+        :key="link.slug"
+        :to="pageLocation(link.slug)"
+        >{{ link.label }}</RouterLink
+      >
+    </nav>
   </footer>
 </template>

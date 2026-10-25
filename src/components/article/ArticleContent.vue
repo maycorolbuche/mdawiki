@@ -2,72 +2,50 @@
 import ArticleSection from './ArticleSection.vue'
 import SpecialtyMetadata from './SpecialtyMetadata.vue'
 import ArticleToc from './ArticleToc.vue'
+import WikiBlocks from '@/components/wiki/WikiBlocks.vue'
+import WikiLink from '@/components/wiki/WikiLink.vue'
+import PageCards from '@/components/wiki/PageCards.vue'
+import { safeUrl } from '@/utils/wikiRoutes'
 defineProps({ article: { type: Object, required: true } })
 defineEmits(['edit'])
 </script>
 <template>
-  <SpecialtyMetadata :article="article" />
-  <details class="mobile-toc border rounded-3 p-3 mb-4">
+  <p v-if="article.notice" class="demo-note">{{ article.notice }}</p>
+  <SpecialtyMetadata v-if="article.metadata" :metadata="article.metadata" />
+  <figure v-if="article.media && safeUrl(article.media.url)" class="wiki-media">
+    <img :src="safeUrl(article.media.url)" :alt="article.media.alt" />
+    <figcaption>
+      {{ article.media.attribution }}
+      <span v-if="article.media.width"
+        >· {{ article.media.width }} × {{ article.media.height }} px ·
+        {{ article.media.format }}</span
+      >
+    </figcaption>
+  </figure>
+  <details v-if="article.toc.length" class="mobile-toc border rounded-3 p-3 mb-4">
     <summary class="fw-semibold">Nesta página</summary>
-    <ArticleToc />
+    <ArticleToc :sections="article.toc" />
   </details>
-  <ArticleSection id="requisitos" title="Requisitos" @edit="$emit('edit', $event)"
-    ><p class="demo-note">
-      <i class="bi bi-info-circle me-1" aria-hidden="true" />Conteúdo resumido para demonstração do
-      layout. Consulte os requisitos oficiais antes de aplicar a especialidade.
-    </p>
-    <ol class="requirements">
-      <li v-for="(requirement, index) in article.requirements" :key="index">
-        {{ requirement.text }}
-        <ol v-if="requirement.items" class="hazards" type="a">
-          <li v-for="item in requirement.items" :key="item">{{ item }}</li>
-        </ol>
-        <div v-if="requirement.links" class="partner-links">
-          <a
-            v-for="link in requirement.links"
-            :key="link.url"
-            :href="link.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            >{{ link.title }} ↗</a
-          >
-        </div>
-      </li>
-    </ol></ArticleSection
-  >
   <ArticleSection
-    id="materiais"
-    title="Materiais de estudo"
-    icon="book-fill"
+    v-for="section in article.sections"
+    :id="section.id"
+    :key="section.id"
+    :title="section.title"
+    :editable="article.capabilities.suggest"
     @edit="$emit('edit', $event)"
-    ><div class="study-grid">
-      <a
-        v-for="resource in article.resources"
-        :key="resource.url"
-        class="resource"
-        :href="resource.url"
-        target="_blank"
-        rel="noopener noreferrer"
-        ><i :class="`bi bi-${resource.icon}`" aria-hidden="true" /><span class="flex-grow-1"
-          ><strong>{{ resource.title }}</strong
-          ><small>{{ resource.description }}</small></span
-        ><i class="bi bi-box-arrow-up-right small" aria-hidden="true"
-      /></a></div
-  ></ArticleSection>
-  <ArticleSection id="referencias" title="Referências" icon="book" @edit="$emit('edit', $event)"
-    ><ol class="references">
-      <li v-for="reference in article.references" :key="reference.url">
-        <a :href="reference.url" target="_blank" rel="noopener noreferrer">{{ reference.title }}</a>
-      </li>
-    </ol></ArticleSection
-  >
-  <div class="categories">
-    <i class="bi bi-tags" aria-hidden="true" />Categorias:<RouterLink
+    ><WikiBlocks :blocks="section.blocks"
+  /></ArticleSection>
+  <section v-if="article.type === 'category'">
+    <h2 class="mb-3">Páginas nesta categoria</h2>
+    <PageCards v-if="article.members.length" :items="article.members" />
+    <p v-else>Nenhuma página nesta categoria.</p>
+  </section>
+  <div v-if="article.categories.length" class="categories mt-4">
+    <i class="bi bi-tags" aria-hidden="true" />Categorias:<WikiLink
       v-for="category in article.categories"
-      :key="category"
+      :key="category.slug"
       class="tag"
-      :to="{ name: 'specialties' }"
-      >{{ category }}</RouterLink
-    >
+      :link="category"
+    />
   </div>
 </template>

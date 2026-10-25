@@ -1,26 +1,34 @@
 <script setup>
+import WikiLink from '@/components/wiki/WikiLink.vue'
 defineProps({ article: { type: Object, required: true } })
 </script>
 <template>
   <header>
-    <nav aria-label="Caminho da página">
+    <nav v-if="article.categories.length" aria-label="Caminho da página">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-          <RouterLink :to="{ name: 'specialties' }">Especialidades</RouterLink>
+        <li
+          v-for="category in article.categories.slice(0, 2)"
+          :key="category.slug"
+          class="breadcrumb-item"
+        >
+          <WikiLink :link="category" />
         </li>
-        <li class="breadcrumb-item active" aria-current="page">{{ article.area }}</li>
       </ol>
     </nav>
-    <span class="category-label">ESPECIALIDADE</span>
+    <span v-if="article.type !== 'home'" class="category-label">{{
+      { specialty: 'Especialidade', category: 'Categoria', media: 'Imagem', article: 'Artigo' }[
+        article.type
+      ] || 'Página'
+    }}</span>
     <h1>{{ article.title }}</h1>
-    <p class="lead-copy mb-0">{{ article.description }}</p>
-    <div class="contributors">
+    <p v-if="article.description" class="lead-copy mb-0">{{ article.description }}</p>
+    <div v-if="article.contributors.length" class="contributors">
       <div class="avatar-stack" aria-hidden="true">
-        <span v-for="person in article.contributors" :key="person" class="avatar">{{
-          person
+        <span v-for="person in article.contributors" :key="person.name" class="avatar">{{
+          person.initials
         }}</span>
       </div>
-      <span>Construído pela comunidade · Prévia do layout</span>
+      <span>Construído pela comunidade</span>
     </div>
   </header>
 </template>

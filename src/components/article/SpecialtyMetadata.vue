@@ -1,25 +1,26 @@
 <script setup>
-import { computed } from 'vue'
-import pathfinders from '@/assets/images/pathfinders.png'
-import adra from '@/assets/images/adra.png'
-const props = defineProps({ article: { type: Object, required: true } })
-const fields = computed(() => [
-  ['Área', props.article.area],
-  ['Código', props.article.code],
-  ['Nível', props.article.level],
-  ['Ano', props.article.year],
-  ['Origem', props.article.origin],
-])
+import { safeUrl } from '@/utils/wikiRoutes'
+defineProps({ metadata: { type: Object, required: true } })
 </script>
 <template>
-  <div class="specialty-info" aria-label="Dados da especialidade">
-    <img class="pathfinder" :src="pathfinders" alt="Emblema dos Desbravadores" />
+  <div class="specialty-info" aria-label="Dados da página">
+    <img
+      v-if="safeUrl(metadata.images?.[0]?.url)"
+      class="pathfinder"
+      :src="safeUrl(metadata.images[0].url)"
+      :alt="metadata.images[0].alt"
+    />
     <dl class="metadata">
-      <div v-for="[label, value] in fields" :key="label">
-        <dt>{{ label }}</dt>
-        <dd>{{ value }}</dd>
+      <div v-for="field in metadata.fields" :key="field.label">
+        <dt>{{ field.label }}</dt>
+        <dd>{{ field.value }}</dd>
       </div>
     </dl>
-    <img class="patch" :src="adra" alt="Emblema da especialidade ADRA" />
+    <img
+      v-if="safeUrl(metadata.images?.[1]?.url)"
+      class="patch"
+      :src="safeUrl(metadata.images[1].url)"
+      :alt="metadata.images[1].alt"
+    />
   </div>
 </template>
