@@ -1,15 +1,67 @@
-# MDAWiki
+# MDAWiki — frontend Vue
 
-Interface de wiki colaborativa para Desbravadores e Aventureiros, baseada no HTML de referência. Vue 3 com Composition API (`<script setup>`), Vite, Vue Router, Pinia, Bootstrap 5, BootstrapVueNext e Bootstrap Icons. Dependências e emblemas são servidos localmente, sem CDN.
+Frontend de uma wiki com backend independente em JavaScript, planejado para Cloudflare Workers. Vue 3, Composition API, Vue Router, Pinia, BootstrapVueNext e Bootstrap 5. O layout mantém a referência visual anterior; páginas e configuração editorial são resolvidas por um único serviço de API.
 
-## Executar
+## Executar a prévia
 
-Use Node.js `^22.18.0 || >=24.12.0` (conforme `package.json`).
+Node.js `^22.18.0 || >=24.12.0`.
 
 ```sh
 npm ci
+```
+
+Copie `.env.example` para `.env.local`. No PowerShell:
+
+```powershell
+Copy-Item .env.example .env.local
 npm run dev
 ```
+
+O exemplo usa `VITE_DATA_SOURCE=mock`. Em desenvolvimento, esse também é o padrão sem configuração. O mock simula endpoints JSON com `Response`, sem uma API real. O modo `api` usa HTTP de verdade e nunca faz fallback silencioso para os exemplos.
+
+## Conectar ao Worker
+
+```dotenv
+VITE_DATA_SOURCE=api
+VITE_API_BASE_URL=https://api.exemplo.com/v1
+```
+
+Reinicie o Vite após alterar as variáveis. Em produção, sem configuração explícita, o padrão é `api` com base `/api/v1`; para backend em outra origem, configure sua URL antes do build. Nunca coloque segredos em variáveis `VITE_`, pois ficam públicos no bundle. O Worker deve liberar a origem do frontend via CORS. O contrato está em [docs/api-contract.md](docs/api-contract.md).
+
+Para gerar uma prévia estática com dados fictícios, configure `VITE_DATA_SOURCE=mock` no ambiente do build. Para publicar com API real, configure `api` e a origem correta. As variáveis Vite são definidas no build, não lidas de um `.env` após a publicação de `dist/`.
+
+## Rotas públicas
+
+- `/`: início recebido da API.
+- `/:slug`: qualquer artigo, especialidade, categoria ou mídia. Exemplos: `/adra`, `/acampamento`, `/resposta-a-emergencias-e-desastres`, `/imagem-emblema-adra`.
+- `/busca?q=...&pagina=2`: busca em todos os tipos, paginada.
+- `/acampamento?acao=historico` e `?acao=discussao`: atividade na mesma página.
+
+Não há prefixo obrigatório `/artigos/...` ou `/especialidades/...`. A API fornece o tipo, o slug canônico e os dados. Slugs/aliases não são recriados a partir de títulos no navegador. Os exemplos incluem aliases como `/Resposta_a_Emergências_e_Desastres` e `/ADRA`; a migração dos endereços reais ainda precisa ser construída no backend.
+
+## Estrutura
+
+| Pasta                         | Responsabilidade                                                         |
+| ----------------------------- | ------------------------------------------------------------------------ |
+| `src/layouts`                 | Shell da wiki, carregamento inicial e falhas de configuração             |
+| `src/views`                   | Resolução de página, busca e 404                                         |
+| `src/components/layout`       | Header, footer, navegação e sidebar de artigo                            |
+| `src/components/article`      | Cabeçalho, metadados opcionais, seções, índice e sugestão local          |
+| `src/components/wiki`         | Blocos genéricos, links, cartões, HTML sanitizado e atividade            |
+| `src/components/common`       | Estados de carregamento/erro e modais compartilhados                     |
+| `src/services/api`            | Cliente HTTP, erros, timeout, cancelamento e validação básica de DTOs    |
+| `src/services/wikiService.js` | Contrato de leitura utilizado por todas as telas                         |
+| `src/config`                  | Configuração pública por ambiente                                        |
+| `src/stores`                  | Configuração do site e estado compartilhado de interface                 |
+| `src/composables`             | Ciclo de vida de requisições, clipboard e índice                         |
+| `src/utils`                   | Rotas, validações de URL e sanitização                                   |
+| `src/mocks`                   | Fixtures e transporte de demonstração, sem importação direta pelas views |
+| `public/demo`                 | Emblemas usados exclusivamente nas fixtures                              |
+| `docs`                        | Análise do legado, arquitetura e contrato da API                         |
+
+Os componentes usam PascalCase, funções/estado camelCase e composables `use...`. Conteúdo de negócio não fica nos componentes: menu, rodapé, home, seções, metadados, categorias, relações, mídia, resultados, revisões e fonte vêm do serviço. Apenas a apresentação e os rótulos de interação pertencem ao frontend.
+
+## Validação
 
 ```sh
 npm run lint
@@ -18,46 +70,12 @@ npm run build
 npm run preview
 ```
 
-## Organização
+A CI executa lint sem correção, formatação, testes e build. Os testes verificam contrato, resolução de tipos/aliases, paginação, normalização de busca no mock, isolamento das respostas, codificação, 404/503, rede, timeout, cancelamento e URLs. O modo real não herda regras de busca do mock: o Worker deve implementá-las.
 
-- `src/assets/images`: marca demonstrativa e emblemas extraídos do HTML enviado.
-- `src/assets/styles`: tema, responsividade e impressão.
-- `src/components/layout`: header, sidebar responsiva, footer e sidebar do artigo.
-- `src/components/article`: cabeçalho, metadados, seções, índice e modais.
-- `src/components/specialties`: catálogo e cartões reutilizáveis.
-- `src/components/search`: busca de especialidades.
-- `src/components/common`: componentes compartilhados.
-- `src/layouts/WikiLayout.vue`: estrutura persistente das páginas.
-- `src/views`: páginas carregadas sob demanda pelas rotas.
-- `src/router`: rotas nomeadas, título e rolagem.
-- `src/stores`: estado global da interface (Pinia).
-- `src/composables`: carregamento do catálogo, índice e cópia para a área de transferência.
-- `src/services`: contrato assíncrono de acesso aos dados.
-- `src/mocks`: dados fictícios separados da apresentação.
+## Hospedagem e escopo
 
-Componentes usam PascalCase; funções e estado usam camelCase; composables têm prefixo `use`; URLs usam kebab-case. Props fornecem dados aos componentes, eventos comunicam ações; estado compartilhado da interface fica no Pinia, estado da página permanece local.
+Publique `dist/` com fallback para `index.html` em navegações de History API. Se usar Workers Static Assets no frontend, a opção de SPA é `assets.not_found_handling = "single-page-application"`; o backend pode continuar em outro Worker/origem. Isso atende refresh da SPA, mas não fornece SSR, redirects 301 ou status 404 editorial no HTTP inicial. Esses requisitos de SEO precisam ser resolvidos antes da migração pública.
 
-## Rotas
+A preparação atual contém leitura e dados fictícios. Não implementa Worker, migração do banco/acervo, autenticação, gravação, uploads, parser legado, restauração ou jobs. “Sugerir alteração” consulta a fonte e baixa um `.txt`, sem publicar. Categorias/relações são prévias; grandes conjuntos precisarão de endpoints paginados. HTML recebido é sanitizado com DOMPurify e não é compilado como Vue.
 
-| URL                                                  | Conteúdo                           |
-| ---------------------------------------------------- | ---------------------------------- |
-| `/`                                                  | Início e especialidade em destaque |
-| `/especialidades`                                    | Catálogo                           |
-| `/especialidades/resposta-a-emergencias-e-desastres` | Artigo do HTML de referência       |
-| `/desbravadores` e `/aventureiros`                   | Páginas iniciais das áreas         |
-| `/comunidade/mudancas-recentes`                      | Exemplo de histórico               |
-| `/comunidade/colaboradores`                          | Exemplo de colaborador             |
-| `/ajuda`                                             | Orientações de uso                 |
-| Outros endereços                                     | Página 404                         |
-
-O artigo possui abas Artigo/Discussão, índice por âncoras, edição demonstrativa com download de sugestão `.txt`, histórico fictício, impressão, cópia de link e referência. A busca ignora acentos e aceita `Ctrl/Cmd + K`. Menu móvel, modais e dropdowns utilizam BootstrapVueNext; não há manipulação de componentes pelo JavaScript do Bootstrap.
-
-## Integração futura com API
-
-`articleService.list(query)` retorna `Promise<Article[]>`; `articleService.findBySlug(slug)` retorna `Promise<Article | null>`. O formato inicial de `Article` está em `src/mocks/articles.js`: identificação, metadados, requisitos, recursos, referências, categorias, colaboradores e revisões. Troque a implementação desse serviço pelo cliente HTTP quando o contrato da API estiver definido; os componentes não importam os mocks. Atualmente as respostas são cópias independentes para evitar alteração acidental da fonte.
-
-As telas tratam carregamento, erro com nova tentativa, busca vazia e artigo inexistente. Não há autenticação nem publicação: sugestões são apenas baixadas, discussões estão vazias e histórico/colaboradores são exemplos identificados. O conteúdo resumido não substitui os requisitos oficiais. A marca usa o símbolo do template com o nome MDAWiki e pode ser substituída pelo logo definitivo.
-
-## Hospedagem
-
-Publique o conteúdo de `dist/`. Como as rotas usam History API, configure o servidor para devolver `index.html` quando o caminho não corresponder a um arquivo existente (inclusive ao atualizar a página em `/especialidades/...`). Para hospedar em subdiretório, configure `base` no Vite; o roteador utiliza `import.meta.env.BASE_URL`. A cópia automática depende da permissão do navegador e de HTTPS (ou localhost); em caso de falha, o texto da referência continua selecionável no modal.
+Veja a [análise minuciosa do legado e plano de migração](docs/analise-legado.md), incluindo evidências, riscos concretos e o que precisa permanecer no backend.
