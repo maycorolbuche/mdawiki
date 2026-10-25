@@ -1093,3 +1093,119 @@ h2 {
     display: none !important;
   }
 }
+
+/* Relações editoriais do legado: coluna direita no desktop, após o artigo no celular. */
+.article-sidebar .right-inner {
+  max-height: calc(100dvh - var(--header) - 52px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-right: 2px;
+}
+.relation-card h2 {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.relation-count {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 23px;
+  padding: 3px 6px;
+  border-radius: 12px;
+  background: var(--sage);
+  color: var(--forest);
+  font-size: 11px;
+  font-weight: 700;
+}
+.relation-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.relation-tags .tag {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.relation-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 11px;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.relation-card-missing {
+  border-color: #edcccc;
+  background: #fffafa;
+}
+.relation-card-missing h2 {
+  color: #9a3838;
+}
+.relation-card-missing .relation-count {
+  background: #f8e6e6;
+  color: #9a3838;
+}
+a.wiki-link-missing {
+  color: #a33333;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+a.wiki-link-missing:hover {
+  color: #762121;
+}
+.media-data dl {
+  margin: 0;
+  font-size: 12px;
+}
+.media-data dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+}
+.media-data dt {
+  font-weight: 500;
+  color: var(--muted);
+}
+.media-data dd {
+  margin: 0;
+}
+@media (max-width: 1199.98px) {
+  .article-sidebar {
+    display: block;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 24px;
+  }
+  .article-sidebar .right-inner {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .article-sidebar .side-card {
+    margin: 0;
+  }
+}
+@media (max-width: 575.98px) {
+  .article-sidebar {
+    padding: 20px 17px;
+  }
+  .article-sidebar .right-inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media print {
+  .article-sidebar {
+    display: none !important;
+  }
+}

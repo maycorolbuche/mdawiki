@@ -79,3 +79,15 @@ Publique `dist/` com fallback para `index.html` em navegações de History API. 
 A preparação atual contém leitura e dados fictícios. Não implementa Worker, migração do banco/acervo, autenticação, gravação, uploads, parser legado, restauração ou jobs. “Sugerir alteração” consulta a fonte e baixa um `.txt`, sem publicar. Categorias/relações são prévias; grandes conjuntos precisarão de endpoints paginados. HTML recebido é sanitizado com DOMPurify e não é compilado como Vue.
 
 Veja a [análise minuciosa do legado e plano de migração](docs/analise-legado.md), incluindo evidências, riscos concretos e o que precisa permanecer no backend.
+
+## Repositórios e coluna de informações
+
+- Frontend: https://github.com/maycorolbuche/mdawiki
+- API JavaScript/Cloudflare Workers: https://github.com/maycorolbuche/mdawiki-api
+- Legado de referência: https://github.com/maycorolbuche/mdawiki-site
+
+No desktop, as informações do legado ficam à direita: dados da imagem (quando aplicável), categorias, páginas não existentes, menções a esta página e páginas relacionadas. Os blocos de relações vazios não aparecem. Contadores mostram a quantidade de itens recebidos, não um total global de registros. Índice, colaboração e ferramentas permanecem na coluna, após as relações.
+
+Em telas menores, a coluna passa para depois do artigo; as informações continuam acessíveis. Links internos presentes em `missingLinks` recebem destaque também nos blocos de conteúdo. Os dados vêm da API; o frontend não calcula relações por conta própria.
+
+O endereço do repositório não é o endereço HTTP da API: `VITE_API_BASE_URL` deve receber a URL do Worker quando ele estiver disponível. Enquanto isso, use o modo `mock`. O repositório da API estava vazio durante esta alteração; este PR não inicializa a branch principal do backend nem implanta um Worker.

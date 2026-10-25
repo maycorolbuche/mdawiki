@@ -106,3 +106,17 @@ Revisões: `{ id, date, author, summary }`. Discussões: `{ id, date, author, te
 A leitura atual usa `credentials: 'omit'`, sem tokens locais. Para origem separada, configurar CORS no Worker para a origem exata do frontend; responder OPTIONS quando aplicável. Não usar credenciais de Cloudflare/D1/R2 no navegador nem variáveis `VITE_` para segredos. A escolha de autenticação futura precisa definir cookies/tokens, CSRF quando aplicável, expiração e revogação antes de habilitar escrita.
 
 Proposta para o backend: leitura pública cacheável com ETag/revisão; informações privadas e fonte restrita sem cache público; invalidar conteúdo dependente após publicação. Esta fase não implementa cache HTTP próprio nem um banco. Sitemap e redirects HTTP permanecem responsabilidades de publicação/edge.
+
+## Repositório oficial e relações do legado
+
+A implementação do backend ficará em [maycorolbuche/mdawiki-api](https://github.com/maycorolbuche/mdawiki-api), separada do frontend. Esse endereço Git não deve ser usado como `VITE_API_BASE_URL`. O contrato deste documento é a referência de integração; a URL HTTP do Worker ainda será configurada após a implementação.
+
+| Campo do Page                                 | Bloco na coluna direita | Origem conceitual no legado |
+| --------------------------------------------- | ----------------------- | --------------------------- |
+| `media.width`, `media.height`, `media.format` | Dados da imagem         | `data.imagem`               |
+| `categories`                                  | Categorias              | `data.categorias`           |
+| `missingLinks`                                | Páginas não existentes  | `data.nao_existentes`       |
+| `backlinks`                                   | Menções a esta página   | `data.mencoes`              |
+| `relatedPages`                                | Páginas relacionadas    | `data.relacionadas`         |
+
+Esses blocos seguem a ordem do legado. Arrays vazios ocultam o bloco; contadores refletem os itens recebidos. O mesmo slug que aparece em `missingLinks` é marcado como inexistente nos links estruturados do corpo. Para HTML renderizado, o backend deve fornecer a marcação editorial adequada ou converter os links em blocos estruturados; o Vue não reinterpreta o grafo a partir de HTML.

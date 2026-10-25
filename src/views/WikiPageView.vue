@@ -1,10 +1,11 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { BAlert, BButton } from 'bootstrap-vue-next'
 import { wikiService } from '@/services/wikiService'
 import { useSiteStore } from '@/stores/site'
 import { useAsyncResource } from '@/composables/useAsyncResource'
+import { missingPagesKey } from '@/composables/wikiContext'
 import { useClipboard } from '@/composables/useClipboard'
 import { pageLocation, validAnchor } from '@/utils/wikiRoutes'
 import ArticleHeader from '@/components/article/ArticleHeader.vue'
@@ -25,6 +26,10 @@ const {
 } = useAsyncResource(
   () => props.slug,
   (slug, options) => wikiService.page(slug, options),
+)
+provide(
+  missingPagesKey,
+  computed(() => new Set(article.value?.missingLinks.map((link) => link.slug) || [])),
 )
 const dialogs = ref(null)
 const redirectedFrom = ref('')
