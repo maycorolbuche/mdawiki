@@ -1045,3 +1045,51 @@ h2 {
   --bs-link-color-rgb: 22, 99, 67;
   --bs-link-hover-color-rgb: 10, 56, 37;
 }
+
+.wiki-html img,
+.wiki-media img {
+  max-width: 100%;
+  height: auto;
+}
+.wiki-html {
+  overflow-wrap: anywhere;
+  overflow-x: auto;
+}
+.wiki-media {
+  text-align: center;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.wiki-media figcaption {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.wiki-page-tabs .nav-link {
+  color: var(--muted);
+  border: 0;
+}
+.wiki-page-tabs .nav-link.active {
+  border-bottom: 3px solid var(--forest);
+  color: var(--forest);
+}
+.section-block {
+  overflow-wrap: anywhere;
+}
+.catalog-grid {
+  margin-bottom: 24px;
+}
+.main > header {
+  margin-bottom: 24px;
+}
+@media (max-width: 1199.98px) {
+  .topbar .brand-tag {
+    display: none !important;
+  }
+}
+@media print {
+  .wiki-page-tabs {
+    display: none !important;
+  }
+}

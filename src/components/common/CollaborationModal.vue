@@ -1,24 +1,23 @@
 <script setup>
 import { BModal } from 'bootstrap-vue-next'
 import { useUiStore } from '@/stores/ui'
+defineProps({ site: { type: Object, required: true } })
 const ui = useUiStore()
 </script>
 <template>
   <BModal
     v-model="ui.helpOpen"
-    title="Conhecimento se constrói junto"
+    :title="site.collaboration.title"
     centered
     ok-only
     ok-title="Entendi"
     ok-variant="success"
-    ><p>Uma wiki reúne contribuições de pessoas que compartilham o que sabem.</p>
+    ><p>{{ site.collaboration.description }}</p>
     <ol>
-      <li>Confira as fontes e os requisitos oficiais.</li>
-      <li>Prepare sugestões com fontes confiáveis.</li>
-      <li>Converse na aba Discussão sobre melhorias.</li>
+      <li v-for="step in site.collaboration.steps" :key="step">{{ step }}</li>
     </ol>
-    <p class="demo-note mb-0">
-      Demonstração do layout. Autenticação, publicação e revisão serão conectadas à API.
+    <p v-if="site.collaboration.notice" class="demo-note mb-0">
+      {{ site.collaboration.notice }}
     </p></BModal
   >
 </template>

@@ -2,32 +2,29 @@
 import { computed, ref } from 'vue'
 import { BButton, BFormTextarea, BModal } from 'bootstrap-vue-next'
 import { useClipboard } from '@/composables/useClipboard'
+import { useAsyncResource } from '@/composables/useAsyncResource'
+import ResourceState from '@/components/common/ResourceState.vue'
+import { wikiService } from '@/services/wikiService'
 const props = defineProps({ article: { type: Object, required: true } })
 const editOpen = ref(false)
-const historyOpen = ref(false)
 const citationOpen = ref(false)
-const section = ref('')
+const section = ref('página')
 const suggestion = ref('')
 const { feedback, copy } = useClipboard()
+const source = useAsyncResource(
+  () => (editOpen.value ? props.article.id : null),
+  async (id, options) => {
+    const result = await wikiService.source(id, options)
+    suggestion.value = result.text
+    return result
+  },
+)
 const citation = computed(
   () =>
-    `MDAWIKI. ${props.article.title}. Disponível em: ${window.location.href.split('#')[0]}. Acesso em: ${new Date().toLocaleDateString('pt-BR')}. Conteúdo demonstrativo.`,
+    `MDAWIKI. ${props.article.title}. Disponível em: ${window.location.href.split('?')[0].split('#')[0]}. Acesso em: ${new Date().toLocaleDateString('pt-BR')}.`,
 )
 function edit(id = 'página') {
   section.value = id
-  const requirements = props.article.requirements
-    .map(
-      (item, index) =>
-        `${index + 1}. ${item.text}${item.items ? '\n' + item.items.join('\n') : ''}`,
-    )
-    .join('\n\n')
-  const resources = props.article.resources.map((item) => `${item.title}: ${item.url}`).join('\n')
-  const references = props.article.references.map((item) => `${item.title} ${item.url}`).join('\n')
-  suggestion.value =
-    { requisitos: requirements, materiais: resources, referencias: references }[id] ??
-    [props.article.title, props.article.description, requirements, resources, references].join(
-      '\n\n',
-    )
   editOpen.value = true
 }
 function download() {
@@ -44,9 +41,6 @@ function download() {
 }
 defineExpose({
   edit,
-  history: () => {
-    historyOpen.value = true
-  },
   cite: () => {
     feedback.value = ''
     citationOpen.value = true
@@ -54,26 +48,26 @@ defineExpose({
 })
 </script>
 <template>
-  <BModal v-model="editOpen" :title="`Editar ${section}`" size="lg" centered
+  <BModal v-model="editOpen" :title="`Sugerir alteração — ${section}`" size="lg" centered
     ><p class="small text-secondary">
-      Prévia do editor. Baixe sua sugestão; nenhuma alteração será publicada.
+      Conteúdo-fonte recebido da API. Baixe sua sugestão; nenhuma alteração será publicada.
     </p>
-    <label for="suggestion" class="form-label">Conteúdo da sugestão</label
-    ><BFormTextarea id="suggestion" v-model="suggestion" rows="12" /><template #footer
+    <ResourceState
+      :loading="source.loading.value"
+      :error="source.error.value"
+      @retry="source.reload"
+      ><label for="suggestion" class="form-label">Conteúdo da sugestão</label
+      ><BFormTextarea id="suggestion" v-model="suggestion" rows="12" /></ResourceState
+    ><template #footer
       ><BButton variant="light" @click="editOpen = false">Cancelar</BButton
-      ><BButton variant="success" @click="download">Baixar sugestão (.txt)</BButton></template
+      ><BButton
+        variant="success"
+        :disabled="source.loading.value || !!source.error.value"
+        @click="download"
+        >Baixar sugestão (.txt)</BButton
+      ></template
     ></BModal
-  >
-  <BModal v-model="historyOpen" title="Histórico da página" centered ok-only ok-title="Fechar"
-    ><p class="demo-note">Revisões fictícias da demonstração.</p>
-    <ul class="list-group">
-      <li v-for="revision in article.revisions" :key="revision.id" class="list-group-item">
-        <strong>{{ revision.date.split('-').reverse().join('/') }}</strong> · {{ revision.author }}
-        <p class="mb-0 mt-1">{{ revision.summary }}</p>
-      </li>
-    </ul></BModal
-  >
-  <BModal v-model="citationOpen" title="Citar esta página" centered
+  ><BModal v-model="citationOpen" title="Citar esta página" centered
     ><label for="citation" class="form-label">Referência sugerida</label
     ><BFormTextarea id="citation" :model-value="citation" rows="5" readonly />
     <p class="small mt-2 mb-0" role="status">{{ feedback }}</p>

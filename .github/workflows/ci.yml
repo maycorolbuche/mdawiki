@@ -17,6 +17,6 @@ jobs:
       - run: npm ci
       - run: npm exec oxlint -- .
       - run: npm exec eslint -- .
-      - run: npm exec prettier -- --check src tests README.md index.html .github/workflows/ci.yml
+      - run: npm exec prettier -- --check src tests docs README.md index.html .github/workflows/ci.yml
       - run: npm test
       - run: npm run build
