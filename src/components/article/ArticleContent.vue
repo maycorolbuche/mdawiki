@@ -3,7 +3,6 @@ import ArticleSection from './ArticleSection.vue'
 import SpecialtyMetadata from './SpecialtyMetadata.vue'
 import ArticleToc from './ArticleToc.vue'
 import WikiBlocks from '@/components/wiki/WikiBlocks.vue'
-import WikiLink from '@/components/wiki/WikiLink.vue'
 import PageCards from '@/components/wiki/PageCards.vue'
 import { safeUrl } from '@/utils/wikiRoutes'
 defineProps({ article: { type: Object, required: true } })
@@ -40,12 +39,4 @@ defineEmits(['edit'])
     <PageCards v-if="article.members.length" :items="article.members" />
     <p v-else>Nenhuma página nesta categoria.</p>
   </section>
-  <div v-if="article.categories.length" class="categories mt-4">
-    <i class="bi bi-tags" aria-hidden="true" />Categorias:<WikiLink
-      v-for="category in article.categories"
-      :key="category.slug"
-      class="tag"
-      :link="category"
-    />
-  </div>
 </template>

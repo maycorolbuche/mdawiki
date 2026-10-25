@@ -1,7 +1,7 @@
 <script setup>
 import { BButton } from 'bootstrap-vue-next'
 import ArticleToc from '@/components/article/ArticleToc.vue'
-import WikiLink from '@/components/wiki/WikiLink.vue'
+import PageRelationCard from '@/components/wiki/PageRelationCard.vue'
 import { useArticleToc } from '@/composables/useArticleToc'
 import { useUiStore } from '@/stores/ui'
 const props = defineProps({ article: { type: Object, required: true } })
@@ -10,20 +10,41 @@ const { activeSection } = useArticleToc(() => props.article.toc)
 const ui = useUiStore()
 </script>
 <template>
-  <aside class="rightbar" aria-label="Índice e ferramentas">
+  <aside class="rightbar article-sidebar" aria-label="Informações da página">
     <div class="right-inner">
-      <div v-if="article.toc.length" class="side-card">
+      <section v-if="article.media" class="side-card media-data" aria-label="Dados da imagem">
+        <h2>Dados da imagem</h2>
+        <dl>
+          <div v-if="article.media.width">
+            <dt>Largura</dt>
+            <dd>{{ article.media.width }} px</dd>
+          </div>
+          <div v-if="article.media.height">
+            <dt>Altura</dt>
+            <dd>{{ article.media.height }} px</dd>
+          </div>
+          <div v-if="article.media.format">
+            <dt>Formato</dt>
+            <dd>{{ article.media.format }}</dd>
+          </div>
+        </dl>
+      </section>
+      <PageRelationCard title="Categorias" :items="article.categories" categories />
+      <PageRelationCard title="Páginas não existentes" :items="article.missingLinks" missing />
+      <PageRelationCard title="Menções a esta página" :items="article.backlinks" />
+      <PageRelationCard title="Páginas relacionadas" :items="article.relatedPages" />
+      <section v-if="article.toc.length" class="side-card">
         <h2>Nesta página</h2>
         <ArticleToc :sections="article.toc" :active-section="activeSection" />
-      </div>
-      <div class="side-card contribute-card">
+      </section>
+      <section class="side-card contribute-card">
         <h2>Compartilhe o que você sabe</h2>
         <p>Ajude a melhorar esta página com fontes e experiências.</p>
         <BButton variant="outline-success" size="sm" class="w-100" @click="ui.helpOpen = true"
           >Como colaborar</BButton
         >
-      </div>
-      <div class="side-card tools">
+      </section>
+      <section class="side-card tools">
         <h2>Ferramentas</h2>
         <button @click="$emit('print')">
           <i class="bi bi-printer" aria-hidden="true" />Imprimir página</button
@@ -32,22 +53,7 @@ const ui = useUiStore()
         ><button @click="$emit('cite')">
           <i class="bi bi-quote" aria-hidden="true" />Citar esta página
         </button>
-      </div>
-      <div
-        v-for="[label, items] in [
-          ['Páginas relacionadas', article.relatedPages],
-          ['Páginas que fazem referência', article.backlinks],
-          ['Links para páginas inexistentes', article.missingLinks],
-        ]"
-        :key="label"
-      >
-        <div v-if="items.length" class="side-card">
-          <h2>{{ label }}</h2>
-          <ul class="small ps-3">
-            <li v-for="link in items" :key="link.slug"><WikiLink :link="link" /></li>
-          </ul>
-        </div>
-      </div>
+      </section>
     </div>
   </aside>
 </template>

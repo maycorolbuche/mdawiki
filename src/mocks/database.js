@@ -106,6 +106,7 @@ const camp = {
   categories: [ref('desbravadores', 'Desbravadores')],
   relatedPages: [summary],
   missingLinks: [ref('artigo-a-criar', 'Artigo a criar')],
+  backlinks: [ref('desbravadores', 'Desbravadores')],
 }
 const image = {
   ...base('imagem-emblema-adra', 'Emblema ADRA', 'media'),
