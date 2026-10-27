@@ -1,0 +1,91 @@
+$primary: #07523b;
+$secondary: #557b64;
+$body-color: #303940;
+$body-bg: #edf1f4;
+$font-family-sans-serif: 'Open Sans', Helvetica, Arial, sans-serif;
+$link-color: $primary;
+$link-hover-color: #032d20;
+
+@import 'bootstrap/scss/bootstrap';
+
+@font-face {
+  font-family: 'Open Sans';
+  src: url('./fonts/OpenSans-Light.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Open Sans';
+  src: url('./fonts/OpenSans-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Open Sans';
+  src: url('./fonts/OpenSans-SemiBold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Open Sans';
+  src: url('./fonts/OpenSans-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+// Estilos próprios: apenas detalhes do layout que as utilidades não cobrem.
+:root {
+  --header-height: 122px;
+  --wiki-line: #dfe5e9;
+  --wiki-dark: #063e2e;
+  --wiki-paper-width: 840px;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 264px;
+  gap: 30px;
+  max-width: 1800px;
+  min-height: calc(100vh - 176px);
+  margin: 0 auto;
+  padding: 24px 22px 38px;
+  align-items: start;
+}
+@media (max-width: 1399.98px) {
+  .workspace {
+    grid-template-columns: 210px minmax(0, 1fr) 235px;
+    gap: 22px;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+@media (max-width: 1199.98px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    max-width: 1160px;
+  }
+}
+@media (max-width: 991.98px) {
+  .workspace {
+    display: block;
+    max-width: 860px;
+    padding: 20px;
+  }
+}
+@media (max-width: 575.98px) {
+  .workspace { padding: 14px 10px 25px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+@media print {
+  body, .workspace {
+    background: white;
+    padding: 0;
+    display: block;
+  }
+}

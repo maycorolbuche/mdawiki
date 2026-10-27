@@ -179,4 +179,8 @@ const categories = [
   padding: 0.4rem 0;
   text-decoration: none;
 }
+@media print {
+  .left-sidebar { display: none !important; }
+}
 </style>
+
