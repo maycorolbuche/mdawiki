@@ -22,20 +22,20 @@ const emit = defineEmits(['notice'])
   font-size: 0.625rem;
   color: #66766b;
   a {
-  color: inherit;
-  text-decoration: none;
+    color: inherit;
+    text-decoration: none;
   }
 }
 
 @media (max-width: 575.98px) {
   .site-footer {
-  padding: 17px 20px;
+    padding: 17px 20px;
   }
 }
 
 @media print {
   .site-footer {
-  display: none !important;
+    display: none !important;
   }
 }
 </style>
