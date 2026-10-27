@@ -1,6 +1,7 @@
 <script setup>
 import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import AppHeader from './layout/AppHeader.vue'
+import AppFooter from './layout/AppFooter.vue'
 import {
   BApp,
   BButton,
@@ -488,15 +489,7 @@ onUnmounted(() => {
         </section>
       </aside>
     </div>
-    <footer class="site-footer d-flex flex-wrap justify-content-between gap-3">
-      <span>MDAWiki · Conhecimento construído em comunidade</span>
-      <nav class="d-flex gap-4" aria-label="Rodapé">
-        <a href="#" @click.prevent="showNotice('Adicione a página Sobre.')">Sobre</a
-        ><a href="#" @click.prevent="showNotice('Adicione a política de privacidade.')"
-          >Privacidade</a
-        ><a href="#" @click.prevent="showNotice('Adicione os canais de contato.')">Contato</a>
-      </nav>
-    </footer>
+    <AppFooter @notice="showNotice" />
 
     <BOffcanvas
       id="indice-mobile"
@@ -874,17 +867,6 @@ $link-hover-color: #032d20;
     font-size: 0.625rem;
   }
 }
-.site-footer {
-  border-top: 1px solid #dbe3e8;
-  background: rgba(255, 255, 255, 0.8);
-  padding: 17px 30px;
-  font-size: 0.625rem;
-  color: #66766b;
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-}
 @media (max-width: 1399.98px) {
   .workspace {
     grid-template-columns: 210px minmax(0, 1fr) 235px;
@@ -969,9 +951,6 @@ $link-hover-color: #032d20;
       grid-column: auto;
     }
   }
-  .site-footer {
-    padding: 17px 20px;
-  }
 }
 @media (prefers-reduced-motion: no-preference) {
   html {
@@ -982,7 +961,6 @@ $link-hover-color: #032d20;
   .left-sidebar,
   .right-sidebar,
   .mobile-tools,
-  .site-footer,
   .toolbar-edit,
   .article-tabs-container > .nav,
   .edit-btn,
