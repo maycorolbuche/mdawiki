@@ -1,408 +1,439 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
-import { BButton, BDropdown, BDropdownItem, BFormInput, BModal } from 'bootstrap-vue-next'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { BButton, BCollapse, BDropdown, BDropdownItem, BFormInput } from 'bootstrap-vue-next'
 
-const emit = defineEmits(['search', 'contribute', 'login'])
-const query = ref('')
-const searchInput = ref(null)
-const dialogOpen = ref(false)
-const dialogTitle = ref('')
-const dialogMessage = ref('')
+const emit = defineEmits(['navigate', 'notice', 'open-discussion', 'open-history', 'open-help'])
 
-// Apenas a interface do header nesta etapa; sem API, autenticação ou navegação nova.
-function showMessage(title, message) {
-  dialogTitle.value = title
-  dialogMessage.value = message
-  dialogOpen.value = true
+const isMenuOpen = ref(false)
+const search = ref('')
+const areResultsVisible = ref(false)
+const headerElement = ref(null)
+let observer
+
+const normalize = (text) =>
+  text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+const results = computed(() => {
+  const term = normalize(search.value.trim())
+  return term
+    ? [
+        {
+          id: 'requisitos',
+          title: 'Requisitos',
+        },
+        {
+          id: 'materiais',
+          title: 'Materiais de estudo',
+        },
+        { id: 'referencias', title: 'Referências', content: 'Fontes e dados da especialidade' },
+        { id: 'relacionadas', title: 'Páginas relacionadas', content: 'Artigos relacionados' },
+        { id: 'categorias', title: 'Categorias', content: 'ADRA Nível 1 Especialidades' },
+      ]
+    : []
+})
+function goTo(id) {
+  isMenuOpen.value = false
+  areResultsVisible.value = false
+  emit('navigate', id)
 }
-function search() {
-  const term = query.value.trim()
-  if (!term) {
-    searchInput.value?.focus()
-    return
+function showNotice(message) {
+  emit('notice', message)
+}
+function closeResultsOnFocusOut(event) {
+  if (!event.currentTarget.contains(event.relatedTarget)) areResultsVisible.value = false
+}
+onMounted(() => {
+  if (typeof ResizeObserver !== 'undefined' && headerElement.value) {
+    observer = new ResizeObserver(([entry]) => {
+      document.documentElement.style.setProperty(
+        '--header-height',
+        `${entry.target.getBoundingClientRect().height}px`,
+      )
+    })
+    observer.observe(headerElement.value)
   }
-  emit('search', term)
-  showMessage(
-    'Pesquisar na MDAWiki',
-    `Busca por “${term}”. A pesquisa será conectada à API em uma próxima etapa.`,
-  )
-}
-function contribute() {
-  emit('contribute')
-  showMessage(
-    'Conhecimento se constrói junto',
-    'Compartilhe suas experiências e confira as fontes oficiais. A área de contribuições será integrada em uma próxima etapa.',
-  )
-}
-function login() {
-  emit('login')
-  showMessage(
-    'Entrar ou criar conta',
-    'O acesso à conta será disponibilizado após a integração com a autenticação.',
-  )
-}
-function keyboard(event) {
-  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && !dialogOpen.value) {
-    event.preventDefault()
-    searchInput.value?.focus()
-  }
-}
-onMounted(() => document.addEventListener('keydown', keyboard))
-onUnmounted(() => document.removeEventListener('keydown', keyboard))
+})
+onUnmounted(() => observer?.disconnect())
 </script>
 
 <template>
-  <div class="app-header-space">
-    <header class="app-header" aria-label="Cabeçalho principal">
-      <BDropdown class="header-navigation" variant="link" no-caret aria-label="Navegação">
-        <template #button-content>
-          <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-          <span class="visually-hidden">Abrir navegação</span>
-        </template>
-        <BDropdownItem to="/">Página inicial</BDropdownItem>
-        <BDropdownItem to="/about">Sobre</BDropdownItem>
-      </BDropdown>
-
-      <RouterLink class="header-brand" to="/" aria-label="MDAWiki, página inicial">
-        <svg class="header-brand-mark" viewBox="0 0 64 64" aria-hidden="true">
-          <path d="M3 56 29 8 44 35 35 35 28 22 10 56Z" fill="#416747" />
-          <path
-            d="m30 7 8 10 7-2 18 41H38L27 37l-9 19h12L18 56 30 28 47 56h8L34 16Z"
-            fill="#164b35"
-          />
-          <path d="M9 58h47" stroke="#a6b393" stroke-width="2" />
-        </svg>
-        <span
-          ><span class="header-brand-name">MDAWiki</span
-          ><span class="header-brand-tag">Conhecimento ao ar livre</span></span
-        >
-      </RouterLink>
-
-      <form class="header-search" role="search" @submit.prevent="search">
-        <label for="header-search" class="visually-hidden">Pesquisar na MDAWiki</label>
-        <svg class="header-icon header-search-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="10.5" cy="10.5" r="6.5" />
-          <path d="m16 16 5 5" />
-        </svg>
-        <BFormInput
-          id="header-search"
-          ref="searchInput"
-          v-model="query"
-          type="search"
-          placeholder="Pesquisar na MDAWiki…"
-          autocomplete="off"
-          aria-keyshortcuts="Control+k Meta+k"
-        />
-        <kbd class="header-search-key" aria-hidden="true">Ctrl K</kbd>
-      </form>
-
-      <div class="header-actions">
-        <BButton variant="success" class="header-contribute" @click="contribute">
-          <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m15 4 5 5M4 20l5-1L20 8a3.5 3.5 0 0 0-5-5L4 14z" />
-          </svg>
-          Contribuir
-        </BButton>
-        <BDropdown variant="link" class="header-dropdown" no-caret end aria-label="Menu do usuário">
-          <template #button-content>
-            <span class="header-avatar" aria-hidden="true">MW</span>
-            <svg class="header-chevron" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-            <span class="visually-hidden">Menu do usuário</span>
-          </template>
-          <li class="dropdown-header">Visitante · demonstração</li>
-          <BDropdownItem @click="login">Entrar ou criar conta</BDropdownItem>
-          <BDropdownItem @click="contribute">Como colaborar</BDropdownItem>
-        </BDropdown>
-      </div>
-    </header>
-    <BModal
-      v-model="dialogOpen"
-      :title="dialogTitle"
-      centered
-      ok-only
-      ok-title="Entendi"
-      ok-variant="success"
+  <header ref="headerElement" class="app-header position-sticky top-0 z-3 shadow-sm">
+    <div
+      class="brandbar d-flex align-items-center gap-3 gap-lg-4 px-3 px-lg-4 py-2 text-white bg-primary"
     >
-      <p class="mb-0">{{ dialogMessage }}</p>
-    </BModal>
-  </div>
+      <a
+        class="brand d-flex align-items-center gap-1 text-decoration-none fw-semibold flex-shrink-0"
+        href="/"
+      >
+        <img src="@/assets/images/logo.png" style="height: 40px" />
+        <img src="@/assets/images/wordmark.png" style="height: 40px" />
+      </a>
+      <form
+        class="site-search position-relative mx-lg-auto"
+        role="search"
+        @submit.prevent="areResultsVisible = true"
+        @focusout="closeResultsOnFocusOut"
+      >
+        <label class="visually-hidden" for="searchWiki">Pesquisar neste artigo</label>
+        <i class="bi bi-search" aria-hidden="true"> </i>
+        <BFormInput
+          id="searchWiki"
+          v-model="search"
+          type="search"
+          placeholder="Pesquisar…"
+          autocomplete="off"
+          aria-controls="searchResults"
+          :aria-expanded="areResultsVisible && !!search.trim()"
+          @input="areResultsVisible = true"
+          @focus="areResultsVisible = true"
+        />
+        <div
+          v-if="areResultsVisible && search.trim()"
+          id="searchResults"
+          class="search-results position-absolute start-0 end-0 bg-white border rounded shadow-sm p-2"
+          aria-live="polite"
+        >
+          <button v-for="result in results" :key="result.id" type="button" @click="goTo(result.id)">
+            {{ result.title }}
+          </button>
+          <p v-if="!results.length" class="small text-secondary m-2">
+            Nenhuma seção encontrada neste artigo.
+          </p>
+        </div>
+      </form>
+      <div class="account d-flex align-items-center gap-3 flex-shrink-0">
+        <a href="#" @click.prevent="showNotice('Conecte este link à tela de login da sua wiki.')">
+          Entrar
+        </a>
+        <BButton
+          variant="outline-light"
+          @click="showNotice('Conecte este botão ao cadastro de usuários.')"
+        >
+          Criar conta
+        </BButton>
+      </div>
+    </div>
+    <nav class="navbar navbar-expand-lg site-nav bg-white px-3 px-lg-4" aria-label="Menu principal">
+      <BButton
+        variant="light"
+        class="navbar-toggler"
+        aria-controls="menu-principal"
+        :aria-expanded="isMenuOpen"
+        :aria-label="isMenuOpen ? 'Fechar menu' : 'Abrir menu'"
+        @click="isMenuOpen = !isMenuOpen"
+      >
+        <span class="navbar-toggler-icon"> </span>
+      </BButton>
+      <BCollapse id="menu-principal" v-model="isMenuOpen" is-nav class="navbar-collapse">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="#artigo" @click.prevent="goTo('artigo')">
+              <i class="bi bi-house-door"> </i>
+              Início
+            </a>
+          </li>
+          <li class="nav-item">
+            <BDropdown variant="link" toggle-class="nav-link" no-caret>
+              <template #button-content>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16px"
+                  height="16px"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="0.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path d="M1 1.4h14v2.1L8 15 1 3.5z" />
+                  <path
+                    d="M3.8 4.2c1.5.4 2.7.3 4.2-.1 1.5.4 2.7.5 4.2.1-.2 2.5-1.1 4.3-4.2 6.2C4.9 8.5 4 6.7 3.8 4.2z"
+                  />
+                  <path d="M4.3 8.4 12.8 5.2 5 9.2z" fill="currentColor" stroke="none" />
+                  <path d="m3.5 8.5 1 1.4M4.2 7.5l1.2 2.6M3.2 9.4l.5.7" />
+                </svg>
+
+                Desbravadores
+                <i class="bi bi-chevron-down small"></i>
+              </template>
+              <BDropdownItem @click="showNotice('Adicione a rota de classes.')">
+                Classes
+              </BDropdownItem>
+              <BDropdownItem @click="goTo('requisitos')">Especialidades</BDropdownItem>
+              <BDropdownItem @click="showNotice('Adicione a rota de materiais para clubes.')">
+                Materiais para clubes
+              </BDropdownItem>
+            </BDropdown>
+          </li>
+          <li class="nav-item">
+            <BDropdown variant="link" toggle-class="nav-link" no-caret>
+              <template #button-content>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16px"
+                  height="16px"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="0.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path
+                    d="M8 1C4.2 1 1 3.2 1 5.8c0 2 1.5 4.3 3.1 6.2C5.4 13.6 6.4 15 8 15s2.6-1.4 3.9-3C13.5 10.1 15 7.8 15 5.8 15 3.2 11.8 1 8 1z"
+                  />
+                  <ellipse cx="8" cy="6.7" rx="5.3" ry="4.2" />
+                  <path d="M8 3.5v3.1M7.2 4.4h1.6" />
+                  <path d="m3.1 8.4 2-1.8 1.3 1 1.1-.8 2 1.4 1.1-.8 2.3 1.7" />
+                  <path d="M7.1 10.8c.2-.8 1.9-.8 2-1.6" />
+                </svg>
+
+                Aventureiros
+                <i class="bi bi-chevron-down small"></i>
+              </template>
+              <BDropdownItem @click="showNotice('Adicione a rota das classes de Aventureiros.')"
+                >Classes</BDropdownItem
+              >
+              <BDropdownItem
+                @click="showNotice('Adicione a rota das especialidades de Aventureiros.')"
+                >Especialidades</BDropdownItem
+              >
+            </BDropdown>
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link active"
+              href="#requisitos"
+              aria-current="page"
+              @click.prevent="goTo('requisitos')"
+            >
+              <i class="bi bi-award"> </i>Especialidades</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="#"
+              @click.prevent="showNotice('Adicione a rota de acampamento.')"
+            >
+              <i class="bi bi-tree"> </i>Acampamento</a
+            >
+          </li>
+          <li class="nav-item">
+            <BDropdown variant="link" toggle-class="nav-link" no-caret>
+              <template #button-content>
+                <i class="bi bi-people"> </i> Comunidade
+                <i class="bi bi-chevron-down small"> </i>
+              </template>
+              <BDropdownItem @click="emit('open-discussion')">Discussão</BDropdownItem>
+              <BDropdownItem @click="emit('open-history')">Mudanças recentes</BDropdownItem>
+              <BDropdownItem @click="emit('open-help')">Como colaborar</BDropdownItem>
+            </BDropdown>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" @click.prevent="emit('open-help')">
+              <i class="bi bi-question-circle"> </i>Ajuda</a
+            >
+          </li>
+        </ul>
+      </BCollapse>
+      <BButton variant="primary" class="contribute ms-lg-3" @click="emit('open-help')">
+        <i class="bi bi-pencil me-2"> </i>Contribuir</BButton
+      >
+    </nav>
+  </header>
 </template>
 
-<style scoped>
-.app-header-space {
-  grid-column: 1 / -1;
-  min-height: 82px;
+<style lang="scss">
+.brandbar {
+  min-height: 58px;
+  background-image: linear-gradient(115deg, #064c36, #063d31);
 }
-.app-header {
-  --header-forest: #124d36;
-  --header-muted: #66736e;
-  --header-line: #e1e7e1;
-  position: fixed;
-  inset: 0 0 auto;
-  z-index: 1030;
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  min-height: 82px;
-  padding: 12px 24px;
-  border-bottom: 1px solid var(--header-line);
-  background: rgba(255, 255, 255, 0.98);
-  color: #34443e;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    sans-serif;
+.brand {
+  font-size: 1.5rem;
+  line-height: 1;
+  white-space: nowrap;
+  i {
+    font-size: 1.875rem;
+  }
 }
-.header-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-  color: #102f24;
-  text-decoration: none;
-  padding: 0;
+.site-search {
+  width: min(100%, 640px);
+  > i {
+    position: absolute;
+    left: 15px;
+    top: 5px;
+    z-index: 1;
+    pointer-events: none;
+  }
+  input {
+    padding-left: 42px;
+    font-size: 0.8125rem;
+    color: white;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.3);
+    &::placeholder {
+      color: #e1eee7;
+      opacity: 1;
+    }
+    &:focus {
+      color: white;
+      background: rgba(255, 255, 255, 0.13);
+      border-color: #b9d3c6;
+      box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.08);
+    }
+  }
 }
-.header-brand:hover {
-  background: transparent;
+.search-results {
+  top: calc(100% + 6px);
+  z-index: 1050;
+  max-height: 320px;
+  overflow: auto;
+  button {
+    display: block;
+    width: 100%;
+    padding: 0.625rem;
+    text-align: left;
+    color: var(--bs-primary);
+    background: transparent;
+    border: 0;
+    border-radius: var(--bs-border-radius-sm);
+    &:hover,
+    &:focus-visible {
+      background: var(--bs-primary-bg-subtle);
+    }
+  }
 }
-.header-brand-mark {
-  width: 51px;
-  height: 51px;
-  flex-shrink: 0;
+.account {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  a {
+    color: white;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  .btn {
+    font-size: 0.75rem;
+  }
 }
-.header-brand-name {
-  display: block;
-  font:
-    bold 27px/1.1 Georgia,
-    'Times New Roman',
-    serif;
-}
-.header-brand-tag {
-  display: block;
-  color: var(--header-muted);
-  margin-top: 4px;
-  font-size: 12px;
-}
-.header-search {
-  flex: 1;
-  max-width: 650px;
-  min-width: 0;
-  margin-inline: auto;
-  position: relative;
-}
-.header-search :deep(.form-control) {
-  padding: 12px 70px 12px 43px;
-  background: #f6f7f5;
-  border-color: var(--header-line);
-  color: #34443e;
-  font-size: 14px;
-  border-radius: 7px;
-}
-.header-search :deep(.form-control:focus) {
-  border-color: #7da58c;
-  box-shadow: 0 0 0 0.2rem #124d3617;
-}
-.header-icon,
-.header-chevron {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vertical-align: middle;
-  flex-shrink: 0;
-}
-.header-search-icon {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  z-index: 1;
-  color: #53655b;
-}
-.header-search-key {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 0 6px;
-  border: 1px solid #dce2dd;
-  border-radius: 5px;
-  background: white;
-  color: #77827c;
-  font:
-    12px/1.5 system-ui,
-    sans-serif;
-}
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-shrink: 0;
-}
-.header-contribute {
-  --bs-btn-bg: var(--header-forest);
-  --bs-btn-border-color: var(--header-forest);
-  --bs-btn-hover-bg: #0d3928;
-  --bs-btn-hover-border-color: #0d3928;
-  --bs-btn-active-bg: #0d3928;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 17px;
-  font-size: 14px;
-  font-weight: 600;
-}
-.header-contribute .header-icon {
-  width: 16px;
-  height: 16px;
-}
-.header-dropdown :deep(.dropdown-toggle),
-.header-navigation :deep(.dropdown-toggle) {
-  border: 0;
-  border-radius: 8px;
-  color: #4b5c53;
-  padding: 8px;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: none;
-}
-.header-dropdown :deep(.dropdown-toggle:hover),
-.header-navigation :deep(.dropdown-toggle:hover) {
-  background: #e8f0e6;
-}
-.header-dropdown :deep(.dropdown-menu),
-.header-navigation :deep(.dropdown-menu) {
-  --bs-dropdown-link-hover-bg: #e8f0e6;
-  --bs-dropdown-link-active-bg: #124d36;
-  font-size: 14px;
-  min-width: 220px;
-}
-.header-dropdown :deep(.dropdown-item),
-.header-navigation :deep(.dropdown-item) {
-  padding: 8px 16px;
-  transition: none;
-}
-.header-avatar {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  background: #e8d7bd;
-  display: inline-grid;
-  place-items: center;
-  color: #674c32;
-  font-size: 12px;
-  font-weight: 700;
-  border: 2px solid white;
-}
-.header-chevron {
-  width: 13px;
-  height: 13px;
-}
-.header-notifications {
-  max-width: 260px;
-  padding: 10px 16px;
-  color: var(--header-muted);
-}
-.header-navigation {
-  display: none;
-}
-.app-header :deep(:focus-visible) {
-  outline: 3px solid #d59c49;
-  outline-offset: 3px;
+.site-nav {
+  min-height: 64px;
+  .navbar-nav {
+    gap: clamp(0.5rem, 1.3vw, 1.3rem);
+  }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.25rem 0.3rem;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    color: var(--bs-body-color);
+    border: 0;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    i {
+      font-size: 1.2rem;
+    }
+    &:hover,
+    &.active {
+      color: var(--bs-primary);
+    }
+    &.active {
+      border-bottom-color: var(--bs-primary);
+      font-weight: 600;
+    }
+  }
+  .dropdown-toggle {
+    text-decoration: none;
+  }
+  .dropdown-menu {
+    min-width: 185px;
+  }
+  .dropdown-item {
+    font-size: 0.8125rem;
+  }
+  .contribute {
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
 }
 @media (max-width: 1199.98px) {
-  .app-header {
-    gap: 20px;
-  }
-  .header-brand-tag,
-  .header-search-key {
-    display: none;
-  }
-  .header-brand-name {
-    font-size: 23px;
-  }
-  .header-search :deep(.form-control) {
-    padding-right: 12px;
+  .site-nav .nav-link {
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    i {
+      font-size: 1rem;
+    }
   }
 }
 @media (max-width: 991.98px) {
-  .app-header {
-    gap: 12px;
-    min-height: 72px;
+  .site-nav {
+    min-height: 54px;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    .navbar-collapse {
+      flex-basis: 100%;
+      order: 3;
+      max-height: calc(100dvh - 140px);
+      overflow: auto;
+    }
+    .navbar-nav {
+      gap: 0;
+      padding: 0.625rem 0;
+    }
+    .nav-link {
+      padding: 0.75rem;
+      border-bottom: 0;
+      border-left: 3px solid transparent;
+      &.active {
+        background: var(--bs-primary-bg-subtle);
+        border-left-color: var(--bs-primary);
+      }
+    }
+    .contribute {
+      margin-left: auto;
+    }
+    .dropdown-menu {
+      border: 0;
+      background: var(--bs-light);
+    }
   }
-  .app-header-space {
-    min-height: 72px;
+  .site-search {
+    max-width: 410px;
   }
-  .header-navigation {
-    display: block;
-  }
-  .header-brand-mark {
-    width: 38px;
-    height: 38px;
-  }
-  .header-brand {
-    gap: 7px;
-  }
-  .header-actions {
-    gap: 8px;
-  }
-  .header-contribute {
-    padding: 9px 12px;
-  }
-}
-@media (max-width: 767.98px) {
-  .header-contribute {
+  .account > a {
     display: none;
   }
 }
 @media (max-width: 575.98px) {
-  .app-header-space {
-    min-height: 122px;
-  }
-  .app-header {
+  .brandbar {
     flex-wrap: wrap;
-    padding: 12px 16px;
-    gap: 8px;
   }
-  .header-brand {
-    flex: 1;
-  }
-  .header-search {
+  .site-search {
     order: 3;
-    flex-basis: 100%;
+    width: 100%;
     max-width: none;
   }
-  .header-search :deep(.form-control) {
-    padding-top: 9px;
-    padding-bottom: 9px;
+  .account {
+    margin-left: auto;
   }
-  .header-search-icon {
-    top: 11px;
-  }
-  .header-actions {
-    gap: 0;
-  }
-  .header-dropdown :deep(.dropdown-toggle) {
-    padding: 5px;
-  }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .header-contribute {
-    transition: background-color 0.15s;
+  .brand {
+    font-size: 1.375rem;
   }
 }
 @media print {
-  .app-header-space {
-    display: none;
+  .app-header {
+    display: none !important;
   }
 }
 </style>
