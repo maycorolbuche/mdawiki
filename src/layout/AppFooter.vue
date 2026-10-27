@@ -16,6 +16,7 @@ const emit = defineEmits(['notice'])
 
 <style lang="scss" scoped>
 .site-footer {
+  grid-column: 1;
   border-top: 1px solid #dbe3e8;
   background: rgba(255, 255, 255, 0.8);
   padding: 17px 30px;
@@ -39,3 +40,4 @@ const emit = defineEmits(['notice'])
   }
 }
 </style>
+
