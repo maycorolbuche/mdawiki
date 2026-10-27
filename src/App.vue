@@ -1,7 +1,8 @@
 <script setup>
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onUnmounted, ref } from 'vue'
 import AppHeader from './layout/AppHeader.vue'
 import AppFooter from './layout/AppFooter.vue'
+import AppSidebar from './layout/AppSidebar.vue'
 import {
   BApp,
   BButton,
@@ -70,7 +71,6 @@ const isCollaborationOpen = ref(true)
 const isDiscussionOpen = ref(true)
 const isInformationOpen = ref(true)
 const activeTab = ref(0)
-const activeSection = ref('requisitos')
 const editText = ref('')
 const editSection = ref('página')
 const notice = ref('')
@@ -117,19 +117,7 @@ async function printArticle() {
   await nextTick()
   window.print()
 }
-function updateTableOfContents() {
-  if (activeTab.value !== 0) return
-  const visibleSections = sections.filter((section) => {
-    const element = document.getElementById(section.id)
-    return element && element.getBoundingClientRect().top < window.innerHeight * 0.4
-  })
-  activeSection.value = visibleSections.at(-1)?.id || 'requisitos'
-}
-onMounted(() => {
-  window.addEventListener('scroll', updateTableOfContents, { passive: true })
-})
 onUnmounted(() => {
-  window.removeEventListener('scroll', updateTableOfContents)
   clearTimeout(noticeTimer)
 })
 </script>
@@ -145,38 +133,7 @@ onUnmounted(() => {
     />
 
     <div class="workspace">
-      <aside
-        class="left-sidebar d-none d-xl-block position-sticky"
-        aria-label="Navegação do artigo"
-      >
-        <div class="side-panel bg-white border rounded-2 p-3">
-          <h2 class="panel-title mb-4">Neste artigo</h2>
-          <nav class="toc" aria-label="Índice">
-            <a
-              v-for="section in sections.slice(0, 3)"
-              :key="section.id"
-              :href="`#${section.id}`"
-              :class="{ active: activeSection === section.id }"
-              :aria-current="activeSection === section.id ? 'location' : undefined"
-              @click.prevent="goTo(section.id)"
-              >{{ section.title }}</a
-            >
-          </nav>
-          <hr />
-          <h2 class="panel-title mb-3">Explorar</h2>
-          <div class="sidebar-links d-flex flex-column gap-1">
-            <a href="#categorias" @click.prevent="goTo('categorias')"
-              ><i class="bi bi-folder"></i>Categorias</a
-            ><a href="#relacionadas" @click.prevent="goTo('relacionadas')"
-              ><i class="bi bi-file-earmark-text"></i>Páginas relacionadas</a
-            ><button @click="isHistoryModalOpen = true">
-              <i class="bi bi-clock-history"></i>Mudanças recentes</button
-            ><button @click="isHelpModalOpen = true">
-              <i class="bi bi-question-circle"></i>Ajuda da wiki
-            </button>
-          </div>
-        </div>
-      </aside>
+      <AppSidebar />
 
       <main id="artigo" class="page-wrap d-flex justify-content-center" tabindex="-1">
         <div class="w-100 article-container">
@@ -593,9 +550,6 @@ $link-hover-color: #032d20;
 .right-sidebar {
   top: calc(var(--header-height) + 22px);
 }
-.left-sidebar .side-panel {
-  min-height: calc(100vh - var(--header-height) - 88px);
-}
 .side-panel {
   border-color: #e1e7ec !important;
   hr {
@@ -633,24 +587,6 @@ $link-hover-color: #032d20;
         border-radius: 3px;
       }
     }
-  }
-}
-.sidebar-links {
-  a,
-  button {
-    display: flex;
-    align-items: center;
-    gap: 0.875rem;
-    padding: 0.625rem 0.125rem;
-    color: #59635f;
-    font-size: 0.75rem;
-    text-align: left;
-    text-decoration: none;
-    background: none;
-    border: 0;
-  }
-  i {
-    font-size: 1.1875rem;
   }
 }
 .article-container {
