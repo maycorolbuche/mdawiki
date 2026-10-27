@@ -6,11 +6,14 @@ import AppFooter from './layout/AppFooter.vue'
 import AppSidebar from './layout/AppSidebar.vue'
 
 const page = ref(null)
+const isSiteMenuOpen = ref(false)
 </script>
 
 <template>
   <BApp>
     <AppHeader
+      :site-menu-open="isSiteMenuOpen"
+      @open-site-menu="isSiteMenuOpen = true"
       @navigate="page?.goTo?.($event)"
       @notice="page?.showNotice?.($event)"
       @open-discussion="page?.openDiscussion?.()"
@@ -18,7 +21,7 @@ const page = ref(null)
       @open-help="page?.openHelp?.()"
     />
     <div class="workspace">
-      <AppSidebar />
+      <AppSidebar v-model:open="isSiteMenuOpen" />
       <RouterView v-slot="{ Component, route }">
         <component :is="Component" :key="route.path" ref="page" />
       </RouterView>
@@ -26,3 +29,4 @@ const page = ref(null)
     <AppFooter @notice="page?.showNotice?.($event)" />
   </BApp>
 </template>
+

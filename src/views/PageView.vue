@@ -8,7 +8,6 @@ import {
   BCollapse,
   BFormTextarea,
   BModal,
-  BOffcanvas,
   BTab,
   BTabs,
 } from 'bootstrap-vue-next'
@@ -87,22 +86,6 @@ const materials =
         { title: 'Programa Mundial de Alimentos', url: 'https://pt.wfp.org/' },
       ]
     : []
-const sections = [
-  {
-    id: 'requisitos',
-    title: 'Requisitos',
-    content: requirements.join(' ') + ' ' + events.join(' '),
-  },
-  {
-    id: 'materiais',
-    title: 'Materiais de estudo',
-    content: materials.map((x) => x.title).join(' '),
-  },
-  { id: 'referencias', title: 'Referências', content: 'Fontes e dados da especialidade' },
-  { id: 'relacionadas', title: 'Páginas relacionadas', content: 'Artigos relacionados' },
-  { id: 'categorias', title: 'Categorias', content: 'ADRA Nível 1 Especialidades' },
-]
-const isTableOfContentsOpen = ref(false)
 const isHelpModalOpen = ref(false)
 const isEditModalOpen = ref(false)
 const isHistoryModalOpen = ref(false)
@@ -123,7 +106,6 @@ function showNotice(message) {
 }
 async function goTo(id) {
   activeTab.value = 0
-  isTableOfContentsOpen.value = false
   await nextTick()
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
@@ -180,14 +162,7 @@ defineExpose({
   <main v-if="article" id="artigo" class="page-wrap d-flex justify-content-center" tabindex="-1">
     <div class="w-100 article-container">
       <div class="mobile-tools d-flex d-xl-none justify-content-end gap-2 mb-3">
-        <BButton
-          variant="light"
-          class="border"
-          aria-controls="indice-mobile"
-          :aria-expanded="isTableOfContentsOpen"
-          @click="isTableOfContentsOpen = true"
-          ><i class="bi bi-list-ul me-2"></i>Índice do artigo</BButton
-        ><BButton variant="light" class="border" @click="printArticle"
+        <BButton variant="light" class="border" @click="printArticle"
           ><i class="bi bi-printer me-2"></i>Imprimir</BButton
         >
       </div>
@@ -525,21 +500,6 @@ defineExpose({
       >
     </section>
   </aside>
-  <BOffcanvas
-    id="indice-mobile"
-    v-model="isTableOfContentsOpen"
-    placement="start"
-    title="Neste artigo"
-    ><nav class="toc" aria-label="Índice para celular">
-      <a
-        v-for="section in sections"
-        :key="section.id"
-        :href="`#${section.id}`"
-        @click.prevent="goTo(section.id)"
-        >{{ section.title }}</a
-      >
-    </nav></BOffcanvas
-  >
   <BModal v-model="isHelpModalOpen" title="Como colaborar" centered no-footer
     ><p>
       Compartilhe fontes confiáveis, converse na aba Discussão e sugira melhorias para os artigos.
@@ -604,32 +564,6 @@ defineExpose({
   font-weight: 650;
   color: var(--wiki-dark);
   margin: 0;
-}
-.toc {
-  border-left: 1px solid #d8e0dc;
-  a {
-    display: block;
-    position: relative;
-    padding: 0.625rem 0.75rem 0.625rem 1.625rem;
-    color: #5b6660;
-    font-size: 0.75rem;
-    text-decoration: none;
-    &.active {
-      color: var(--bs-primary);
-      background: var(--bs-primary-bg-subtle);
-      font-weight: 600;
-      &::before {
-        content: '';
-        position: absolute;
-        left: -2px;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: var(--bs-primary);
-        border-radius: 3px;
-      }
-    }
-  }
 }
 .article-container {
   max-width: var(--wiki-paper-width);
@@ -955,3 +889,4 @@ defineExpose({
   }
 }
 </style>
+

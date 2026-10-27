@@ -61,8 +61,6 @@ $link-hover-color: #032d20;
     margin: 0;
     padding-left: 0;
   }
-  // Reserva no grid a coluna ocupada pelo menu fixo.
-  .workspace::before { content: ''; }
 }
 @media (max-width: 1399.98px) {
   .workspace {
@@ -92,11 +90,11 @@ $link-hover-color: #032d20;
   html { scroll-behavior: smooth; }
 }
 @media print {
-  .workspace::before { display: none; }
   body, .workspace {
     background: white;
     padding: 0;
     display: block;
   }
 }
+
 

@@ -2,7 +2,8 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { BButton, BCollapse, BDropdown, BDropdownItem, BFormInput } from 'bootstrap-vue-next'
 
-const emit = defineEmits(['navigate', 'notice', 'open-discussion', 'open-history', 'open-help'])
+defineProps({ siteMenuOpen: { type: Boolean, default: false } })
+const emit = defineEmits(['navigate', 'notice', 'open-discussion', 'open-history', 'open-help', 'open-site-menu'])
 
 const isMenuOpen = ref(false)
 const search = ref('')
@@ -118,10 +119,19 @@ onUnmounted(() => observer?.disconnect())
     <nav class="navbar navbar-expand-lg site-nav bg-white px-3 px-lg-4" aria-label="Menu principal">
       <BButton
         variant="light"
+        class="d-xl-none me-2 border"
+        aria-controls="menu-site-mobile"
+        :aria-expanded="siteMenuOpen"
+        @click="emit('open-site-menu')"
+      >
+        <i class="bi bi-list" aria-hidden="true"></i> Menu do site
+      </BButton>
+      <BButton
+        variant="light"
         class="navbar-toggler"
         aria-controls="menu-principal"
         :aria-expanded="isMenuOpen"
-        :aria-label="isMenuOpen ? 'Fechar menu' : 'Abrir menu'"
+        :aria-label="isMenuOpen ? 'Fechar menu principal' : 'Abrir menu principal'"
         @click="isMenuOpen = !isMenuOpen"
       >
         <span class="navbar-toggler-icon"> </span>
@@ -440,5 +450,6 @@ onUnmounted(() => observer?.disconnect())
   }
 }
 </style>
+
 
 
