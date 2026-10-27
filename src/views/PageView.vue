@@ -151,12 +151,9 @@ function updateSidebarPosition() {
     return
   }
   const slot = sidebarSlot.value.getBoundingClientRect()
-  const footer = document.querySelector('.site-footer')
-  const footerTop = footer?.getBoundingClientRect().top ?? window.innerHeight
   sidebarStyle.value = {
     left: `${slot.left}px`,
     width: `${slot.width}px`,
-    bottom: `${Math.max(0, window.innerHeight - footerTop + 12)}px`,
   }
 }
 function scheduleSidebarPosition() {
@@ -164,11 +161,10 @@ function scheduleSidebarPosition() {
 }
 onMounted(async () => {
   await nextTick()
-  window.addEventListener('scroll', scheduleSidebarPosition, { passive: true })
   window.addEventListener('resize', scheduleSidebarPosition)
   if (typeof ResizeObserver !== 'undefined') {
     layoutObserver = new ResizeObserver(scheduleSidebarPosition)
-    for (const element of [sidebarSlot.value, document.querySelector('.workspace'), document.querySelector('.site-footer')]) {
+    for (const element of [sidebarSlot.value]) {
       if (element) layoutObserver.observe(element)
     }
   }
@@ -176,7 +172,6 @@ onMounted(async () => {
 })
 onUnmounted(() => {
   clearTimeout(noticeTimer)
-  window.removeEventListener('scroll', scheduleSidebarPosition)
   window.removeEventListener('resize', scheduleSidebarPosition)
   layoutObserver?.disconnect()
   cancelAnimationFrame(layoutFrame)
@@ -593,6 +588,7 @@ defineExpose({
 .right-sidebar {
   position: fixed;
   top: calc(var(--header-height) + 22px);
+  bottom: 12px;
   overflow-y: auto;
 }
 .side-panel {
@@ -933,4 +929,5 @@ defineExpose({
   }
 }
 </style>
+
 

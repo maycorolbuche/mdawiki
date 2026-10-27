@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { BOffcanvas } from 'bootstrap-vue-next'
 import SiteMenu from './SiteMenu.vue'
 import TopMenu from './TopMenu.vue'
@@ -8,46 +8,13 @@ defineProps({ open: { type: Boolean, default: false } })
 const emit = defineEmits(['update:open', 'navigate', 'notice', 'open-discussion', 'open-history', 'open-help'])
 const close = () => emit('update:open', false)
 const closeOnDesktop = () => { if (window.innerWidth >= 1200) close() }
-const bottomOffset = ref(0)
-let footerObserver
-let positionFrame = 0
-let disposed = false
-function updateBottomOffset() {
-  positionFrame = 0
-  const footer = document.querySelector('.site-footer')
-  const footerTop = footer?.getBoundingClientRect().top ?? window.innerHeight
-  bottomOffset.value = Math.max(0, window.innerHeight - footerTop)
-}
-function schedulePosition() {
-  if (!positionFrame) positionFrame = requestAnimationFrame(updateBottomOffset)
-}
-onMounted(async () => {
-  await nextTick()
-  if (disposed) return
-  window.addEventListener('scroll', schedulePosition, { passive: true })
-  window.addEventListener('resize', schedulePosition)
-  window.addEventListener('resize', closeOnDesktop)
-  if (typeof ResizeObserver !== 'undefined') {
-    footerObserver = new ResizeObserver(schedulePosition)
-    for (const element of [document.querySelector('.workspace'), document.querySelector('.site-footer')]) {
-      if (element) footerObserver.observe(element)
-    }
-  }
-  schedulePosition()
-})
-onUnmounted(() => {
-  disposed = true
-  window.removeEventListener('scroll', schedulePosition)
-  window.removeEventListener('resize', schedulePosition)
-  window.removeEventListener('resize', closeOnDesktop)
-  footerObserver?.disconnect()
-  cancelAnimationFrame(positionFrame)
-})
+onMounted(() => window.addEventListener('resize', closeOnDesktop))
+onUnmounted(() => window.removeEventListener('resize', closeOnDesktop))
 </script>
 
 <template>
   <div class="left-sidebar-slot d-none d-xl-block">
-    <aside class="left-sidebar" :style="{ bottom: `${bottomOffset}px` }" aria-label="Navegação do site">
+    <aside class="left-sidebar" aria-label="Navegação do site">
       <SiteMenu />
     </aside>
   </div>
@@ -68,6 +35,7 @@ onUnmounted(() => {
   position: fixed;
   top: var(--header-height);
   left: 0;
+  bottom: 0;
   width: 250px;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -93,3 +61,4 @@ onUnmounted(() => {
   .left-sidebar-slot { display: none !important; }
 }
 </style>
+

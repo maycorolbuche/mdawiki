@@ -25,11 +25,14 @@ const isSiteMenuOpen = ref(false)
         @navigate="page?.goTo?.($event)" @notice="page?.showNotice?.($event)"
         @open-discussion="page?.openDiscussion?.()" @open-history="page?.openHistory?.()"
         @open-help="page?.openHelp?.()" />
-      <RouterView v-slot="{ Component, route }">
-        <component :is="Component" :key="route.path" ref="page" />
-      </RouterView>
+      <div class="workspace-content">
+        <RouterView v-slot="{ Component, route }">
+          <component :is="Component" :key="route.path" ref="page" />
+        </RouterView>
+        <AppFooter @notice="page?.showNotice?.($event)" />
+      </div>
     </div>
-    <AppFooter @notice="page?.showNotice?.($event)" />
   </BApp>
 </template>
+
 
