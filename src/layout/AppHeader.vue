@@ -129,10 +129,10 @@ onUnmounted(() => observer?.disconnect())
       <BCollapse id="menu-principal" v-model="isMenuOpen" is-nav class="navbar-collapse">
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
-            <a class="nav-link" href="#artigo" @click.prevent="goTo('artigo')">
+            <RouterLink class="nav-link" to="/" @click="isMenuOpen = false">
               <i class="bi bi-house-door"> </i>
               Início
-            </a>
+            </RouterLink>
           </li>
           <li class="nav-item">
             <BDropdown variant="link" toggle-class="nav-link" no-caret>
@@ -220,8 +220,8 @@ onUnmounted(() => observer?.disconnect())
           <li class="nav-item">
             <a
               class="nav-link"
-              href="#"
-              @click.prevent="showNotice('Adicione a rota de acampamento.')"
+              href="/exemplos/acampamento"
+              @click.prevent="$router.push('/exemplos/acampamento'); isMenuOpen = false"
             >
               <i class="bi bi-tree"> </i>Acampamento</a
             >
@@ -437,3 +437,4 @@ onUnmounted(() => observer?.disconnect())
   }
 }
 </style>
+
