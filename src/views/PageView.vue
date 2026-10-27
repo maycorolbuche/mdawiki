@@ -1,11 +1,19 @@
 <script setup>
 import { nextTick, onUnmounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import pathfinderEmblem from '../assets/images/pathfinder-emblem.svg'
 import specialtyEmblem from '../assets/images/specialty-ad004.png'
 import { BButton, BCollapse, BFormTextarea, BModal, BOffcanvas, BTab, BTabs } from 'bootstrap-vue-next'
 
 // Dados demonstrativos: substitua-os pelos dados da API da MDAWiki.
-const props = defineProps({ example: { type: String, default: 'emergencias' } })
+const route = useRoute()
+// Mapeamento temporário: a API poderá localizar a página pelo caminho da URL.
+const examplesByPath = new Map([
+  ['/', 'emergencias'],
+  ['/exemplos/acampamento', 'acampamento'],
+  ['/exemplos/natureza', 'natureza'],
+])
+const example = examplesByPath.get(route.path.replace(/\/$/, '') || '/')
 
 const examples = {
   emergencias: {
@@ -20,15 +28,15 @@ const examples = {
   acampamento: { title: 'Especialidade de Acampamento', summary: 'Conteúdo demonstrativo para testar uma segunda página.', area: 'Atividades Recreativas', code: 'AR 001', level: '1', year: 'Exemplo', origin: 'Demonstração' },
   natureza: { title: 'Especialidade de Estudos da Natureza', summary: 'Conteúdo demonstrativo para testar uma terceira página.', area: 'Estudos da Natureza', code: 'EN 001', level: '1', year: 'Exemplo', origin: 'Demonstração' },
 }
-const article = examples[props.example] ?? examples.emergencias
-const requirements = props.example === 'emergencias' ? [
+const article = example ? examples[example] : null
+const requirements = example === 'emergencias' ? [
   'Explique os danos causados pelos principais tipos de emergências e desastres.',
   'Descreva os serviços prestados pela ADRA e por órgãos de resposta a emergências.',
   'Pesquise uma notícia recente da ADRA e discuta como responder à situação apresentada.',
   'Explique o significado da sigla ADRA e seu papel na resposta a desastres.',
   'Conheça as organizações que atuam em parceria com a ADRA.',
 ] : ['Este requisito é apenas um exemplo para testar a navegação.', 'O conteúdo será carregado pela API futuramente.']
-const events = props.example === 'emergencias' ? [
+const events = example === 'emergencias' ? [
   'Ciclones (furacões e tufões)',
   'Tornados',
   'Inundações',
@@ -37,7 +45,7 @@ const events = props.example === 'emergencias' ? [
   'Incêndios',
   'Guerras e conflitos',
 ] : []
-const materials = props.example === 'emergencias' ? [
+const materials = example === 'emergencias' ? [
   { title: 'ADRA Brasil — projetos e ações humanitárias', url: 'https://adra.org.br/' },
   { title: 'Comitê Internacional da Cruz Vermelha', url: 'https://www.icrc.org/pt' },
   { title: 'ACNUR — proteção e assistência a refugiados', url: 'https://www.acnur.org/br/' },
@@ -84,6 +92,7 @@ async function goTo(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 function openEdit(section = 'página') {
+  if (!article) return
   editSection.value = section
   if (section === 'página')
     editText.value = [article.title, article.summary, ...requirements].join('\n\n')
@@ -120,7 +129,7 @@ defineExpose({ goTo, showNotice, openDiscussion: () => { activeTab.value = 1 }, 
 </script>
 
 <template>
-      <main id="artigo" class="page-wrap d-flex justify-content-center" tabindex="-1">
+      <main v-if="article" id="artigo" class="page-wrap d-flex justify-content-center" tabindex="-1">
         <div class="w-100 article-container">
           <div class="mobile-tools d-flex d-xl-none justify-content-end gap-2 mb-3">
             <BButton
@@ -157,13 +166,13 @@ defineExpose({ goTo, showNotice, openDiscussion: () => { activeTab.value = 1 }, 
                 </p>
                 <h1>{{ article.title }}</h1>
                 <p class="article-intro">{{ article.summary }}</p>
-                <p v-if="props.example === 'emergencias'" class="article-support">
+                <p v-if="example === 'emergencias'" class="article-support">
                   Material de apoio para estudos:
                   <a href="https://plus.mda.wiki.br/especialidade-de-resposta-a-emergencias-e-desastres/"
                     >https://plus.mda.wiki.br/especialidade-de-resposta-a-emergencias-e-desastres/</a>
                 </p>
                 <hr class="article-divider" />
-                <div v-if="props.example === 'emergencias'" class="specialty-wrapper" role="region" aria-label="Tabela de dados da especialidade" tabindex="0">
+                <div v-if="example === 'emergencias'" class="specialty-wrapper" role="region" aria-label="Tabela de dados da especialidade" tabindex="0">
                   <table class="specialty" aria-label="Dados da especialidade">
                     <tbody>
                       <tr>
@@ -248,8 +257,8 @@ defineExpose({ goTo, showNotice, openDiscussion: () => { activeTab.value = 1 }, 
                     </button>
                   </div>
                   <ol class="article-copy">
-                    <li>{{ props.example === 'emergencias' ? 'Dados da especialidade conforme a referência enviada.' : 'Referência demonstrativa, aguardando integração com a API.' }}</li>
-                    <li v-if="props.example === 'emergencias'">Sites das organizações relacionados em Materiais de estudo.</li>
+                    <li>{{ example === 'emergencias' ? 'Dados da especialidade conforme a referência enviada.' : 'Referência demonstrativa, aguardando integração com a API.' }}</li>
+                    <li v-if="example === 'emergencias'">Sites das organizações relacionados em Materiais de estudo.</li>
                   </ol>
                 </section>
                 <section id="relacionadas" class="article-section">
@@ -320,7 +329,17 @@ defineExpose({ goTo, showNotice, openDiscussion: () => { activeTab.value = 1 }, 
         </div>
       </main>
 
-      <aside
+      <main v-else class="page-wrap d-flex justify-content-center" tabindex="-1">
+        <div class="w-100 article-container">
+          <article class="paper bg-white border rounded-1 shadow-sm p-4">
+            <h1>Página não encontrada</h1>
+            <p>Não há conteúdo demonstrativo para este endereço.</p>
+            <RouterLink to="/">Voltar ao início</RouterLink>
+          </article>
+        </div>
+      </main>
+
+      <aside v-if="article"
         class="right-sidebar position-sticky d-flex flex-column gap-2"
         aria-label="Colaboração e informações"
       >
