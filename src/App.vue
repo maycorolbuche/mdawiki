@@ -21,7 +21,10 @@ const isSiteMenuOpen = ref(false)
       @open-help="page?.openHelp?.()"
     />
     <div class="workspace">
-      <AppSidebar v-model:open="isSiteMenuOpen" />
+      <AppSidebar v-model:open="isSiteMenuOpen"
+        @navigate="page?.goTo?.($event)" @notice="page?.showNotice?.($event)"
+        @open-discussion="page?.openDiscussion?.()" @open-history="page?.openHistory?.()"
+        @open-help="page?.openHelp?.()" />
       <RouterView v-slot="{ Component, route }">
         <component :is="Component" :key="route.path" ref="page" />
       </RouterView>
