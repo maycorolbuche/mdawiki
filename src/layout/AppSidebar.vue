@@ -86,8 +86,8 @@ const categories = [
 </script>
 
 <template>
-  <aside class="left-sidebar d-none d-xl-block position-sticky" aria-label="Navegação do site">
-    <nav class="site-menu bg-white border rounded-2 p-3" aria-label="Menu do site">
+  <aside class="left-sidebar d-none d-xl-block" aria-label="Navegação do site">
+    <nav class="site-menu p-3" aria-label="Menu do site">
       <a class="menu-link donate-link" :href="siteUrl + 'page@Doação'">
         <i class="bi bi-heart" aria-hidden="true"></i>
         <span>Faça uma Doação</span>
@@ -122,12 +122,18 @@ const categories = [
 
 <style lang="scss" scoped>
 .left-sidebar {
-  top: calc(var(--header-height) + 22px);
-  max-height: calc(100vh - var(--header-height) - 44px);
+  position: fixed;
+  top: var(--header-height);
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  width: 250px;
   overflow-y: auto;
+  background: #fff;
+  border-right: 1px solid #e1e7ec;
 }
-.site-menu {
-  border-color: #e1e7ec !important;
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .left-sidebar { width: 210px; }
 }
 .menu-group {
   margin-top: 1.25rem;
@@ -183,4 +189,5 @@ const categories = [
   .left-sidebar { display: none !important; }
 }
 </style>
+
 
