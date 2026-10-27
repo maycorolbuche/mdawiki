@@ -17,7 +17,7 @@ import {
 const route = useRoute()
 // Mapeamento temporário: a API poderá localizar a página pelo caminho da URL.
 const examplesByPath = new Map([
-  ['/', 'emergencias'],
+  ['/especialidade-de-resposta-a-emergencias-e-desastres', 'emergencias'],
   ['/acampamento', 'acampamento'],
   ['/natureza', 'natureza'],
 ])
@@ -27,8 +27,8 @@ const examples = {
   emergencias: {
     title: 'Especialidade de Resposta a Emergências e Desastres',
     summary: 'Conhecimento e preparo para servir em situações de emergência.',
-    area: 'ADRA',
-    code: 'AD 004',
+    area: 'AD',
+    code: '004',
     level: '1',
     year: '2005',
     origin: 'Associação Geral',
@@ -56,7 +56,7 @@ const article = example ? examples[example] : null
 const requirements =
   example === 'emergencias'
     ? [
-        'Explique os danos causados pelos principais tipos de emergências e desastres.',
+        'Explicar os tipos de danos mais prováveis de ocorrer às casas, indivíduos e comunidades diante dos principais tipos de emergências e desastres e indicar em qual parte do mundo eles ocorrem com mais frequência. Você pode encontrar estas informações da Defesa Civil do seu Estado.',
         'Descreva os serviços prestados pela ADRA e por órgãos de resposta a emergências.',
         'Pesquise uma notícia recente da ADRA e discuta como responder à situação apresentada.',
         'Explique o significado da sigla ADRA e seu papel na resposta a desastres.',
@@ -75,7 +75,7 @@ const events =
         'Terremotos',
         'Tsunamis',
         'Incêndios',
-        'Guerras e conflitos',
+        'Guerras/conflitos ou guerras civis',
       ]
     : []
 const materials =
@@ -213,7 +213,7 @@ defineExpose({
               <strong>{{ article.area }}</strong>
             </p>
             <h1>{{ article.title }}</h1>
-            <p class="article-intro">{{ article.summary }}</p>
+            <p v-if="example !== 'emergencias'" class="article-intro">{{ article.summary }}</p>
             <p v-if="example === 'emergencias'" class="article-support">
               Material de apoio para estudos:
               <a
@@ -323,9 +323,9 @@ defineExpose({
               </div>
               <p class="article-copy text-secondary">Páginas de exemplo para testar a navegação:</p>
               <ul class="article-copy">
-                <li><RouterLink to="/">Resposta a Emergências e Desastres</RouterLink></li>
-                <li><RouterLink to="/exemplos/acampamento">Acampamento</RouterLink></li>
-                <li><RouterLink to="/exemplos/natureza">Estudos da Natureza</RouterLink></li>
+                <li><RouterLink to="/especialidade-de-resposta-a-emergencias-e-desastres">Resposta a Emergências e Desastres</RouterLink></li>
+                <li><RouterLink to="/acampamento">Acampamento</RouterLink></li>
+                <li><RouterLink to="/natureza">Estudos da Natureza</RouterLink></li>
               </ul>
             </section>
             <div
@@ -899,3 +899,4 @@ defineExpose({
   .specialty { print-color-adjust: exact; }
 }
 </style>
+
