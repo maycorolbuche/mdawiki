@@ -1,6 +1,8 @@
 <script setup>
 import { nextTick, onUnmounted, ref } from 'vue'
 import AppHeader from './layout/AppHeader.vue'
+import pathfinderEmblem from './assets/images/pathfinder-emblem.svg'
+import specialtyEmblem from './assets/images/specialty-ad004.png'
 import AppFooter from './layout/AppFooter.vue'
 import AppSidebar from './layout/AppSidebar.vue'
 import {
@@ -18,7 +20,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 
 // Dados demonstrativos: substitua-os pelos dados da API da MDAWiki.
 const article = {
-  title: 'Resposta a Emergências e Desastres',
+  title: 'Especialidade de Resposta a Emergências e Desastres',
   summary: 'Conhecimento e preparo para servir em situações de emergência.',
   area: 'ADRA',
   code: 'AD 004',
@@ -172,24 +174,38 @@ onUnmounted(() => {
                 </p>
                 <h1>{{ article.title }}</h1>
                 <p class="article-intro">{{ article.summary }}</p>
-                <dl class="specialty d-grid rounded-2" aria-label="Dados da especialidade">
-                  <div>
-                    <dt>Área:</dt>
-                    <dd>{{ article.area }}</dd>
-                  </div>
-                  <div>
-                    <dt>Código:</dt>
-                    <dd>{{ article.code }}</dd>
-                  </div>
-                  <div>
-                    <dt>Nível:</dt>
-                    <dd>{{ article.level }}</dd>
-                  </div>
-                  <div>
-                    <dt>Ano:</dt>
-                    <dd>{{ article.year }}</dd>
-                  </div>
-                </dl>
+                <p class="article-support">
+                  Material de apoio para estudos:
+                  <a href="https://plus.mda.wiki.br/especialidade-de-resposta-a-emergencias-e-desastres/"
+                    >https://plus.mda.wiki.br/especialidade-de-resposta-a-emergencias-e-desastres/</a>
+                </p>
+                <hr class="article-divider" />
+                <div class="specialty-wrapper" role="region" aria-label="Tabela de dados da especialidade" tabindex="0">
+                  <table class="specialty" aria-label="Dados da especialidade">
+                    <tbody>
+                      <tr>
+                        <th rowspan="2" class="specialty-image">
+                          <img :src="pathfinderEmblem" alt="Emblema dos Desbravadores" />
+                        </th>
+                        <th scope="col">Área</th>
+                        <th scope="col">Código</th>
+                        <th scope="col">Nível</th>
+                        <th scope="col">Ano</th>
+                        <th scope="col">Instituição de Origem</th>
+                        <th rowspan="2" class="specialty-image">
+                          <img :src="specialtyEmblem" alt="Insígnia da especialidade" />
+                        </th>
+                      </tr>
+                      <tr>
+                        <td>{{ article.area }}</td>
+                        <td>{{ article.code }}</td>
+                        <td>{{ article.level }}</td>
+                        <td>{{ article.year }}</td>
+                        <td>{{ article.origin }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
                 <section id="requisitos" class="article-section">
                   <div
                     class="section-heading d-flex align-items-center justify-content-between gap-2"
@@ -518,15 +534,40 @@ $primary: #07523b;
 $secondary: #557b64;
 $body-color: #303940;
 $body-bg: #edf1f4;
-$font-family-sans-serif:
-  'Segoe UI',
-  system-ui,
-  -apple-system,
-  sans-serif;
+$font-family-sans-serif: 'Open Sans', Helvetica, Arial, sans-serif;
 $link-color: $primary;
 $link-hover-color: #032d20;
 
 @import 'bootstrap/scss/bootstrap';
+
+@font-face {
+  font-family: 'Open Sans';
+  src: url('./assets/fonts/OpenSans-Light.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Open Sans';
+  src: url('./assets/fonts/OpenSans-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Open Sans';
+  src: url('./assets/fonts/OpenSans-SemiBold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Open Sans';
+  src: url('./assets/fonts/OpenSans-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
 
 // Estilos próprios: apenas detalhes do layout que as utilidades não cobrem.
 :root {
@@ -598,20 +639,18 @@ $link-hover-color: #032d20;
   padding: 0 52px 24px;
   h1,
   h2 {
-    color: var(--wiki-dark);
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: inherit;
+    color: #777;
   }
   h1 {
-    font-size: clamp(28px, 2.5vw, 39px);
-    line-height: 1.16;
-    letter-spacing: -0.7px;
-    font-weight: 600;
-    margin: 0 0 0.75rem;
+    font-size: clamp(1.75rem, 2.5vw, 2rem);
+    line-height: 1.2;
+    font-weight: 300;
+    margin: 0 0 1rem;
   }
   h2 {
-    font-size: 1.8125rem;
-    font-weight: 500;
-    letter-spacing: -0.4px;
+    font-size: 1.5rem;
+    font-weight: 400;
     margin: 0;
   }
 }
@@ -664,36 +703,54 @@ $link-hover-color: #032d20;
     text-decoration: none;
   }
 }
-.article-intro {
-  color: #69746d;
-  font-size: 0.9375rem;
-  line-height: 1.6;
-  margin-bottom: 1.25rem;
+.article-intro,
+.article-support {
+  color: #777;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.article-support a,
+.article-copy a {
+  color: #4a89dc;
+  overflow-wrap: anywhere;
+}
+.article-divider {
+  margin: 1.25rem 0;
+  border-color: #ccc;
+}
+.specialty-wrapper {
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
 }
 .specialty {
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-  margin: 0 0 2rem;
-  padding: 0.75rem 0.3rem;
-  background: var(--bs-primary-bg-subtle);
-  border: 1px solid var(--bs-primary-border-subtle);
-  div {
-    text-align: center;
-    border-right: 1px solid var(--bs-primary-border-subtle);
-    padding: 0 5px;
-    font-size: 0.6875rem;
-    &:last-child {
-      border: 0;
-    }
+  width: 100%;
+  min-width: 590px;
+  border-collapse: collapse;
+  color: #fff;
+  font-size: 13px;
+  text-align: center;
+  th, td {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    padding: 0.75rem 0.45rem;
+    vertical-align: middle;
   }
-  dt,
-  dd {
-    display: inline;
-    margin: 0;
+  th {
+    background: #0e0d34;
+    font-weight: 700;
   }
-  dt {
-    font-weight: 600;
-    margin-right: 6px;
+  td, .specialty-image {
+    background: #55577f;
+  }
+  .specialty-image {
+    width: 100px;
+    padding: 4px;
+  }
+  img {
+    display: block;
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    margin: auto;
   }
 }
 .article-section {
@@ -701,14 +758,14 @@ $link-hover-color: #032d20;
   margin-bottom: 2.25rem;
 }
 .section-heading {
-  border-bottom: 1px solid #83ad96;
+  border-bottom: 1px solid #ddd;
   margin-bottom: 1rem;
   padding-bottom: 0.4375rem;
 }
 .article-copy {
-  font-size: 0.75rem;
-  line-height: 1.85;
-  color: #3f4742;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #666;
 }
 .requirements {
   padding-left: 19px;
@@ -844,9 +901,6 @@ $link-hover-color: #032d20;
       grid-column: 1 / -1;
     }
   }
-  .paper h1 {
-    font-size: 2.25rem;
-  }
 }
 @media (max-width: 575.98px) {
   .workspace {
@@ -873,13 +927,6 @@ $link-hover-color: #032d20;
   }
   .toolbar-edit {
     margin-right: -6px;
-  }
-  .specialty {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px 0;
-    div:nth-child(2) {
-      border: 0;
-    }
   }
   .right-sidebar {
     grid-template-columns: 1fr;
