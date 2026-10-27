@@ -206,8 +206,11 @@ defineExpose({
           nav-class="article-tabs"
           content-class="article-content"
         >
-          <BTab
-            ><template #title><i class="bi bi-file-earmark-text me-2"></i>Artigo</template>
+          <BTab>
+            <template #title>
+              <i class="bi bi-file-earmark-text me-2"></i>
+              Artigo
+            </template>
             <p class="eyebrow">
               <a href="#categorias" @click.prevent="goTo('categorias')">Especialidades</a> /
               <strong>{{ article.area }}</strong>
@@ -323,7 +326,11 @@ defineExpose({
               </div>
               <p class="article-copy text-secondary">Páginas de exemplo para testar a navegação:</p>
               <ul class="article-copy">
-                <li><RouterLink to="/especialidade-de-resposta-a-emergencias-e-desastres">Resposta a Emergências e Desastres</RouterLink></li>
+                <li>
+                  <RouterLink to="/especialidade-de-resposta-a-emergencias-e-desastres"
+                    >Resposta a Emergências e Desastres</RouterLink
+                  >
+                </li>
                 <li><RouterLink to="/acampamento">Acampamento</RouterLink></li>
                 <li><RouterLink to="/natureza">Estudos da Natureza</RouterLink></li>
               </ul>
@@ -345,8 +352,11 @@ defineExpose({
               Conteúdo demonstrativo. As páginas e seus dados serão integrados à API futuramente.
             </p>
           </BTab>
-          <BTab
-            ><template #title><i class="bi bi-chat-square-text me-2"></i>Discussão</template>
+          <BTab>
+            <template #title>
+              <i class="bi bi-chat-square-text me-2"></i>
+              Discussão
+            </template>
             <div class="pb-5">
               <h2 class="mb-3">Discussão do artigo</h2>
               <p class="article-copy">
@@ -361,10 +371,13 @@ defineExpose({
               <BButton variant="primary" class="mt-3" @click="isHelpModalOpen = true"
                 >Como participar</BButton
               >
-            </div></BTab
-          >
-          <BTab
-            ><template #title><i class="bi bi-clock-history me-2"></i>Histórico</template>
+            </div>
+          </BTab>
+          <BTab>
+            <template #title>
+              <i class="bi bi-clock-history me-2"></i>
+              Histórico
+            </template>
             <div class="pb-5">
               <h2 class="mb-3">Histórico do artigo</h2>
               <p class="article-copy">
@@ -373,8 +386,8 @@ defineExpose({
               <div class="discussion-box article-copy border rounded-2 p-3 bg-light">
                 Não há revisões nesta demonstração.
               </div>
-            </div></BTab
-          >
+            </div>
+          </BTab>
         </BTabs>
         <footer class="paper-footer d-flex justify-content-between">
           <span>MDAWiki · Conhecimento construído em comunidade</span><span>Artigo</span>
@@ -653,11 +666,16 @@ defineExpose({
 }
 .article-tabs-container {
   position: relative;
-  > .nav {
-    margin: 0 -30px 30px;
+
+  .nav {
+    margin: 6px -30px 10px -30px;
     padding-right: 80px;
-    gap: 20px;
+    gap: 10px;
     border-bottom: 1px solid var(--wiki-line);
+
+    .nav-item button {
+      padding: 6px 16px;
+    }
   }
   .nav-link {
     padding: 15px 3px;
@@ -717,7 +735,8 @@ defineExpose({
   color: #fff;
   font-size: 13px;
   text-align: center;
-  th, td {
+  th,
+  td {
     border: 1px solid rgba(255, 255, 255, 0.35);
     padding: 0.75rem 0.45rem;
     vertical-align: middle;
@@ -726,7 +745,8 @@ defineExpose({
     background: #0e0d34;
     font-weight: 700;
   }
-  td, .specialty-image {
+  td,
+  .specialty-image {
     background: #55577f;
   }
   .specialty-image {
@@ -849,9 +869,17 @@ defineExpose({
   }
 }
 @media (max-width: 1399.98px) {
-  .paper { padding-left: 32px; padding-right: 32px; }
-  .article-tabs-container > .nav { margin-left: -15px; margin-right: -15px; }
-  .toolbar-edit { margin-right: -8px; }
+  .paper {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+  .article-tabs-container > .nav {
+    margin-left: -15px;
+    margin-right: -15px;
+  }
+  .toolbar-edit {
+    margin-right: -8px;
+  }
 }
 @media (max-width: 991.98px) {
   .right-sidebar {
@@ -860,32 +888,52 @@ defineExpose({
     grid-template-columns: 1fr 1fr;
     margin: 22px auto 0;
     max-width: 800px;
-    > .side-panel:last-child { grid-column: 1 / -1; }
+    > .side-panel:last-child {
+      grid-column: 1 / -1;
+    }
   }
 }
 @media (max-width: 575.98px) {
   .paper {
     padding: 0 21px 20px;
     min-height: auto;
-    h1 { font-size: 1.875rem; }
-    h2 { font-size: 1.5625rem; }
+    h1 {
+      font-size: 1.875rem;
+    }
+    h2 {
+      font-size: 1.5625rem;
+    }
   }
   .article-tabs-container > .nav {
     margin: 0 -8px 25px;
     gap: 13px;
     padding-right: 50px;
   }
-  .article-tabs-container .nav-link { font-size: 0.625rem; padding: 14px 0; }
-  .toolbar-edit { margin-right: -6px; }
+  .article-tabs-container .nav-link {
+    font-size: 0.625rem;
+    padding: 14px 0;
+  }
+  .toolbar-edit {
+    margin-right: -6px;
+  }
   .right-sidebar {
     grid-template-columns: 1fr;
-    > .side-panel:last-child { grid-column: auto; }
+    > .side-panel:last-child {
+      grid-column: auto;
+    }
   }
 }
 @media print {
-  .right-sidebar, .mobile-tools, .toolbar-edit,
-  .article-tabs-container > .nav, .edit-btn, .paper-note,
-  .modal, .toast-container { display: none !important; }
+  .right-sidebar,
+  .mobile-tools,
+  .toolbar-edit,
+  .article-tabs-container > .nav,
+  .edit-btn,
+  .paper-note,
+  .modal,
+  .toast-container {
+    display: none !important;
+  }
   .paper {
     border: 0 !important;
     box-shadow: none !important;
@@ -893,10 +941,17 @@ defineExpose({
     min-height: 0;
     padding: 0;
   }
-  .article-section { break-inside: avoid; }
-  .article-copy { font-size: 11pt; }
-  .paper h1 { font-size: 26pt; }
-  .specialty { print-color-adjust: exact; }
+  .article-section {
+    break-inside: avoid;
+  }
+  .article-copy {
+    font-size: 11pt;
+  }
+  .paper h1 {
+    font-size: 26pt;
+  }
+  .specialty {
+    print-color-adjust: exact;
+  }
 }
 </style>
-
