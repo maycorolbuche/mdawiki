@@ -165,6 +165,9 @@ onUnmounted(() => observer?.disconnect())
                 Classes
               </BDropdownItem>
               <BDropdownItem @click="goTo('requisitos')">Especialidades</BDropdownItem>
+              <BDropdownItem to="/especialidade-de-resposta-a-emergencias-e-desastres" @click="isMenuOpen = false">
+                Exemplo: Resposta a Emergências e Desastres
+              </BDropdownItem>
               <BDropdownItem @click="showNotice('Adicione a rota de materiais para clubes.')">
                 Materiais para clubes
               </BDropdownItem>
@@ -437,4 +440,5 @@ onUnmounted(() => observer?.disconnect())
   }
 }
 </style>
+
 
