@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import pathfinderEmblem from '../assets/images/pathfinder-emblem.svg'
 import specialtyEmblem from '../assets/images/specialty-ad004.png'
@@ -139,8 +139,47 @@ async function printArticle() {
   await nextTick()
   window.print()
 }
+// A coluna permanece no grid; o painel usa suas medidas enquanto está fixo.
+const sidebarSlot = ref(null)
+const sidebarStyle = ref({})
+let layoutObserver
+let layoutFrame = 0
+function updateSidebarPosition() {
+  layoutFrame = 0
+  if (!sidebarSlot.value || window.innerWidth < 992) {
+    sidebarStyle.value = {}
+    return
+  }
+  const slot = sidebarSlot.value.getBoundingClientRect()
+  const footer = document.querySelector('.site-footer')
+  const footerTop = footer?.getBoundingClientRect().top ?? window.innerHeight
+  sidebarStyle.value = {
+    left: `${slot.left}px`,
+    width: `${slot.width}px`,
+    bottom: `${Math.max(0, window.innerHeight - footerTop + 12)}px`,
+  }
+}
+function scheduleSidebarPosition() {
+  if (!layoutFrame) layoutFrame = requestAnimationFrame(updateSidebarPosition)
+}
+onMounted(async () => {
+  await nextTick()
+  window.addEventListener('scroll', scheduleSidebarPosition, { passive: true })
+  window.addEventListener('resize', scheduleSidebarPosition)
+  if (typeof ResizeObserver !== 'undefined') {
+    layoutObserver = new ResizeObserver(scheduleSidebarPosition)
+    for (const element of [sidebarSlot.value, document.querySelector('.workspace'), document.querySelector('.site-footer')]) {
+      if (element) layoutObserver.observe(element)
+    }
+  }
+  scheduleSidebarPosition()
+})
 onUnmounted(() => {
   clearTimeout(noticeTimer)
+  window.removeEventListener('scroll', scheduleSidebarPosition)
+  window.removeEventListener('resize', scheduleSidebarPosition)
+  layoutObserver?.disconnect()
+  cancelAnimationFrame(layoutFrame)
 })
 
 defineExpose({
@@ -381,9 +420,10 @@ defineExpose({
     </div>
   </main>
 
+  <div v-if="article" ref="sidebarSlot" class="right-sidebar-slot">
   <aside
-    v-if="article"
-    class="right-sidebar position-sticky d-flex flex-column gap-2"
+    class="right-sidebar d-flex flex-column gap-2"
+    :style="sidebarStyle"
     aria-label="Colaboração e informações"
   >
     <section class="side-panel bg-white border rounded-2 p-3">
@@ -500,6 +540,7 @@ defineExpose({
       >
     </section>
   </aside>
+  </div>
   <BModal v-model="isHelpModalOpen" title="Como colaborar" centered no-footer
     ><p>
       Compartilhe fontes confiáveis, converse na aba Discussão e sugira melhorias para os artigos.
@@ -550,7 +591,9 @@ defineExpose({
 <style lang="scss">
 // Sem scoped: os estilos também alcançam elementos gerados pelo Bootstrap Vue e seus modais.
 .right-sidebar {
+  position: fixed;
   top: calc(var(--header-height) + 22px);
+  overflow-y: auto;
 }
 .side-panel {
   border-color: #e1e7ec !important;
@@ -817,7 +860,8 @@ defineExpose({
 }
 @media (max-width: 991.98px) {
   .right-sidebar {
-    position: static !important;
+    position: static;
+    overflow: visible;
     display: grid !important;
     grid-template-columns: 1fr 1fr;
     margin: 22px auto 0;
