@@ -1,16 +1,10 @@
 <script setup>
 import { nextTick, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import mockArticleHtml from '../mocks/articlePdf.html?raw'
 import pathfinderEmblem from '../assets/images/pathfinder-emblem.svg'
 import specialtyEmblem from '../assets/images/specialty-ad004.png'
-import {
-  BButton,
-  BCollapse,
-  BFormTextarea,
-  BModal,
-  BTab,
-  BTabs,
-} from 'bootstrap-vue-next'
+import { BButton, BCollapse, BFormTextarea, BModal, BTab, BTabs } from 'bootstrap-vue-next'
 
 // Dados demonstrativos: substitua-os pelos dados da API da MDAWiki.
 const route = useRoute()
@@ -134,6 +128,25 @@ function downloadSuggestion() {
   isEditModalOpen.value = false
   showNotice('Sugestão baixada. Nenhuma alteração foi publicada.')
 }
+const isPdfLoading = ref(false)
+async function downloadPdf() {
+  if (!article || isPdfLoading.value) return
+  isPdfLoading.value = true
+  try {
+    const { downloadArticlePdf } = await import('../utils/articlePdf')
+    await downloadArticlePdf({
+      title: article.title,
+      html: mockArticleHtml,
+      filename: `${example || 'artigo'}-mdawiki.pdf`,
+      sourceUrl: window.location.href,
+    })
+  } catch (error) {
+    console.error('Falha ao gerar PDF:', error)
+    showNotice('Não foi possível gerar o PDF. Tente novamente.')
+  } finally {
+    isPdfLoading.value = false
+  }
+}
 async function printArticle() {
   activeTab.value = 0
   await nextTick()
@@ -162,6 +175,15 @@ defineExpose({
   <main v-if="article" id="artigo" class="page-wrap d-flex justify-content-center" tabindex="-1">
     <div class="w-100 article-container">
       <div class="mobile-tools d-flex d-xl-none justify-content-end gap-2 mb-3">
+        <BButton
+          variant="primary"
+          :disabled="isPdfLoading"
+          :aria-busy="isPdfLoading"
+          @click="downloadPdf"
+        >
+          <i class="bi bi-file-earmark-pdf me-2"></i
+          >{{ isPdfLoading ? 'Gerando PDF…' : 'Baixar PDF' }}
+        </BButton>
         <BButton variant="light" class="border" @click="printArticle"
           ><i class="bi bi-printer me-2"></i>Imprimir</BButton
         >
@@ -494,6 +516,16 @@ defineExpose({
           </div>
         </dl>
         <hr />
+        <BButton
+          variant="primary"
+          class="w-100 mb-2"
+          :disabled="isPdfLoading"
+          :aria-busy="isPdfLoading"
+          @click="downloadPdf"
+        >
+          <i class="bi bi-file-earmark-pdf me-2"></i
+          >{{ isPdfLoading ? 'Gerando PDF…' : 'Baixar PDF' }}
+        </BButton>
         <BButton variant="light" class="border w-100" style="font-size: 11px" @click="printArticle"
           ><i class="bi bi-printer me-2"></i>Imprimir artigo</BButton
         ></BCollapse
@@ -885,5 +917,3 @@ defineExpose({
   }
 }
 </style>
-
-
