@@ -1,5 +1,6 @@
 <script setup>
-import { reactive, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
+import { BDropdown, BDropdownItem } from "bootstrap-vue-next";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { editorExtensions } from "../utils/editorExtensions.js";
 import { sanitizeArticleHtml } from "../utils/articleHtml.js";
@@ -47,6 +48,35 @@ watch(
 const levels = [2, 3, 4, 5, 6].filter((level) =>
   props.policy.tags.includes(`h${level}`),
 );
+const selectedListType = ref(null);
+const listFormats = computed(() => [
+  { value: null, label: "Números (1, 2, 3)" },
+  ...(props.policy.attributes.ol?.includes("type")
+    ? [
+        { value: "a", label: "Letras minúsculas (a, b, c)" },
+        { value: "A", label: "Letras maiúsculas (A, B, C)" },
+        { value: "i", label: "Romanos minúsculos (i, ii, iii)" },
+        { value: "I", label: "Romanos maiúsculos (I, II, III)" },
+      ]
+    : []),
+]);
+watch(
+  () => editor.value?.getAttributes("orderedList").type,
+  (type) => {
+    if (editor.value?.isActive("orderedList"))
+      selectedListType.value = type || null;
+  },
+);
+function selectListFormat(type) {
+  selectedListType.value = type;
+  if (editor.value.isActive("orderedList"))
+    editor.value
+      .chain()
+      .focus()
+      .updateAttributes("orderedList", { type })
+      .run();
+  else orderedList(type);
+}
 function orderedList(type) {
   const active = editor.value.isActive("orderedList");
   const current = editor.value.getAttributes("orderedList").type || null;
@@ -186,70 +216,50 @@ defineExpose({
         </option>
       </select>
       <template v-for="tool in tools" :key="tool.mark">
+        <BDropdown
+          v-if="tool.mark === 'orderedList'"
+          split
+          size="sm"
+          :variant="
+            editor.isActive('orderedList') ? 'primary' : 'outline-secondary'
+          "
+          :split-variant="
+            editor.isActive('orderedList') ? 'primary' : 'outline-secondary'
+          "
+          :disabled="readOnly"
+          toggle-text="Escolher formato da lista ordenada"
+          :split-class="'ordered-list-action'"
+          @split-click="orderedList(selectedListType)"
+        >
+          <template #button-content
+            ><i class="bi bi-list-ol" aria-hidden="true"></i
+            ><span class="visually-hidden">Lista ordenada</span></template
+          >
+          <BDropdownItem
+            v-for="format in listFormats"
+            :key="format.value ?? 'numbers'"
+            :active="
+              (editor.isActive('orderedList')
+                ? editor.getAttributes('orderedList').type || null
+                : selectedListType) === format.value
+            "
+            @click="selectListFormat(format.value)"
+            >{{ format.label }}</BDropdownItem
+          >
+        </BDropdown>
         <button
+          v-else
           type="button"
           class="btn btn-sm"
           :class="
-            (
-              tool.mark === 'orderedList'
-                ? editor.isActive('orderedList') &&
-                  !editor.getAttributes('orderedList').type
-                : editor.isActive(tool.mark)
-            )
-              ? 'btn-primary'
-              : 'btn-outline-secondary'
+            editor.isActive(tool.mark) ? 'btn-primary' : 'btn-outline-secondary'
           "
           :aria-label="tool.label"
           :title="tool.label"
-          :aria-pressed="
-            tool.mark === 'orderedList'
-              ? editor.isActive('orderedList') &&
-                !editor.getAttributes('orderedList').type
-              : editor.isActive(tool.mark)
-          "
-          @click="
-            tool.mark === 'orderedList'
-              ? orderedList(null)
-              : editor.chain().focus()[tool.command]().run()
-          "
+          :aria-pressed="editor.isActive(tool.mark)"
+          @click="editor.chain().focus()[tool.command]().run()"
         >
           <i :class="`bi bi-${tool.icon}`"></i>
-        </button>
-        <button
-          v-if="
-            tool.mark === 'orderedList' &&
-            policy.attributes.ol?.includes('type')
-          "
-          type="button"
-          class="btn btn-sm"
-          :class="
-            editor.isActive('orderedList', { type: 'a' })
-              ? 'btn-primary'
-              : 'btn-outline-secondary'
-          "
-          aria-label="Lista alfabética"
-          title="Lista alfabética (a, b, c)"
-          :aria-pressed="editor.isActive('orderedList', { type: 'a' })"
-          @click="orderedList('a')"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="1em"
-            height="1em"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path stroke-width="1" d="M6.5 3h8M6.5 8h8M6.5 13h8" />
-            <path
-              stroke-width=".85"
-              d="M1.3 2.2c.4-.4 1.6-.4 1.6.5v1.5M2.9 3H1.8c-1 0-1 .9-.2.9.5 0 .9-.2 1.3-.6M1.3 5.7v3.2M1.3 7.2c1.9-1.2 2.4 1.6.8 1.6-.4 0-.6-.1-.8-.3M3 11.9c-1.9-1-2.5 2.1-.5 2.1.2 0 .4 0 .6-.2"
-            />
-          </svg>
         </button>
       </template>
 
