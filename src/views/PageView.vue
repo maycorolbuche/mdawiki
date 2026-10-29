@@ -64,9 +64,18 @@ const draftFields = computed(
   () =>
     schema.value?.types.find((type) => type.value === draft.type)?.fields ?? [],
 );
-const contentHtml = computed(() =>
-  sanitizeArticleHtml(article.value?.content, schema.value?.html),
-);
+const contentHtml = computed(() => {
+  const html = sanitizeArticleHtml(article.value?.content, schema.value?.html);
+  const document = new DOMParser().parseFromString(html, 'text/html');
+  const missing = new Set((article.value?.links ?? []).filter(link => !link.is_external && link.exists === false && link.target_slug).map(link => link.target_slug));
+  for (const link of document.querySelectorAll('a[href]')) {
+    const href = link.getAttribute('href');
+    if (!href.startsWith('/') || href.startsWith('//')) continue;
+    const slug = articleSlug(href.split(/[?#]/)[0]);
+    if (slug && missing.has(slug)) link.classList.add('wiki-missing-link');
+  }
+  return document.body.innerHTML;
+});
 const generatedSlug = computed(() => titlePathSegment(draft.title));
 const isCreating = computed(() => !article.value);
 
@@ -690,6 +699,8 @@ defineExpose({
 .page-state {
   min-height: 220px;
 }
+.article-body a.wiki-missing-link { color: #ba0000; }
+.article-body a.wiki-missing-link:hover { color: #800000; }
 .article-body {
   h2,
   h3,
@@ -1058,3 +1069,4 @@ defineExpose({
   }
 }
 </style>
+
