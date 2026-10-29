@@ -1,8 +1,9 @@
 <script setup>
-import { computed, reactive, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { BDropdown, BDropdownItem } from "bootstrap-vue-next";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { editorExtensions } from "../utils/editorExtensions.js";
+import { articlePath } from "../utils/page.js";
 import { sanitizeArticleHtml } from "../utils/articleHtml.js";
 const props = defineProps({
   modelValue: { type: String, default: "" },
@@ -163,27 +164,13 @@ const tools = [
     icon: "superscript",
   },
 ].filter((tool) => props.policy.tags.includes(tool.tag));
-const link = { open: false, url: "", title: "" };
-// Ref reativo separado dos estados internos do editor.
-const linkForm = reactive(link);
-function editLink() {
-  linkForm.url = editor.value.getAttributes("link").href || "";
-  linkForm.title = editor.value.getAttributes("link").title || "";
-  linkForm.open = true;
-}
-function applyLink() {
-  const html = sanitizeArticleHtml(
-    `<a href="${linkForm.url.replaceAll('"', "&quot;")}">x</a>`,
-    props.policy,
-  );
-  if (!html.includes("href=")) return;
-  editor.value
-    .chain()
-    .focus()
-    .extendMarkRange("link")
-    .setLink({ href: linkForm.url, title: linkForm.title || null })
-    .run();
-  linkForm.open = false;
+function linkSelection() {
+  const { from, to, empty } = editor.value.state.selection;
+  if (empty || props.readOnly) return;
+  const text = editor.value.state.doc.textBetween(from, to, " ").trim();
+  if (!text) return;
+  const href = /^https?:\/\//i.test(text) ? text : articlePath(text);
+  editor.value.chain().focus().setLink({ href, title: null }).run();
 }
 // Repassa a serialização atual ao salvar, mesmo quando só o título/metadados foram editados.
 defineExpose({
@@ -267,9 +254,13 @@ defineExpose({
         v-if="policy.tags.includes('a')"
         type="button"
         class="btn btn-sm btn-outline-secondary"
-        @click="editLink"
+        aria-label="Criar link a partir do texto selecionado"
+        title="Criar link"
+        :disabled="readOnly || editor.state.selection.empty"
+        @mousedown.prevent
+        @click="linkSelection"
       >
-        Link
+        <i class="bi bi-link-45deg" aria-hidden="true"></i>
       </button>
       <button
         v-if="policy.tags.includes('a') && editor.isActive('link')"
@@ -312,33 +303,6 @@ defineExpose({
         @click="editor.chain().focus().redo().run()"
       >
         Refazer
-      </button>
-    </div>
-    <div
-      v-if="linkForm.open"
-      class="d-flex flex-wrap gap-2 p-2 bg-light border-bottom"
-    >
-      <input
-        v-model="linkForm.url"
-        class="form-control"
-        aria-label="Endereço do link"
-        placeholder="https://..."
-      />
-      <input
-        v-model="linkForm.title"
-        class="form-control"
-        aria-label="Título do link"
-        placeholder="Título opcional"
-      />
-      <button type="button" class="btn btn-primary btn-sm" @click="applyLink">
-        Aplicar link
-      </button>
-      <button
-        type="button"
-        class="btn btn-light btn-sm"
-        @click="linkForm.open = false"
-      >
-        Cancelar link
       </button>
     </div>
     <EditorContent :editor="editor" />
