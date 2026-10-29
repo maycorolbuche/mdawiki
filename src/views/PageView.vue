@@ -1,188 +1,248 @@
 <script setup>
-import { nextTick, onUnmounted, reactive, ref } from "vue";
-import ArticleRichEditor from "../components/ArticleRichEditor.vue";
-import { sanitizeArticleHtml } from "../utils/articleHtml";
-import { useRoute } from "vue-router";
-import pathfinderEmblem from "../assets/images/pathfinder-emblem.svg";
-import specialtyEmblem from "../assets/images/specialty-ad004.png";
+import { computed, nextTick, onUnmounted, reactive, ref, watch } from "vue";
+import {
+  onBeforeRouteLeave,
+  onBeforeRouteUpdate,
+  useRoute,
+  useRouter,
+} from "vue-router";
 import { BButton, BCollapse, BModal, BTab, BTabs } from "bootstrap-vue-next";
+import ArticleRichEditor from "../components/ArticleRichEditor.vue";
+import PageMetadataFields from "../components/PageMetadataFields.vue";
+import pathfinderEmblem from "../assets/images/pathfinder-emblem.svg";
+import { pagesApi } from "../services/pages.js";
+import { sanitizeArticleHtml } from "../utils/articleHtml.js";
+import {
+  articleSlug,
+  metadataPayload,
+  slugify,
+  validatePageDraft,
+} from "../utils/page.js";
+import { unsupportedEditorTags } from "../utils/editorExtensions.js";
 
-// Dados demonstrativos: substitua-os pelos dados da API da MDAWiki.
 const route = useRoute();
-// Mapeamento temporário: a API poderá localizar a página pelo caminho da URL.
-const examplesByPath = new Map([
-  ["/especialidade-de-resposta-a-emergencias-e-desastres", "emergencias"],
-  ["/acampamento", "acampamento"],
-  ["/natureza", "natureza"],
-]);
-const example = examplesByPath.get(route.path.replace(/\/$/, "") || "/");
-
-const examples = {
-  emergencias: {
-    title: "Especialidade de Resposta a Emergências e Desastres",
-    summary: "Conhecimento e preparo para servir em situações de emergência.",
-    area: "AD",
-    code: "004",
-    level: "1",
-    year: "2005",
-    origin: "Associação Geral",
-  },
-  acampamento: {
-    title: "Especialidade de Acampamento",
-    summary: "Conteúdo demonstrativo para testar uma segunda página.",
-    area: "Atividades Recreativas",
-    code: "AR 001",
-    level: "1",
-    year: "Exemplo",
-    origin: "Demonstração",
-  },
-  natureza: {
-    title: "Especialidade de Estudos da Natureza",
-    summary: "Conteúdo demonstrativo para testar uma terceira página.",
-    area: "Estudos da Natureza",
-    code: "EN 001",
-    level: "1",
-    year: "Exemplo",
-    origin: "Demonstração",
-  },
-};
-const article = example
-  ? reactive({
-      ...examples[example],
-      type: "specialty",
-      categories: [examples[example].area, "Nível 1", "Especialidades"],
-      html: null,
-    })
-  : null;
-const requirements =
-  example === "emergencias"
-    ? [
-        "Explicar os tipos de danos mais prováveis de ocorrer às casas, indivíduos e comunidades diante dos principais tipos de emergências e desastres e indicar em qual parte do mundo eles ocorrem com mais frequência. Você pode encontrar estas informações da Defesa Civil do seu Estado.",
-        "Descreva os serviços prestados pela ADRA e por órgãos de resposta a emergências.",
-        "Pesquise uma notícia recente da ADRA e discuta como responder à situação apresentada.",
-        "Explique o significado da sigla ADRA e seu papel na resposta a desastres.",
-        "Conheça as organizações que atuam em parceria com a ADRA.",
-      ]
-    : [
-        "Este requisito é apenas um exemplo para testar a navegação.",
-        "O conteúdo será carregado pela API futuramente.",
-      ];
-const events =
-  example === "emergencias"
-    ? [
-        "Ciclones (furacões e tufões)",
-        "Tornados",
-        "Inundações",
-        "Terremotos",
-        "Tsunamis",
-        "Incêndios",
-        "Guerras/conflitos ou guerras civis",
-      ]
-    : [];
-const materials =
-  example === "emergencias"
-    ? [
-        {
-          title: "ADRA Brasil — projetos e ações humanitárias",
-          url: "https://adra.org.br/",
-        },
-        {
-          title: "Comitê Internacional da Cruz Vermelha",
-          url: "https://www.icrc.org/pt",
-        },
-        {
-          title: "ACNUR — proteção e assistência a refugiados",
-          url: "https://www.acnur.org/br/",
-        },
-        { title: "Programa Mundial de Alimentos", url: "https://pt.wfp.org/" },
-      ]
-    : [];
-const isHelpModalOpen = ref(false);
+const router = useRouter();
+const article = ref(null);
+const schema = ref(null);
+const state = ref("loading");
+const loadError = ref("");
+const activeTab = ref(0);
 const isEditModalOpen = ref(false);
+const isHelpModalOpen = ref(false);
 const isHistoryModalOpen = ref(false);
+const isInformationOpen = ref(true);
 const isCollaborationOpen = ref(true);
 const isDiscussionOpen = ref(true);
-const isInformationOpen = ref(true);
-const activeTab = ref(0);
+const saving = ref(false);
+const preparingEditor = ref(false);
+const editError = ref("");
 const draft = reactive({
   title: "",
-  html: "",
+  content: "",
+  type: "",
   categories: "",
-  type: "specialty",
+  metadata: {},
 });
-const editError = ref("");
-const articleBody = ref(null);
-const pageTypes = [
-  { value: "specialty", label: "Especialidade" },
-  { value: "person", label: "Pessoa" },
-  { value: "article", label: "Artigo" },
-  { value: "club", label: "Clube" },
-];
+const draftVersion = ref("");
+const metadataByType = new Map();
 const notice = ref("");
+const bodyElement = ref(null);
 let noticeTimer;
+let loadController;
+let saveController;
+let generation = 0;
+let disposed = false;
+const requestedSlug = computed(() => articleSlug(route.path));
+const typeDefinition = computed(() =>
+  schema.value?.types.find((type) => type.value === article.value?.type),
+);
+const draftFields = computed(
+  () =>
+    schema.value?.types.find((type) => type.value === draft.type)?.fields ?? [],
+);
+const contentHtml = computed(() =>
+  sanitizeArticleHtml(article.value?.content, schema.value?.html),
+);
+const generatedSlug = computed(() => slugify(draft.title));
+const isCreating = computed(() => !article.value);
+
 function showNotice(message) {
   notice.value = message;
   clearTimeout(noticeTimer);
   noticeTimer = setTimeout(() => {
     notice.value = "";
-  }, 4000);
+  }, 6000);
+}
+async function loadPage() {
+  const current = ++generation;
+  loadController?.abort();
+  loadController = new AbortController();
+  article.value = null;
+  state.value = "loading";
+  loadError.value = "";
+  activeTab.value = 0;
+  isEditModalOpen.value = false;
+  const slug = requestedSlug.value;
+  if (!slug) {
+    state.value = "reserved";
+    return;
+  }
+  const [rules, page] = await Promise.allSettled([
+    pagesApi.schema(),
+    pagesApi.get(slug, loadController.signal),
+  ]);
+  if (disposed || current !== generation) return;
+  if (rules.status === "fulfilled") schema.value = rules.value;
+  if (rules.status === "rejected") {
+    state.value = "error";
+    loadError.value = rules.reason.message;
+    return;
+  }
+  if (page.status === "rejected") {
+    state.value = page.reason.status === 404 ? "missing" : "error";
+    loadError.value = page.reason.message;
+    return;
+  }
+  if (page.value.slug !== slug) {
+    await router.replace("/" + page.value.slug);
+    return;
+  }
+  article.value = page.value;
+  state.value = "ready";
+}
+watch(() => route.path, loadPage, { immediate: true });
+function switchType(event) {
+  metadataByType.set(draft.type, { ...draft.metadata });
+  draft.type = event.target.value;
+  draft.metadata = { ...(metadataByType.get(draft.type) ?? {}) };
+}
+async function openEdit() {
+  if (
+    preparingEditor.value ||
+    saving.value ||
+    !["ready", "missing"].includes(state.value)
+  )
+    return;
+  preparingEditor.value = true;
+  const current = generation;
+  try {
+    const rules = await pagesApi.schema({ revalidate: true });
+    if (disposed || generation !== current) return;
+    schema.value = rules;
+    const unsupported = unsupportedEditorTags(rules.html);
+    if (unsupported.length)
+      throw new Error(
+        `O editor precisa ser atualizado para estas tags: ${unsupported.join(", ")}.`,
+      );
+    const type = article.value?.type ?? rules.page.defaultType;
+    const fields = rules.types.find((item) => item.value === type)?.fields;
+    if (!fields)
+      throw new Error(
+        "O tipo desta página não está configurado para edição na API.",
+      );
+    const unknown = Object.keys(article.value?.metadata ?? {}).filter(
+      (key) => !fields.some((field) => field.key === key),
+    );
+    if (unknown.length)
+      throw new Error(
+        `A API precisa configurar estes metadados antes da edição: ${unknown.join(", ")}.`,
+      );
+    metadataByType.clear();
+    Object.assign(draft, {
+      title: article.value?.title ?? requestedSlug.value.replaceAll("-", " "),
+      type,
+      content: article.value?.content ?? "",
+      categories: (article.value?.categories ?? [])
+        .map((item) => item.name)
+        .join(", "),
+      metadata: { ...(article.value?.metadata ?? {}) },
+    });
+    draftVersion.value = rules.version;
+    editError.value = "";
+    isEditModalOpen.value = true;
+  } catch (error) {
+    if (!disposed) showNotice(error.message);
+  } finally {
+    preparingEditor.value = false;
+  }
+}
+async function saveArticle() {
+  if (saving.value) return;
+  editError.value = validatePageDraft(draft, schema.value);
+  if (editError.value) return;
+  saving.value = true;
+  saveController = new AbortController();
+  const current = generation;
+  try {
+    const rules = await pagesApi.schema({ revalidate: true });
+    if (disposed || generation !== current) return;
+    if (rules.version !== draftVersion.value)
+      throw new Error(
+        "As diretrizes foram alteradas na API. Feche e reabra o editor para revisar as novas regras. Seu rascunho continua aberto.",
+      );
+    const categories = [
+      ...new Set(
+        draft.categories
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean),
+      ),
+    ];
+    if (categories.length > rules.page.maxCategories)
+      throw new Error(`Use no máximo ${rules.page.maxCategories} categorias.`);
+    const data = await pagesApi.save(
+      article.value?.slug,
+      {
+        title: draft.title.trim(),
+        type: draft.type,
+        content: sanitizeArticleHtml(draft.content, rules.html),
+        categories,
+        metadata: metadataPayload(draftFields.value, draft.metadata),
+      },
+      saveController.signal,
+    );
+    if (disposed || generation !== current) return;
+    article.value = data;
+    state.value = "ready";
+    isEditModalOpen.value = false;
+    saving.value = false;
+    if (requestedSlug.value !== data.slug)
+      await router.replace("/" + data.slug);
+    showNotice("Página salva com sucesso.");
+  } catch (error) {
+    if (!disposed && generation === current) editError.value = error.message;
+  } finally {
+    saving.value = false;
+  }
+}
+function preventEditorClose(event) {
+  if (saving.value) event.preventDefault();
 }
 async function goTo(id) {
   activeTab.value = 0;
   await nextTick();
-  document
-    .getElementById(id)
-    ?.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-function openEdit() {
-  if (!article) return;
-  draft.title = article.title;
-  draft.type = article.type;
-  draft.categories = article.categories.join(", ");
-  const body = articleBody.value?.cloneNode(true);
-  body?.querySelectorAll("button").forEach((button) => button.remove());
-  draft.html = sanitizeArticleHtml(article.html ?? body?.innerHTML ?? "");
-  editError.value = "";
-  isEditModalOpen.value = true;
-}
-function saveArticle() {
-  const html = sanitizeArticleHtml(draft.html);
-  const text = new DOMParser().parseFromString(html, "text/html").body
-    .textContent;
-  if (
-    !draft.title.trim() ||
-    !text.trim() ||
-    !pageTypes.some((type) => type.value === draft.type)
-  ) {
-    editError.value =
-      "Preencha o título, o conteúdo e selecione um tipo válido.";
-    return;
-  }
-  article.title = draft.title.trim();
-  article.html = html;
-  article.type = draft.type;
-  article.categories = [
-    ...new Set(
-      draft.categories
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean),
-    ),
-  ];
-  isEditModalOpen.value = false;
-  showNotice(
-    "Alterações aplicadas na demonstração. Recarregar a página restaura os dados originais.",
-  );
+  const target =
+    document.getElementById(id) ??
+    [...(bodyElement.value?.querySelectorAll("h2,h3,h4,h5,h6") ?? [])].find(
+      (element) => slugify(element.textContent) === id,
+    );
+  target?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 async function printArticle() {
   activeTab.value = 0;
   await nextTick();
   window.print();
 }
+// Evita desmontar um formulário enquanto uma gravação está em andamento.
+onBeforeRouteLeave(() => !saving.value);
+onBeforeRouteUpdate(() => !saving.value);
 onUnmounted(() => {
+  disposed = true;
+  ++generation;
+  loadController?.abort();
+  saveController?.abort();
   clearTimeout(noticeTimer);
 });
-
 defineExpose({
   goTo,
   showNotice,
@@ -200,287 +260,176 @@ defineExpose({
 
 <template>
   <main
-    v-if="article"
     id="artigo"
     class="page-wrap d-flex justify-content-center"
     tabindex="-1"
+    :aria-busy="state === 'loading'"
   >
     <div class="w-100 article-container">
-      <div class="mobile-tools d-flex d-xl-none justify-content-end gap-2 mb-3">
-        <BButton variant="light" class="border" @click="printArticle"
-          ><i class="bi bi-printer me-2"></i>Imprimir</BButton
-        >
-      </div>
-      <article class="paper bg-white border rounded-1 shadow-sm">
-        <div class="toolbar-edit position-relative text-end">
+      <article
+        v-if="state !== 'ready'"
+        class="paper bg-white border rounded-1 shadow-sm p-4 page-state"
+      >
+        <p v-if="state === 'loading'" role="status">
+          <span class="spinner-border spinner-border-sm me-2"></span>Carregando
+          página…
+        </p>
+        <template v-else-if="state === 'error'">
+          <h1>Não foi possível carregar a página</h1>
+          <p role="alert">{{ loadError }}</p>
+          <BButton variant="primary" @click="loadPage"
+            >Tentar novamente</BButton
+          >
+        </template>
+        <template v-else-if="state === 'missing'">
+          <h1>Página não encontrada</h1>
+          <p>Ainda não existe um artigo neste endereço.</p>
           <BButton
-            variant="link"
-            class="edit-btn border-0 bg-transparent text-secondary"
-            @click="openEdit()"
-            ><i class="bi bi-pencil me-1"></i>Editar</BButton
+            variant="primary"
+            :disabled="preparingEditor"
+            @click="openEdit"
+            >{{
+              preparingEditor ? "Preparando editor…" : "Criar página"
+            }}</BButton
+          >
+        </template>
+        <template v-else
+          ><h1>Endereço não disponível</h1>
+          <p>
+            Este endereço pertence às rotas do sistema ou não é um endereço
+            válido de artigo.
+          </p></template
+        >
+        <RouterLink v-if="state !== 'loading'" to="/" class="d-block mt-3"
+          >Voltar ao início</RouterLink
+        >
+      </article>
+      <template v-else>
+        <div
+          class="mobile-tools d-flex d-xl-none justify-content-end gap-2 mb-3"
+        >
+          <BButton variant="light" class="border" @click="printArticle"
+            ><i class="bi bi-printer me-2"></i>Imprimir</BButton
           >
         </div>
-        <BTabs
-          v-model="activeTab"
-          class="article-tabs-container"
-          nav-class="article-tabs"
-          content-class="article-content"
-        >
-          <BTab>
-            <template #title>
-              <i class="bi bi-file-earmark-text me-2"></i>
-              Artigo
-            </template>
-            <p class="eyebrow">
-              <a href="#categorias" @click.prevent="goTo('categorias')"
-                >Especialidades</a
-              >
-              /
-              <strong>{{ article.area }}</strong>
-            </p>
-            <h1>{{ article.title }}</h1>
-            <p v-if="example !== 'emergencias'" class="article-intro">
-              {{ article.summary }}
-            </p>
-            <p v-if="example === 'emergencias'" class="article-support">
-              Material de apoio para estudos:
-              <a
-                href="https://plus.mda.wiki.br/especialidade-de-resposta-a-emergencias-e-desastres/"
-                >https://plus.mda.wiki.br/especialidade-de-resposta-a-emergencias-e-desastres/</a
-              >
-            </p>
-            <hr class="article-divider" />
-            <div
-              v-if="example === 'emergencias'"
-              class="specialty-wrapper"
-              role="region"
-              aria-label="Tabela de dados da especialidade"
-              tabindex="0"
+        <article class="paper bg-white border rounded-1 shadow-sm">
+          <div class="toolbar-edit position-relative text-end">
+            <BButton
+              variant="link"
+              class="edit-btn border-0 bg-transparent text-secondary"
+              :disabled="preparingEditor"
+              @click="openEdit"
+              ><i class="bi bi-pencil me-1"></i>Editar</BButton
             >
-              <table class="specialty" aria-label="Dados da especialidade">
-                <tbody>
-                  <tr>
-                    <th rowspan="2" class="specialty-image">
-                      <img
-                        :src="pathfinderEmblem"
-                        alt="Emblema dos Desbravadores"
-                      />
-                    </th>
-                    <th scope="col">Área</th>
-                    <th scope="col">Código</th>
-                    <th scope="col">Nível</th>
-                    <th scope="col">Ano</th>
-                    <th scope="col">Instituição de Origem</th>
-                    <th rowspan="2" class="specialty-image">
-                      <img
-                        :src="specialtyEmblem"
-                        alt="Insígnia da especialidade"
-                      />
-                    </th>
-                  </tr>
-                  <tr>
-                    <td>{{ article.area }}</td>
-                    <td>{{ article.code }}</td>
-                    <td>{{ article.level }}</td>
-                    <td>{{ article.year }}</td>
-                    <td>{{ article.origin }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <!-- HTML sanitizado antes de renderizar. -->
-            <div
-              v-if="article.html !== null"
-              class="article-copy article-section"
-              v-html="article.html"
-            ></div>
-            <div v-else ref="articleBody">
-              <section id="requisitos" class="article-section">
-                <div
-                  class="section-heading d-flex align-items-center justify-content-between gap-2"
-                >
-                  <h2>Requisitos</h2>
-                  <button
-                    class="edit-btn border-0 bg-transparent text-secondary"
-                    aria-label="Editar requisitos"
-                    @click="openEdit('requisitos')"
-                  >
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                </div>
-                <div class="article-copy">
-                  <ol class="requirements">
-                    <li
-                      v-for="(requirement, index) in requirements"
-                      :key="requirement"
-                    >
-                      {{ requirement }}
-                      <ol v-if="index === 0 && events.length" type="a">
-                        <li v-for="disaster in events" :key="disaster">
-                          {{ disaster }}.
-                        </li>
-                      </ol>
-                    </li>
-                  </ol>
-                </div>
-              </section>
-              <section id="materiais" class="article-section">
-                <div
-                  class="section-heading d-flex align-items-center justify-content-between gap-2"
-                >
-                  <h2>Materiais de estudo</h2>
-                  <button
-                    class="edit-btn border-0 bg-transparent text-secondary"
-                    aria-label="Editar materiais"
-                    @click="openEdit('materiais')"
-                  >
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                </div>
-                <ul class="article-copy study-links">
-                  <li v-for="item in materials" :key="item.url">
-                    <a
-                      :href="item.url"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      >{{ item.title }}</a
-                    >
-                  </li>
-                </ul>
-              </section>
-              <section id="referencias" class="article-section">
-                <div
-                  class="section-heading d-flex align-items-center justify-content-between gap-2"
-                >
-                  <h2>Referências</h2>
-                  <button
-                    class="edit-btn border-0 bg-transparent text-secondary"
-                    aria-label="Editar referências"
-                    @click="openEdit('referencias')"
-                  >
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                </div>
-                <ol class="article-copy">
-                  <li>
-                    {{
-                      example === "emergencias"
-                        ? "Dados da especialidade conforme a referência enviada."
-                        : "Referência demonstrativa, aguardando integração com a API."
-                    }}
-                  </li>
-                  <li v-if="example === 'emergencias'">
-                    Sites das organizações relacionados em Materiais de estudo.
-                  </li>
-                </ol>
-              </section>
-            </div>
-            <section id="relacionadas" class="article-section">
-              <div
-                class="section-heading d-flex align-items-center justify-content-between gap-2"
+          </div>
+          <BTabs
+            v-model="activeTab"
+            class="article-tabs-container"
+            nav-class="article-tabs"
+            content-class="article-content"
+          >
+            <BTab>
+              <template #title
+                ><i class="bi bi-file-earmark-text me-2"></i>Artigo</template
               >
-                <h2>Páginas relacionadas</h2>
-              </div>
-              <p class="article-copy text-secondary">
-                Páginas de exemplo para testar a navegação:
+              <p class="eyebrow">
+                {{ typeDefinition?.label ?? article.type
+                }}<template v-if="article.metadata?.area">
+                  / <strong>{{ article.metadata.area }}</strong></template
+                >
               </p>
-              <ul class="article-copy">
-                <li>
-                  <RouterLink
-                    to="/especialidade-de-resposta-a-emergencias-e-desastres"
-                    >Resposta a Emergências e Desastres</RouterLink
-                  >
-                </li>
-                <li><RouterLink to="/acampamento">Acampamento</RouterLink></li>
-                <li>
-                  <RouterLink to="/natureza">Estudos da Natureza</RouterLink>
-                </li>
-              </ul>
-            </section>
-            <div
-              id="categorias"
-              class="d-flex flex-wrap align-items-center gap-2 small article-section"
-            >
-              <i class="bi bi-tags text-secondary"></i
-              ><span class="text-secondary">Categorias:</span
-              ><span
-                v-for="item in article.categories"
-                :key="item"
-                class="badge text-bg-light border fw-normal"
-                >{{ item }}</span
+              <h1>{{ article.title }}</h1>
+              <p v-if="article.summary" class="article-intro">
+                {{ article.summary }}
+              </p>
+              <hr class="article-divider" />
+              <div
+                v-if="article.type === 'specialty'"
+                class="specialty-wrapper"
+                role="region"
+                aria-label="Dados da especialidade"
+                tabindex="0"
               >
-            </div>
-            <p class="paper-note">
-              Conteúdo demonstrativo. As páginas e seus dados serão integrados à
-              API futuramente.
-            </p>
-          </BTab>
-          <BTab>
-            <template #title>
-              <i class="bi bi-chat-square-text me-2"></i>
-              Discussão
-            </template>
-            <div class="pb-5">
+                <table class="specialty">
+                  <tbody>
+                    <tr>
+                      <th
+                        v-if="article.metadata.club_type === 'pathfinders'"
+                        rowspan="2"
+                        class="specialty-image"
+                      >
+                        <img
+                          :src="pathfinderEmblem"
+                          alt="Emblema dos Desbravadores"
+                        />
+                      </th>
+                      <th scope="col">Área</th>
+                      <th scope="col">Código</th>
+                      <th scope="col">Nível</th>
+                      <th scope="col">Ano</th>
+                      <th scope="col">Instituição de Origem</th>
+                    </tr>
+                    <tr>
+                      <td>{{ article.metadata.area ?? "—" }}</td>
+                      <td>{{ article.metadata.code ?? "—" }}</td>
+                      <td>{{ article.metadata.level ?? "—" }}</td>
+                      <td>{{ article.metadata.introduction_year ?? "—" }}</td>
+                      <td>{{ article.metadata.origin ?? "—" }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- Conteúdo filtrado pela política retornada pela API. -->
+              <div
+                ref="bodyElement"
+                class="article-copy article-body article-section"
+                v-html="contentHtml"
+              ></div>
+              <div
+                id="categorias"
+                class="d-flex flex-wrap align-items-center gap-2 small article-section"
+              >
+                <i class="bi bi-tags text-secondary"></i
+                ><span class="text-secondary">Categorias:</span
+                ><span
+                  v-for="category in article.categories"
+                  :key="category.id"
+                  class="badge text-bg-light border fw-normal"
+                  >{{ category.name }}</span
+                ><span v-if="!article.categories.length" class="text-secondary"
+                  >Nenhuma</span
+                >
+              </div>
+            </BTab>
+            <BTab
+              ><template #title
+                ><i class="bi bi-chat-square-text me-2"></i>Discussão</template
+              >
               <h2 class="mb-3">Discussão do artigo</h2>
               <p class="article-copy">
-                Use este espaço para conversar sobre fontes, conteúdo e
-                melhorias.
-              </p>
-              <div
-                class="discussion-box article-copy border rounded-2 p-3 bg-light"
+                Comentários ainda não integrados à API.
+              </p></BTab
+            >
+            <BTab
+              ><template #title
+                ><i class="bi bi-clock-history me-2"></i>Histórico</template
               >
-                <strong>Área demonstrativa</strong>
-                <p class="mb-0 mt-2">
-                  Conecte esta aba ao sistema da wiki para carregar e enviar
-                  comentários.
-                </p>
-              </div>
-              <BButton
-                variant="primary"
-                class="mt-3"
-                @click="isHelpModalOpen = true"
-                >Como participar</BButton
-              >
-            </div>
-          </BTab>
-          <BTab>
-            <template #title>
-              <i class="bi bi-clock-history me-2"></i>
-              Histórico
-            </template>
-            <div class="pb-5">
               <h2 class="mb-3">Histórico do artigo</h2>
               <p class="article-copy">
-                As revisões aparecerão aqui após a integração com o sistema.
-              </p>
-              <div
-                class="discussion-box article-copy border rounded-2 p-3 bg-light"
-              >
-                Não há revisões nesta demonstração.
-              </div>
-            </div>
-          </BTab>
-        </BTabs>
-        <footer class="paper-footer d-flex justify-content-between">
-          <span>MDAWiki · Conhecimento construído em comunidade</span
-          ><span>Artigo</span>
-        </footer>
-      </article>
+                A consulta ao histórico ainda não está integrada à API.
+              </p></BTab
+            >
+          </BTabs>
+          <footer class="paper-footer d-flex justify-content-between">
+            <span>MDAWiki · Conhecimento construído em comunidade</span
+            ><span>{{ typeDefinition?.label ?? article.type }}</span>
+          </footer>
+        </article>
+      </template>
     </div>
   </main>
-
-  <main v-else class="page-wrap d-flex justify-content-center" tabindex="-1">
-    <div class="w-100 article-container">
-      <article class="paper bg-white border rounded-1 shadow-sm p-4">
-        <h1>Página não encontrada</h1>
-        <p>Não há conteúdo demonstrativo para este endereço.</p>
-        <RouterLink to="/">Voltar ao início</RouterLink>
-      </article>
-    </div>
-  </main>
-
   <aside
-    v-if="article"
+    v-if="article && state === 'ready'"
     class="right-sidebar d-flex flex-column gap-2"
     aria-label="Colaboração e informações"
   >
@@ -490,7 +439,8 @@ defineExpose({
       >
         <h2 class="panel-title">Colaboração</h2>
         <button
-          class="plain-btn border-0 bg-transparent p-0 text-secondary"
+          type="button"
+          class="border-0 bg-transparent text-secondary"
           :aria-expanded="isCollaborationOpen"
           aria-controls="colaboracao"
           aria-label="Expandir ou recolher colaboração"
@@ -504,34 +454,14 @@ defineExpose({
         </button>
       </div>
       <BCollapse id="colaboracao" v-model="isCollaborationOpen"
-        ><div
-          class="avatars d-flex gap-2 mb-3"
-          aria-label="Avatares ilustrativos"
-        >
-          <span
-            class="avatar d-inline-flex align-items-center justify-content-center rounded-circle text-white bg-primary"
-            >JS</span
-          ><span
-            class="avatar d-inline-flex align-items-center justify-content-center rounded-circle text-white bg-info"
-            >AM</span
-          ><span
-            class="avatar avatar-purple d-inline-flex align-items-center justify-content-center rounded-circle text-white"
-            >RC</span
-          ><span
-            class="avatar d-inline-flex align-items-center justify-content-center rounded-circle bg-light border text-body"
-            >+3</span
-          >
-        </div>
-        <p class="caption">Página colaborativa</p>
-        <p class="muted mb-4">
-          Compartilhe fontes e ajude a melhorar o conteúdo.
-        </p>
+        ><p class="caption">Página colaborativa</p>
+        <p class="muted">Compartilhe fontes e ajude a melhorar o conteúdo.</p>
         <BButton
           variant="outline-primary"
           class="w-100"
-          style="font-size: 11px"
-          @click="openEdit()"
-          ><i class="bi bi-pencil me-2"></i>Sugerir alteração</BButton
+          :disabled="preparingEditor"
+          @click="openEdit"
+          >Editar página</BButton
         ></BCollapse
       >
     </section>
@@ -541,7 +471,8 @@ defineExpose({
       >
         <h2 class="panel-title">Discussão</h2>
         <button
-          class="plain-btn border-0 bg-transparent p-0 text-secondary"
+          type="button"
+          class="border-0 bg-transparent text-secondary"
           :aria-expanded="isDiscussionOpen"
           aria-controls="comentarios"
           aria-label="Expandir ou recolher discussão"
@@ -555,42 +486,11 @@ defineExpose({
         </button>
       </div>
       <BCollapse id="comentarios" v-model="isDiscussionOpen"
-        ><div class="comment d-flex gap-2 border rounded-2 p-2 mb-2 bg-white">
-          <span
-            class="avatar d-inline-flex align-items-center justify-content-center rounded-circle text-white bg-primary"
-            >JS</span
-          >
-          <div>
-            <strong>Exemplo de comentário</strong>
-            <p>Seria interessante incluir um exemplo prático desta situação.</p>
-            <span class="muted" style="font-size: 9px"
-              >Conteúdo ilustrativo</span
-            >
-          </div>
-        </div>
-        <div class="comment d-flex gap-2 border rounded-2 p-2 mb-2 bg-white">
-          <span
-            class="avatar d-inline-flex align-items-center justify-content-center rounded-circle text-white bg-info"
-            >AM</span
-          >
-          <div>
-            <strong>Exemplo de comentário</strong>
-            <p>
-              Também podemos adicionar uma referência para complementar o
-              estudo.
-            </p>
-            <span class="muted" style="font-size: 9px"
-              >Conteúdo ilustrativo</span
-            >
-          </div>
-        </div>
-        <BButton
-          variant="link"
-          class="p-0 mt-2"
-          style="font-size: 11px"
-          @click="activeTab = 1"
-          >Abrir discussão <i class="bi bi-arrow-right ms-1"></i></BButton
-      ></BCollapse>
+        ><p class="muted">Comentários ainda não integrados à API.</p>
+        <BButton variant="link" class="p-0" @click="activeTab = 1"
+          >Abrir discussão</BButton
+        ></BCollapse
+      >
     </section>
     <section class="side-panel bg-white border rounded-2 p-3">
       <div
@@ -598,7 +498,8 @@ defineExpose({
       >
         <h2 class="panel-title">Informações</h2>
         <button
-          class="plain-btn border-0 bg-transparent p-0 text-secondary"
+          type="button"
+          class="border-0 bg-transparent text-secondary"
           :aria-expanded="isInformationOpen"
           aria-controls="informacoes"
           aria-label="Expandir ou recolher informações"
@@ -614,118 +515,146 @@ defineExpose({
       <BCollapse id="informacoes" v-model="isInformationOpen"
         ><dl class="info-list">
           <div>
-            <i class="bi bi-tag"></i>
-            <dt>Área:</dt>
-            <dd>{{ article.area }}</dd>
+            <dt>Tipo:</dt>
+            <dd>{{ typeDefinition?.label ?? article.type }}</dd>
           </div>
-          <div>
-            <i class="bi bi-bar-chart"></i>
-            <dt>Nível:</dt>
-            <dd>{{ article.level }}</dd>
-          </div>
-          <div>
-            <i class="bi bi-file-earmark-text"></i>
-            <dt>Origem:</dt>
-            <dd>{{ article.origin }}</dd>
-          </div>
+          <template
+            v-for="field in typeDefinition?.fields ?? []"
+            :key="field.key"
+            ><div
+              v-if="
+                article.metadata[field.key] !== undefined &&
+                article.metadata[field.key] !== null
+              "
+            >
+              <dt>{{ field.label }}:</dt>
+              <dd>
+                {{
+                  field.input === "boolean"
+                    ? article.metadata[field.key]
+                      ? "Sim"
+                      : "Não"
+                    : Array.isArray(article.metadata[field.key])
+                      ? article.metadata[field.key].join(", ")
+                      : article.metadata[field.key]
+                }}
+              </dd>
+            </div></template
+          >
         </dl>
         <hr />
-        <BButton
-          variant="light"
-          class="border w-100"
-          style="font-size: 11px"
-          @click="printArticle"
-          ><i class="bi bi-printer me-2"></i>Imprimir artigo</BButton
+        <BButton variant="light" class="border w-100" @click="printArticle"
+          >Imprimir artigo</BButton
         ></BCollapse
       >
     </section>
   </aside>
+  <BModal
+    v-model="isEditModalOpen"
+    :title="isCreating ? 'Criar página' : 'Editar página'"
+    size="xl"
+    centered
+    no-footer
+    :no-close-on-backdrop="saving"
+    :no-close-on-esc="saving"
+    :no-header-close="saving"
+    @hide="preventEditorClose"
+  >
+    <form v-if="schema" @submit.prevent="saveArticle">
+      <div v-if="editError" class="alert alert-danger" role="alert">
+        {{ editError }}
+      </div>
+      <fieldset :disabled="saving">
+        <label for="article-title" class="form-label">Título</label
+        ><input
+          id="article-title"
+          v-model="draft.title"
+          class="form-control"
+          required
+          :minlength="schema.page.titleMinLength"
+          :maxlength="schema.page.titleMaxLength"
+        />
+        <p class="form-text">
+          Endereço gerado: /{{ generatedSlug
+          }}<template v-if="article && generatedSlug !== article.slug"
+            >. O endereço anterior redirecionará para o novo.</template
+          >
+        </p>
+        <label for="article-type" class="form-label">Tipo</label
+        ><select
+          id="article-type"
+          :value="draft.type"
+          class="form-select mb-3"
+          required
+          @change="switchType"
+        >
+          <option
+            v-for="type in schema.types"
+            :key="type.value"
+            :value="type.value"
+          >
+            {{ type.label }}
+          </option>
+        </select>
+        <p class="form-text">
+          Ao trocar o tipo, serão enviados somente os campos do tipo
+          selecionado.
+        </p>
+        <PageMetadataFields v-model="draft.metadata" :fields="draftFields" />
+        <label for="article-categories" class="form-label">Categorias</label
+        ><input
+          id="article-categories"
+          v-model="draft.categories"
+          class="form-control"
+          aria-describedby="categories-help"
+        />
+        <p id="categories-help" class="form-text">
+          Separe as categorias por vírgulas.
+        </p>
+        <p class="form-label">Conteúdo</p>
+        <ArticleRichEditor
+          v-if="isEditModalOpen"
+          :key="draftVersion"
+          v-model="draft.content"
+          :policy="schema.html"
+          :read-only="saving"
+        />
+        <p class="form-text">
+          As formatações disponíveis seguem as diretrizes da API. O título
+          principal é reservado à página.
+        </p>
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <BButton variant="light" @click="isEditModalOpen = false"
+            >Cancelar</BButton
+          ><BButton type="submit" variant="primary">{{
+            saving ? "Salvando…" : "Salvar página"
+          }}</BButton>
+        </div>
+      </fieldset>
+    </form>
+  </BModal>
   <BModal v-model="isHelpModalOpen" title="Como colaborar" centered no-footer
     ><p>
-      Compartilhe fontes confiáveis, converse na aba Discussão e sugira
-      melhorias para os artigos.
+      Use Editar para alterar título, conteúdo, categorias e as informações do
+      tipo. Ao salvar, as alterações são gravadas na API.
     </p>
-    <div class="alert alert-light border small">
-      Login, publicação, comentários e histórico precisam ser integrados ao
-      sistema da wiki.
-    </div>
-    <div class="text-end">
-      <BButton variant="primary" @click="isHelpModalOpen = false"
-        >Entendi</BButton
-      >
-    </div></BModal
+    <p>
+      Comentários e consulta ao histórico serão integrados em outra etapa.
+    </p></BModal
   >
   <BModal
     v-model="isHistoryModalOpen"
     title="Mudanças recentes"
     centered
     no-footer
-    >Após a integração, liste aqui as revisões dos artigos, com data, autor e
-    resumo das alterações.</BModal
+    >A consulta às revisões ainda não está integrada à API.</BModal
   >
-  <BModal
-    v-model="isEditModalOpen"
-    title="Editar página"
-    size="xl"
-    centered
-    no-footer
-  >
-    <p class="small text-secondary">
-      Demonstração: as alterações ficam apenas nesta página e não são enviadas à
-      API.
-    </p>
-    <form @submit.prevent="saveArticle">
-      <div v-if="editError" class="alert alert-danger" role="alert">
-        {{ editError }}
-      </div>
-      <label for="article-title" class="form-label">Título</label>
-      <input
-        id="article-title"
-        v-model="draft.title"
-        class="form-control mb-3"
-        required
-        maxlength="255"
-      />
-      <label for="article-type" class="form-label">Tipo</label>
-      <select
-        id="article-type"
-        v-model="draft.type"
-        class="form-select mb-3"
-        required
-      >
-        <option v-for="type in pageTypes" :key="type.value" :value="type.value">
-          {{ type.label }}
-        </option>
-      </select>
-      <label for="article-categories" class="form-label">Categorias</label>
-      <input
-        id="article-categories"
-        v-model="draft.categories"
-        class="form-control"
-        aria-describedby="categories-help"
-      />
-      <p id="categories-help" class="form-text">
-        Separe as categorias por vírgulas.
-      </p>
-      <p class="form-label">Conteúdo</p>
-      <ArticleRichEditor v-if="isEditModalOpen" v-model="draft.html" />
-      <p class="form-text">
-        Negrito, itálico, títulos de 1 a 6, listas e citações. Formatação não
-        permitida é removida ao colar.
-      </p>
-      <div class="d-flex justify-content-end gap-2 mt-3">
-        <BButton variant="light" @click="isEditModalOpen = false"
-          >Cancelar</BButton
-        >
-        <BButton type="submit" variant="primary">Salvar demonstração</BButton>
-      </div>
-    </form>
-  </BModal>
   <div v-if="notice" class="toast-container position-fixed bottom-0 end-0 p-3">
     <div class="toast show" role="status">
       <div class="d-flex">
         <div class="toast-body">{{ notice }}</div>
         <button
+          type="button"
           class="btn-close me-2 m-auto"
           aria-label="Fechar aviso"
           @click="notice = ''"
@@ -737,6 +666,41 @@ defineExpose({
 
 <style lang="scss">
 // Sem scoped: os estilos também alcançam elementos gerados pelo Bootstrap Vue e seus modais.
+.page-state {
+  min-height: 220px;
+}
+.article-body {
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 1.5rem 0 0.8rem;
+    scroll-margin-top: calc(var(--header-height) + 20px);
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+    }
+  }
+  blockquote {
+    border-left: 3px solid #a9bca9;
+    padding-left: 1rem;
+  }
+  pre {
+    white-space: pre-wrap;
+  }
+}
 .side-panel {
   border-color: #e1e7ec !important;
   hr {
