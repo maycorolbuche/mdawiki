@@ -1,4 +1,5 @@
 import { Extension, Node } from "@tiptap/core";
+import { Plugin } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
 import { TableKit } from "@tiptap/extension-table";
 import Image from "@tiptap/extension-image";
@@ -34,7 +35,7 @@ export function editorExtensions(policy) {
       link: has("a")
         ? {
             openOnClick: false,
-            autolink: true,
+            autolink: false,
             linkOnPaste: true,
             shouldAutoLink: (url) => /^https?:\/\//i.test(url),
             HTMLAttributes: { target: null, rel: null },
@@ -42,6 +43,33 @@ export function editorExtensions(policy) {
         : false,
     }),
   ];
+  if (has("a")) extensions.push(Extension.create({
+    name: "httpAutoLinks",
+    addProseMirrorPlugins() {
+      return [new Plugin({
+        appendTransaction(transactions, oldState, state) {
+          if (!transactions.some(transaction => transaction.docChanged) ||
+              transactions.some(transaction => transaction.getMeta("preventAutolink"))) return null;
+          const tr = state.tr;
+          state.doc.descendants((node, position) => {
+            if (!node.isTextblock || node.type.spec.code) return;
+            const text = node.textBetween(0, node.content.size, "", "\ufffc");
+            for (const match of text.matchAll(/https?:\/\/[^\s<>"\ufffc]+/gi)) {
+              const href = match[0].replace(/[.,;:!?]+$/, "");
+              if (!/^https?:\/\/[^/]+/i.test(href)) continue;
+              const from = position + 1 + match.index;
+              const to = from + href.length;
+              let code = false;
+              state.doc.nodesBetween(from, to, child => { if (child.marks.some(mark => mark.type.name === "code")) code = true; });
+              if (!code) tr.addMark(from, to, state.schema.marks.link.create({ href }));
+            }
+            return false;
+          });
+          return tr.docChanged ? tr : null;
+        },
+      })];
+    },
+  }));
   if (has("table") && has("tr") && has("td"))
     extensions.push(
       TableKit.configure({
@@ -101,3 +129,4 @@ export function editorExtensions(policy) {
   );
   return extensions;
 }
+
