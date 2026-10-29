@@ -41,3 +41,6 @@ DOMPurify aplica tags, atributos por elemento e protocolos da política antes de
 `npm test` verifica política de HTML, preservação do editor, limites de título/slug, namespaces reservados, serialização de metadata, ETag e tratamento de respostas do cliente HTTP. `tests/fixtures/pageSchema.json` é uma amostra do contrato da API usada somente pelos testes, sem regras fixas de produção no frontend.
 
 O editor mantém o botão de lista com marcadores e oferece um botão dividido de lista ordenada, com o ícone numérico. O clique principal aplica/remove o formato selecionado; a seta abre números, letras minúsculas/maiúsculas e romanos minúsculos/maiúsculos, sem ícones nos itens. Selecionar um formato aplica-o à lista atual ou cria uma lista. Letras e romanos dependem da autorização do atributo `type` em `ol` pela API e são preservados no HTML.
+
+O botão de link (ícone bi-link-45deg) transforma o texto selecionado em um link interno, preservando maiúsculas e acentos no endereço. URLs HTTP/HTTPS digitadas ou coladas são reconhecidas automaticamente. Links HTTP/HTTPS abrem em nova aba com rel="noopener noreferrer"; links internos usam a mesma aba. A API também normaliza esses atributos ao salvar.
+
