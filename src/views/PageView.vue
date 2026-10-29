@@ -38,6 +38,9 @@ const isInformationOpen = ref(true);
 const isCollaborationOpen = ref(true);
 const isDiscussionOpen = ref(true);
 const saving = ref(false);
+const deleting = ref(false);
+const isDeleteModalOpen = ref(false);
+const deletedPage = ref(null);
 const preparingEditor = ref(false);
 const editError = ref("");
 const draft = reactive({
@@ -91,6 +94,7 @@ async function loadPage() {
   loadController?.abort();
   loadController = new AbortController();
   article.value = null;
+  deletedPage.value = null;
   state.value = "loading";
   loadError.value = "";
   activeTab.value = 0;
@@ -133,6 +137,11 @@ async function loadPage() {
     });
     return;
   }
+  if (page.value.exists === false || page.value.deleted_at) {
+    deletedPage.value = page.value;
+    state.value = "deleted";
+    return;
+  }
   article.value = page.value;
   state.value = "ready";
 }
@@ -146,7 +155,7 @@ async function openEdit() {
   if (
     preparingEditor.value ||
     saving.value ||
-    !["ready", "missing"].includes(state.value)
+    !["ready", "missing", "deleted"].includes(state.value)
   )
     return;
   preparingEditor.value = true;
@@ -229,6 +238,7 @@ async function saveArticle() {
     );
     if (disposed || generation !== current) return;
     article.value = data;
+    deletedPage.value = null;
     state.value = "ready";
     isEditModalOpen.value = false;
     saving.value = false;
@@ -243,6 +253,22 @@ async function saveArticle() {
     if (!disposed && generation === current) editError.value = error.message;
   } finally {
     saving.value = false;
+  }
+}
+async function deleteArticle() {
+  if (!article.value || deleting.value) return;
+  deleting.value = true;
+  const current = generation;
+  try {
+    await pagesApi.remove(article.value.slug);
+    if (disposed || generation !== current) return;
+    isDeleteModalOpen.value = false;
+    await loadPage();
+    showNotice("Página excluída. O histórico foi preservado.");
+  } catch (error) {
+    if (!disposed && generation === current) showNotice(error.message);
+  } finally {
+    deleting.value = false;
   }
 }
 function preventEditorClose(event) {
@@ -264,8 +290,8 @@ async function printArticle() {
   window.print();
 }
 // Evita desmontar um formulário enquanto uma gravação está em andamento.
-onBeforeRouteLeave(() => !saving.value);
-onBeforeRouteUpdate(() => !saving.value);
+onBeforeRouteLeave(() => !saving.value && !deleting.value);
+onBeforeRouteUpdate(() => !saving.value && !deleting.value);
 onUnmounted(() => {
   disposed = true;
   ++generation;
@@ -311,6 +337,17 @@ defineExpose({
             >Tentar novamente</BButton
           >
         </template>
+        <template v-else-if="state === 'deleted'">
+          <h1>{{ deletedPage?.title ?? titleFromPath(route.path) }}</h1>
+          <p>Esta página foi excluída. Seu histórico permanece preservado.</p>
+          <BButton variant="primary" :disabled="preparingEditor" @click="openEdit">{{ preparingEditor ? "Preparando editor…" : "Recriar página" }}</BButton>
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <BButton variant="outline-secondary" @click="activeTab = 1">Discussão</BButton>
+            <BButton variant="outline-secondary" @click="activeTab = 2">Histórico</BButton>
+          </div>
+          <div v-if="activeTab === 1" class="mt-3 text-secondary">A discussão ainda não está integrada à API.</div>
+          <div v-if="activeTab === 2" class="mt-3 text-secondary">A consulta ao histórico ainda não está integrada à API.</div>
+        </template>
         <template v-else-if="state === 'missing'">
           <h1>{{ titleFromPath(route.path) }}</h1>
           <p>Ainda não existe um artigo neste endereço.</p>
@@ -351,6 +388,7 @@ defineExpose({
               @click="openEdit"
               ><i class="bi bi-pencil me-1"></i>Editar</BButton
             >
+            <BButton variant="link" class="border-0 bg-transparent text-danger" @click="isDeleteModalOpen = true"><i class="bi bi-trash me-1"></i>Excluir</BButton>
           </div>
           <BTabs
             v-model="activeTab"
@@ -662,6 +700,13 @@ defineExpose({
         </div>
       </fieldset>
     </form>
+  </BModal>
+  <BModal v-model="isDeleteModalOpen" title="Excluir página" centered no-footer :no-close-on-backdrop="deleting" :no-close-on-esc="deleting" :no-header-close="deleting">
+    <p>Deseja realmente excluir <strong>{{ article?.title }}</strong>? O artigo deixará de aparecer, mas suas revisões serão preservadas.</p>
+    <div class="d-flex justify-content-end gap-2">
+      <BButton variant="light" :disabled="deleting" @click="isDeleteModalOpen = false">Cancelar</BButton>
+      <BButton variant="danger" :disabled="deleting" @click="deleteArticle">{{ deleting ? "Excluindo…" : "Confirmar exclusão" }}</BButton>
+    </div>
   </BModal>
   <BModal v-model="isHelpModalOpen" title="Como colaborar" centered no-footer
     ><p>

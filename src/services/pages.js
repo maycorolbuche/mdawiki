@@ -77,6 +77,23 @@ export function createPageClient(
       return (await request("/pages/" + encodeURIComponent(slug), { signal }))
         .body.data;
     },
+    async remove(slug, signal) {
+      const controller = new AbortController();
+      const abort = () => controller.abort();
+      signal?.addEventListener('abort', abort, { once: true });
+      if (signal?.aborted) abort();
+      const timer = setTimeout(abort, 15000);
+      try {
+        const response = await transport(baseUrl + '/pages/' + encodeURIComponent(slug), { method: 'DELETE', signal: controller.signal });
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          throw new ApiError(body?.error || 'Não foi possível excluir a página.', response.status);
+        }
+      } finally {
+        clearTimeout(timer);
+        signal?.removeEventListener('abort', abort);
+      }
+    },
     async save(slug, data, signal) {
       return (
         await request(slug ? "/pages/" + encodeURIComponent(slug) : "/pages", {
