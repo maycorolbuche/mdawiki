@@ -34,7 +34,9 @@ export function editorExtensions(policy) {
       link: has("a")
         ? {
             openOnClick: false,
-            autolink: false,
+            autolink: true,
+            linkOnPaste: true,
+            shouldAutoLink: (url) => /^https?:\/\//i.test(url),
             HTMLAttributes: { target: null, rel: null },
           }
         : false,
@@ -78,7 +80,17 @@ export function editorExtensions(policy) {
       name: "articleAttributes",
       addGlobalAttributes() {
         return [
-          { types: has("ol") ? ["orderedList"] : [], attributes: { type: { default: null, parseHTML: element => element.getAttribute("type"), renderHTML: attributes => attributes.type ? { type: attributes.type } : {} } } },
+          {
+            types: has("ol") ? ["orderedList"] : [],
+            attributes: {
+              type: {
+                default: null,
+                parseHTML: (element) => element.getAttribute("type"),
+                renderHTML: (attributes) =>
+                  attributes.type ? { type: attributes.type } : {},
+              },
+            },
+          },
           {
             types: has("a") ? ["link"] : [],
             attributes: { title: { default: null } },
