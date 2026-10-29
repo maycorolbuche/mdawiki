@@ -18,6 +18,8 @@ Execute `npm install` após atualizar as dependências e reinicie o Vite após a
 
 `GET /page-schema` fornece versão, limites, tags/atributos/protocolos HTML e os tipos com campos de metadados. É carregado em paralelo à página e armazenado somente na memória da sessão. Abrir ou salvar o editor revalida por ETag. Se as diretrizes mudarem com o formulário aberto, o salvamento é interrompido e pede para reabrir/revisar. A API sempre valida novamente.
 
+Ao criar uma página, o título inicial é sugerido a partir do slug: `especialidade-de-caes` vira `Especialidade de Caes`. Conectivos ficam em minúsculas, exceto no início. Acentos e siglas podem ser corrigidos manualmente; títulos de páginas existentes são preservados.
+
 O formulário mostra título, endereço gerado, tipo, campos específicos, categorias e conteúdo em Tiptap. Metadados são renderizados a partir das definições da API; números, datas, seleções, booleanos e listas de texto são suportados. Código de especialidade é texto para manter zeros. Ao alternar tipos, os rascunhos dos campos são mantidos enquanto o modal estiver aberto; somente os campos do tipo selecionado são enviados. Metadados existentes não descritos pela API bloqueiam edição para evitar perda silenciosa.
 
 O corpo não aceita H1: o título principal pertence à página. As extensões do Tiptap seguem a política da API e preservam tabelas, imagens com data-media-id, figuras/legendas e links. A barra disponibiliza as formatações implementadas e autorizadas. Não há upload de imagem nesta etapa; imagens já presentes são preservadas. Se a API introduzir tags ainda não suportadas, o editor informa a necessidade de atualização em vez de remover conteúdo desconhecido.
