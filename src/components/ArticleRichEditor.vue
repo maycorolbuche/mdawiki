@@ -47,6 +47,14 @@ watch(
 const levels = [2, 3, 4, 5, 6].filter((level) =>
   props.policy.tags.includes(`h${level}`),
 );
+function orderedList(type) {
+  const active = editor.value.isActive("orderedList");
+  const current = editor.value.getAttributes("orderedList").type || null;
+  const chain = editor.value.chain().focus();
+  if (active && current === type) chain.toggleOrderedList().run();
+  else if (active) chain.updateAttributes("orderedList", { type }).run();
+  else chain.toggleOrderedList().updateAttributes("orderedList", { type }).run();
+}
 function heading(event) {
   const level = Number(event.target.value);
   if (level) editor.value.chain().focus().setHeading({ level }).run();
@@ -182,15 +190,16 @@ defineExpose({
         type="button"
         class="btn btn-sm"
         :class="
-          editor.isActive(tool.mark) ? 'btn-primary' : 'btn-outline-secondary'
+          (tool.mark === 'orderedList' ? editor.isActive('orderedList') && !editor.getAttributes('orderedList').type : editor.isActive(tool.mark)) ? 'btn-primary' : 'btn-outline-secondary'
         "
         :aria-label="tool.label"
         :title="tool.label"
-        :aria-pressed="editor.isActive(tool.mark)"
-        @click="editor.chain().focus()[tool.command]().run()"
+        :aria-pressed="tool.mark === 'orderedList' ? editor.isActive('orderedList') && !editor.getAttributes('orderedList').type : editor.isActive(tool.mark)"
+        @click="tool.mark === 'orderedList' ? orderedList(null) : editor.chain().focus()[tool.command]().run()"
       >
         <i :class="`bi bi-${tool.icon}`"></i>
       </button>
+      <button v-if="policy.tags.includes('ol') && policy.attributes.ol?.includes('type')" type="button" class="btn btn-sm" :class="editor.isActive('orderedList', { type: 'a' }) ? 'btn-primary' : 'btn-outline-secondary'" aria-label="Lista alfabética" title="Lista alfabética (a, b, c)" :aria-pressed="editor.isActive('orderedList', { type: 'a' })" @click="orderedList('a')">a. b. c.</button>
       <button
         v-if="policy.tags.includes('a')"
         type="button"
