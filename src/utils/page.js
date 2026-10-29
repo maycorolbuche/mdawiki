@@ -55,3 +55,20 @@ export function validatePageDraft(draft, schema) {
     return "Selecione um tipo válido.";
   return "";
 }
+
+const titleConnectives = new Set(
+  "a as o os de da das do dos e em no na nos nas por para com sem sob sobre entre ao aos".split(" "),
+);
+
+// Sugestão inicial: acentos e siglas podem ser ajustados manualmente.
+export function titleFromSlug(slug) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((word, index) =>
+      index > 0 && titleConnectives.has(word)
+        ? word
+        : word.charAt(0).toLocaleUpperCase("pt-BR") + word.slice(1),
+    )
+    .join(" ");
+}

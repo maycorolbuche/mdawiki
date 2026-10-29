@@ -16,6 +16,7 @@ import {
   articleSlug,
   metadataPayload,
   slugify,
+  titleFromSlug,
   validatePageDraft,
 } from "../utils/page.js";
 import { unsupportedEditorTags } from "../utils/editorExtensions.js";
@@ -149,7 +150,7 @@ async function openEdit() {
       );
     metadataByType.clear();
     Object.assign(draft, {
-      title: article.value?.title ?? requestedSlug.value.replaceAll("-", " "),
+      title: article.value?.title ?? titleFromSlug(requestedSlug.value),
       type,
       content: article.value?.content ?? "",
       categories: (article.value?.categories ?? [])
