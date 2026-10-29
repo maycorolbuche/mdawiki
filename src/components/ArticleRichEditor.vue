@@ -53,7 +53,8 @@ function orderedList(type) {
   const chain = editor.value.chain().focus();
   if (active && current === type) chain.toggleOrderedList().run();
   else if (active) chain.updateAttributes("orderedList", { type }).run();
-  else chain.toggleOrderedList().updateAttributes("orderedList", { type }).run();
+  else
+    chain.toggleOrderedList().updateAttributes("orderedList", { type }).run();
 }
 function heading(event) {
   const level = Number(event.target.value);
@@ -184,22 +185,74 @@ defineExpose({
           Título {{ level }}
         </option>
       </select>
-      <button
-        v-for="tool in tools"
-        :key="tool.mark"
-        type="button"
-        class="btn btn-sm"
-        :class="
-          (tool.mark === 'orderedList' ? editor.isActive('orderedList') && !editor.getAttributes('orderedList').type : editor.isActive(tool.mark)) ? 'btn-primary' : 'btn-outline-secondary'
-        "
-        :aria-label="tool.label"
-        :title="tool.label"
-        :aria-pressed="tool.mark === 'orderedList' ? editor.isActive('orderedList') && !editor.getAttributes('orderedList').type : editor.isActive(tool.mark)"
-        @click="tool.mark === 'orderedList' ? orderedList(null) : editor.chain().focus()[tool.command]().run()"
-      >
-        <i :class="`bi bi-${tool.icon}`"></i>
-      </button>
-      <button v-if="policy.tags.includes('ol') && policy.attributes.ol?.includes('type')" type="button" class="btn btn-sm" :class="editor.isActive('orderedList', { type: 'a' }) ? 'btn-primary' : 'btn-outline-secondary'" aria-label="Lista alfabética" title="Lista alfabética (a, b, c)" :aria-pressed="editor.isActive('orderedList', { type: 'a' })" @click="orderedList('a')">a. b. c.</button>
+      <template v-for="tool in tools" :key="tool.mark">
+        <button
+          type="button"
+          class="btn btn-sm"
+          :class="
+            (
+              tool.mark === 'orderedList'
+                ? editor.isActive('orderedList') &&
+                  !editor.getAttributes('orderedList').type
+                : editor.isActive(tool.mark)
+            )
+              ? 'btn-primary'
+              : 'btn-outline-secondary'
+          "
+          :aria-label="tool.label"
+          :title="tool.label"
+          :aria-pressed="
+            tool.mark === 'orderedList'
+              ? editor.isActive('orderedList') &&
+                !editor.getAttributes('orderedList').type
+              : editor.isActive(tool.mark)
+          "
+          @click="
+            tool.mark === 'orderedList'
+              ? orderedList(null)
+              : editor.chain().focus()[tool.command]().run()
+          "
+        >
+          <i :class="`bi bi-${tool.icon}`"></i>
+        </button>
+        <button
+          v-if="
+            tool.mark === 'orderedList' &&
+            policy.attributes.ol?.includes('type')
+          "
+          type="button"
+          class="btn btn-sm"
+          :class="
+            editor.isActive('orderedList', { type: 'a' })
+              ? 'btn-primary'
+              : 'btn-outline-secondary'
+          "
+          aria-label="Lista alfabética"
+          title="Lista alfabética (a, b, c)"
+          :aria-pressed="editor.isActive('orderedList', { type: 'a' })"
+          @click="orderedList('a')"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="1em"
+            height="1em"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path stroke-width="1" d="M6.5 3h8M6.5 8h8M6.5 13h8" />
+            <path
+              stroke-width=".85"
+              d="M1.3 2.2c.4-.4 1.6-.4 1.6.5v1.5M2.9 3H1.8c-1 0-1 .9-.2.9.5 0 .9-.2 1.3-.6M1.3 5.7v3.2M1.3 7.2c1.9-1.2 2.4 1.6.8 1.6-.4 0-.6-.1-.8-.3M3 11.9c-1.9-1-2.5 2.1-.5 2.1.2 0 .4 0 .6-.2"
+            />
+          </svg>
+        </button>
+      </template>
+
       <button
         v-if="policy.tags.includes('a')"
         type="button"
