@@ -303,7 +303,7 @@ defineExpose({
           >
         </template>
         <template v-else-if="state === 'missing'">
-          <h1>Página não encontrada</h1>
+          <h1>{{ titleFromPath(route.path) }}</h1>
           <p>Ainda não existe um artigo neste endereço.</p>
           <BButton
             variant="primary"

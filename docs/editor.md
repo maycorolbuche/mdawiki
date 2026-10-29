@@ -4,7 +4,7 @@
 
 Página encontrada mostra título, conteúdo, categorias e metadados reais, mantendo abas e painéis. A tabela de especialidade é formada pelos metadados; imagens fictícias não são aplicadas aos artigos reais. Discussão e consulta ao histórico continuam explicitamente pendentes de integração.
 
-404 mostra Criar página. Falha de rede, timeout, erro interno ou falha ao obter diretrizes mostra erro/tentar novamente, sem oferecer criação por engano. A navegação cancela consultas anteriores. Redirecionamentos da API levam à URL canônica da página.
+404 mostra como título a escrita derivada da URL (a mesma usada no formulário), seguida de “Ainda não existe um artigo neste endereço.” e do botão Criar página. Falha de rede, timeout, erro interno ou falha ao obter diretrizes mostra erro/tentar novamente, sem oferecer criação por engano. A navegação cancela consultas anteriores. Redirecionamentos da API levam à URL canônica da página.
 
 ## Ambiente
 
