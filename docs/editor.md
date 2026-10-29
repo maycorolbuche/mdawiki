@@ -44,3 +44,6 @@ O editor mantém o botão de lista com marcadores e oferece um botão dividido d
 
 O botão de link (ícone bi-link-45deg) transforma o texto selecionado em um link interno, preservando maiúsculas e acentos no endereço. URLs HTTP/HTTPS digitadas ou coladas são reconhecidas automaticamente. Links HTTP/HTTPS abrem em nova aba com rel="noopener noreferrer"; links internos usam a mesma aba. A API também normaliza esses atributos ao salvar.
 
+
+A resposta da página inclui a relação de links com target_page_id e exists. O corpo exibido recebe a classe wiki-missing-link nos links de artigos internos com exists=false, usando vermelho como no legado. A classe é apenas de apresentação e não é persistida no HTML. Ao recarregar a página, a existência é obtida novamente da API; não há atualização em tempo real entre abas.
+
