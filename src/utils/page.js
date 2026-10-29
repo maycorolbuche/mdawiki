@@ -6,15 +6,39 @@ export function slugify(title) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
-// Artigos ocupam somente um segmento. Segmentos de um caractere e seus filhos são do sistema.
-export function articleSlug(path) {
+// A escrita da URL é independente do slug normalizado usado pela API.
+export function titleFromPath(path) {
   const parts = path.split("/").filter(Boolean);
   if (parts.length !== 1) return null;
   try {
-    const slug = decodeURIComponent(parts[0]);
-    return /^[a-z0-9][a-z0-9-]*$/.test(slug) && slug.length >= 2 ? slug : null;
+    const segment = decodeURIComponent(parts[0]);
+    if (/[\/\\\u0000-\u001f\u007f]/.test(segment)) return null;
+    return segment.replaceAll("-", " ").trim();
   } catch {
     return null;
+  }
+}
+export function articleSlug(path) {
+  const title = titleFromPath(path);
+  if (title === null) return null;
+  const slug = slugify(title);
+  return slug.length >= 2 ? slug : null;
+}
+export function titlePathSegment(title) {
+  return title
+    .normalize("NFC")
+    .trim()
+    .replace(/[^\p{L}\p{N}\p{M}]+/gu, "-")
+    .replace(/^-|-$/g, "");
+}
+export function articlePath(title) {
+  return "/" + encodeURIComponent(titlePathSegment(title));
+}
+export function sameArticlePath(path, canonical) {
+  try {
+    return decodeURIComponent(path) === decodeURIComponent(canonical);
+  } catch {
+    return false;
   }
 }
 export function metadataPayload(fields, values) {
@@ -54,21 +78,4 @@ export function validatePageDraft(draft, schema) {
   if (!schema.types.some((type) => type.value === draft.type))
     return "Selecione um tipo válido.";
   return "";
-}
-
-const titleConnectives = new Set(
-  "a as o os de da das do dos e em no na nos nas por para com sem sob sobre entre ao aos".split(" "),
-);
-
-// Sugestão inicial: acentos e siglas podem ser ajustados manualmente.
-export function titleFromSlug(slug) {
-  return slug
-    .split("-")
-    .filter(Boolean)
-    .map((word, index) =>
-      index > 0 && titleConnectives.has(word)
-        ? word
-        : word.charAt(0).toLocaleUpperCase("pt-BR") + word.slice(1),
-    )
-    .join(" ");
 }
