@@ -36,6 +36,20 @@ export function sanitizeArticleHtml(html, policy) {
     )
       data.keepAttr = false;
   });
+  purifier.addHook("afterSanitizeAttributes", (node) => {
+    if (node.nodeName.toLowerCase() !== "a") return;
+    const href = node.getAttribute("href") || "";
+    node.removeAttribute("target");
+    node.removeAttribute("rel");
+    if (
+      /^https?:\/\//i.test(href) &&
+      policy.attributes.a?.includes("target") &&
+      policy.attributes.a?.includes("rel")
+    ) {
+      node.setAttribute("target", "_blank");
+      node.setAttribute("rel", "noopener noreferrer");
+    }
+  });
   return purifier.sanitize(html || "", {
     ALLOWED_TAGS: policy.tags,
     ALLOWED_ATTR: [...new Set(Object.values(policy.attributes).flat())],
