@@ -16,7 +16,10 @@ import {
   articleSlug,
   metadataPayload,
   slugify,
-  titleFromSlug,
+  titleFromPath,
+  titlePathSegment,
+  articlePath,
+  sameArticlePath,
   validatePageDraft,
 } from "../utils/page.js";
 import { unsupportedEditorTags } from "../utils/editorExtensions.js";
@@ -64,7 +67,7 @@ const draftFields = computed(
 const contentHtml = computed(() =>
   sanitizeArticleHtml(article.value?.content, schema.value?.html),
 );
-const generatedSlug = computed(() => slugify(draft.title));
+const generatedSlug = computed(() => titlePathSegment(draft.title));
 const isCreating = computed(() => !article.value);
 
 function showNotice(message) {
@@ -88,6 +91,15 @@ async function loadPage() {
     state.value = "reserved";
     return;
   }
+  const typedPath = articlePath(titleFromPath(route.path));
+  if (!sameArticlePath(route.path, typedPath)) {
+    await router.replace({
+      path: typedPath,
+      query: route.query,
+      hash: route.hash,
+    });
+    return;
+  }
   const [rules, page] = await Promise.allSettled([
     pagesApi.schema(),
     pagesApi.get(slug, loadController.signal),
@@ -104,8 +116,12 @@ async function loadPage() {
     loadError.value = page.reason.message;
     return;
   }
-  if (page.value.slug !== slug) {
-    await router.replace("/" + page.value.slug);
+  if (!sameArticlePath(route.path, articlePath(page.value.title))) {
+    await router.replace({
+      path: articlePath(page.value.title),
+      query: route.query,
+      hash: route.hash,
+    });
     return;
   }
   article.value = page.value;
@@ -150,7 +166,7 @@ async function openEdit() {
       );
     metadataByType.clear();
     Object.assign(draft, {
-      title: article.value?.title ?? titleFromSlug(requestedSlug.value),
+      title: article.value?.title ?? titleFromPath(route.path),
       type,
       content: article.value?.content ?? "",
       categories: (article.value?.categories ?? [])
@@ -207,8 +223,12 @@ async function saveArticle() {
     state.value = "ready";
     isEditModalOpen.value = false;
     saving.value = false;
-    if (requestedSlug.value !== data.slug)
-      await router.replace("/" + data.slug);
+    if (!sameArticlePath(route.path, articlePath(data.title)))
+      await router.replace({
+        path: articlePath(data.title),
+        query: route.query,
+        hash: route.hash,
+      });
     showNotice("Página salva com sucesso.");
   } catch (error) {
     if (!disposed && generation === current) editError.value = error.message;
@@ -577,7 +597,7 @@ defineExpose({
         />
         <p class="form-text">
           Endereço gerado: /{{ generatedSlug
-          }}<template v-if="article && generatedSlug !== article.slug"
+          }}<template v-if="article && slugify(draft.title) !== article.slug"
             >. O endereço anterior redirecionará para o novo.</template
           >
         </p>
