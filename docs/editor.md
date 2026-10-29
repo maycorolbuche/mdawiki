@@ -39,3 +39,5 @@ DOMPurify aplica tags, atributos por elemento e protocolos da política antes de
 `src/views/PageViewMock.vue` é uma cópia do PageView anterior, mantida fora das rotas e do bundle ativo. É uma referência de código do estado mockado; os serviços e componentes compartilhados evoluíram para a API, portanto não deve ser registrado como uma rota sem restaurar suas dependências originais. Pode ser removido quando a integração estiver estável.
 
 `npm test` verifica política de HTML, preservação do editor, limites de título/slug, namespaces reservados, serialização de metadata, ETag e tratamento de respostas do cliente HTTP. `tests/fixtures/pageSchema.json` é uma amostra do contrato da API usada somente pelos testes, sem regras fixas de produção no frontend.
+
+O editor oferece lista numérica e lista alfabética (`a.`, `b.`, `c.`). O botão alfabético depende da autorização do atributo `type` em `ol` nas diretrizes da API. O formato é preservado no HTML como `<ol type="a">`.
