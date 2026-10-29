@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import schema from "./fixtures/pageSchema.json" with { type: "json" };
 import {
   articleSlug,
+  titleFromPath,
+  articlePath,
+  sameArticlePath,
   metadataPayload,
   validatePageDraft,
 } from "../src/utils/page.js";
@@ -88,4 +91,32 @@ test("404, erro de rede e validação são diferenciados; gravação usa POST ou
     ["https://api.example/pages", "POST"],
     ["https://api.example/pages/ab", "PUT"],
   ]);
+});
+
+test("preserva escrita na criação e normaliza somente a busca", () => {
+  assert.equal(
+    titleFromPath("/especialidade-de-caes"),
+    "especialidade de caes",
+  );
+  assert.equal(
+    titleFromPath("/Especialidade%20de%20C%C3%A3es"),
+    "Especialidade de Cães",
+  );
+  assert.equal(articleSlug("/Especialidade de Cães"), "especialidade-de-caes");
+  assert.equal(
+    articleSlug("/Especialidade-de-C%C3%A3es"),
+    "especialidade-de-caes",
+  );
+  const canonical = articlePath("Especialidade de Cães");
+  assert.equal(decodeURIComponent(canonical), "/Especialidade-de-Cães");
+  assert.ok(sameArticlePath("/Especialidade-de-Cães", canonical));
+  assert.ok(!sameArticlePath("/especialidade-de-caes", canonical));
+  assert.equal(articleSlug(canonical), articleSlug("/especialidade-de-caes"));
+  assert.equal(articleSlug("/%"), null);
+  assert.equal(articleSlug("/p/Sobre"), null);
+  assert.equal(articleSlug("/%C3%81"), null);
+  assert.equal(
+    decodeURIComponent(articlePath("Texto / com # símbolos?")),
+    "/Texto-com-símbolos",
+  );
 });
