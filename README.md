@@ -43,16 +43,41 @@ npm run build
 npm run lint
 ```
 
-## Publicação no GitHub Pages
+## Publicação no Cloudflare Pages
 
-O workflow `.github/workflows/pages.yml` valida o build nos PRs e publica automaticamente após push/merge na main. Também pode ser executado manualmente em Actions. O build usa Node 24 e npm ci; não cria branch dist e não precisa de token pessoal.
+Ambiente de testes: **https://sites.mda.wiki.br**. O domínio **mda.wiki.br** permanece no legado até a migração final. O build/deploy é feito pela integração Git nativa do Pages, sem branch dist nem workflow de publicação no GitHub.
 
-1. No GitHub, abrir Settings → Pages e escolher **GitHub Actions** em Source.
-2. Integrar o PR na main (ou executar Build and deploy GitHub Pages manualmente depois).
-3. Acompanhar o endereço publicado no job deploy / ambiente github-pages.
+### Criar o projeto
 
-O caminho base vem de actions/configure-pages, contemplando publicação no subdiretório /mdawiki/ ou domínio próprio configurado no Pages. A variável de repositório VITE_API_BASE_URL pode sobrescrever a API; por padrão usa https://api.mda.wiki.br. Alterações exigem novo build.
+No painel Cloudflare, acessar Workers & Pages, criar uma aplicação **Pages** e escolher importar/conectar um repositório Git existente. Conectar o GitHub e selecionar maycorolbuche/mdawiki. Se a interface abrir a criação de um Worker, voltar e selecionar Pages.
 
-A API precisa permitir a origem publicada em CORS_ORIGINS: por exemplo, https://maycorolbuche.github.io (sem /mdawiki no origin). Manter também as outras origens necessárias, separadas por vírgula.
+| Configuração | Valor |
+| --- | --- |
+| Nome do projeto | mdawiki (ou outro disponível) |
+| Branch de produção do projeto de teste | main |
+| Framework preset | Vue / Vite, conforme as opções exibidas |
+| Build command | npm run build |
+| Build output directory | dist |
+| Root directory | raiz do repositório |
+| NODE_VERSION | 24 |
+| VITE_API_BASE_URL | https://api.mda.wiki.br |
 
-O workflow copia index.html para 404.html para que acessos diretos às rotas do Vue carreguem a aplicação. O GitHub Pages ainda responde HTTP 404 nesses acessos, embora a página Vue seja exibida. Para rotas SPA com resposta HTTP 200 e melhor indexação, usar hospedagem com fallback configurável, como Cloudflare Pages. Não foi configurado domínio próprio nem alterada a hospedagem nesta entrega.
+A branch de produção do projeto Pages alimenta somente o site de testes, não altera o site legado. Definir as variáveis para Production; replicar em Preview se for usar builds de branches. .node-version também fixa Node 24. A URL da API é pública e incorporada no build.
+
+Após salvar/deploy, testar primeiro o endereço atribuído pelo Pages. Depois acessar o projeto → Custom domains → Set up a custom domain e adicionar **sites.mda.wiki.br**. Confirmar a criação do DNS sugerido quando a zona estiver na mesma conta; se precisar configurar manualmente, seguir o CNAME informado pelo Pages para o endereço atribuído ao projeto. Registrar o domínio no projeto antes de criar somente o CNAME. Aguardar domínio/certificado ativos.
+
+Não alterar registros DNS de mda.wiki.br nem de api.mda.wiki.br.
+
+### API / CORS
+
+A API precisa autorizar https://sites.mda.wiki.br. O PR correspondente adiciona a origem à configuração padrão; publicar a API atualizada antes de usar o site. Se CORS_ORIGINS estiver configurada no Worker, ela substitui os padrões: incluir https://sites.mda.wiki.br nessa variável, mantendo as outras origens necessárias. Sem barra final e sem caminho.
+
+O endereço temporário pages.dev também precisa ser autorizado explicitamente se for utilizado para testar chamadas à API. Não há liberação genérica de domínios de preview.
+
+### Rotas Vue e atualizações
+
+Usar base / (padrão do Vite), sem /mdawiki/. O Pages fornece fallback SPA para index.html quando não existe um 404.html na raiz. Este projeto não gera esse 404.html; acessar ou atualizar diretamente /Especialidade-de-Cães deve carregar o Vue.
+
+Depois da integração, pushes/merges na main geram novos deploys automaticamente pelo Cloudflare. Acompanhar o build no painel Deployments. Não é necessário rodar Wrangler para publicar o frontend nem token Cloudflare no GitHub.
+
+Se o GitHub Pages já tiver sido ativado antes, despublicar/desativar em Settings → Pages para encerrar a hospedagem anterior. Remover o workflow não apaga um site GitHub Pages já publicado.
