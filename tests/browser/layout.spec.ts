@@ -1,12 +1,21 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type BrowserContext } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 const fixtures = JSON.parse(await readFile('tests/fixtures/pages.json', 'utf8'))
 const article = fixtures[2]
 const path = '/' + encodeURIComponent(article.slug) + '/'
 const headers = { 'access-control-allow-origin': 'http://127.0.0.1:4173' }
+const media: Record<string, { contentType: string; base64: string }> = JSON.parse(await readFile('tests/fixtures/media.json', 'utf8'))
+async function mockMedia(context: BrowserContext) {
+  await context.route('https://mda.wiki.br/site/@imgs_wiki/**', route => {
+    const asset = media[route.request().url()]
+    return asset ? route.fulfill({ contentType: asset.contentType, body: Buffer.from(asset.base64, 'base64') }) : route.abort()
+  })
+}
+test.beforeEach(async ({ context }) => { await mockMedia(context) })
 
 test('static article includes complete navigation and relation panels without JavaScript', async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1535, height: 900 } })
+  await mockMedia(context)
   const page = await context.newPage()
   await page.goto('http://127.0.0.1:4173' + path)
   await expect(page.getByRole('img', { name: 'MDAWiki', exact: true })).toBeVisible()
