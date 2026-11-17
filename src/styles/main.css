@@ -1,0 +1,25 @@
+:root { --wiki-blue: #2875a8; --wiki-sidebar: 230px; }
+body { margin: 0; background: #f2f3f5; color: #444; font-family: 'Open Sans', Arial, sans-serif; }
+.site-header { background: white; position: sticky; top: 0; z-index: 20; }
+.brand { color: #303d49; font-size: 1.6rem; font-weight: 700; }
+.brand span { color: var(--wiki-blue); font-weight: 300; }
+.site-layout { display: grid; grid-template-columns: var(--wiki-sidebar) minmax(0, 1fr); min-height: calc(100vh - 145px); }
+.site-menu { padding: 24px 12px; border-right: 1px solid #ddd; }
+.site-menu .nav-link { color: #4c5966; }
+.main-content { padding: 24px; min-width: 0; }
+.article-card { border-radius: 0; border-top: 4px solid #777; }
+.article-card h1 { font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 300; margin-bottom: 24px; }
+.wiki-content { line-height: 1.7; overflow-wrap: anywhere; }
+.wiki-content img, .wiki-content video { max-width: 100%; height: auto; }
+.wiki-content table { display: block; max-width: 100%; overflow-x: auto; }
+.wiki-content :is(h2,h3,h4,h5,h6,[id],[name]) { scroll-margin-top: 90px; }
+.wiki-content a { color: var(--wiki-blue); }
+.article-list { columns: 280px; padding-left: 20px; }
+.article-list li { margin-bottom: 10px; }
+.site-footer { padding: 20px; text-align: center; background: white; font-size: .85rem; }
+@media (max-width: 991px) {
+  .site-layout { display: block; }
+  .site-menu { display: none; }
+  .site-menu.is-open { display: block; background: white; border-bottom: 1px solid #ddd; }
+  .main-content { padding: 12px; }
+}

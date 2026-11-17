@@ -1,38 +1,24 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
-import { BApp } from 'bootstrap-vue-next'
-import AppHeader from './layout/AppHeader.vue'
-import AppFooter from './layout/AppFooter.vue'
-import AppSidebar from './layout/AppSidebar.vue'
-
-const page = ref(null)
-const isSiteMenuOpen = ref(false)
+const menuOpen = ref(false)
 </script>
 
 <template>
-  <BApp>
-    <AppHeader
-      :site-menu-open="isSiteMenuOpen"
-      @open-site-menu="isSiteMenuOpen = true"
-      @navigate="page?.goTo?.($event)"
-      @notice="page?.showNotice?.($event)"
-      @open-discussion="page?.openDiscussion?.()"
-      @open-history="page?.openHistory?.()"
-      @open-help="page?.openHelp?.()"
-    />
-    <div class="workspace">
-      <AppSidebar v-model:open="isSiteMenuOpen"
-        @navigate="page?.goTo?.($event)" @notice="page?.showNotice?.($event)"
-        @open-discussion="page?.openDiscussion?.()" @open-history="page?.openHistory?.()"
-        @open-help="page?.openHelp?.()" />
-      <div class="workspace-content">
-        <RouterView v-slot="{ Component, route }">
-          <component :is="Component" :key="route.path" ref="page" />
-        </RouterView>
-        <AppFooter @notice="page?.showNotice?.($event)" />
-      </div>
+  <a class="visually-hidden-focusable p-2" href="#conteudo">Ir para o conteúdo</a>
+  <header class="site-header border-bottom">
+    <div class="container-fluid d-flex align-items-center gap-3 py-3">
+      <RouterLink class="brand text-decoration-none" to="/">MDA<span>Wiki</span></RouterLink>
+      <span class="text-muted d-none d-md-inline">Tudo sobre Desbravadores e Aventureiros</span>
+      <button class="btn btn-outline-secondary ms-auto d-lg-none" type="button" :aria-expanded="menuOpen" aria-controls="site-menu" @click="menuOpen = !menuOpen">Menu</button>
     </div>
-  </BApp>
+  </header>
+  <div class="site-layout container-fluid">
+    <aside id="site-menu" class="site-menu" :class="{ 'is-open': menuOpen }" aria-label="Menu do site">
+      <nav class="nav flex-column gap-1" @click="menuOpen = false">
+        <RouterLink class="nav-link" to="/">Página inicial</RouterLink>
+      </nav>
+    </aside>
+    <main id="conteudo" class="main-content" tabindex="-1"><RouterView /></main>
+  </div>
+  <footer class="site-footer border-top text-muted">MDAWiki · A Wikipedia dos Desbravadores e Aventureiros</footer>
 </template>
-
-
