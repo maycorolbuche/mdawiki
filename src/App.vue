@@ -32,7 +32,6 @@ function submitSearch() {
     <aside id="site-menu" class="site-menu" :class="{ 'is-open': menuOpen }" aria-label="Menu do site">
       <nav>
         <a class="donation-link" href="https://mda.wiki.br/page@Doação"><span aria-hidden="true">▣</span> Faça uma Doação <span class="donation-badge">Doar</span></a>
-        <RouterLink class="home-link" to="/">Página inicial</RouterLink>
         <section v-for="section in menuSections" :key="section.title" class="menu-section">
           <h2>{{ section.title }}</h2>
           <template v-for="item in section.items" :key="item.title">
