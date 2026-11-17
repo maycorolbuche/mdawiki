@@ -51,6 +51,7 @@ test('mobile menu opens, expands groups and closes after SPA navigation without 
   await page.route('http://127.0.0.1:8080/**', route => route.fulfill({ headers, json: { data: article } }))
   await page.goto(path)
   await expect(page.locator('.wiki-content table')).toBeVisible()
+  await expect(page.locator('.wiki-content table td').nth(1)).toHaveCSS('white-space', 'nowrap')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   await page.getByRole('button', { name: 'Menu do site', exact: true }).click()
   await expect(page.locator('#site-menu')).toBeVisible()
