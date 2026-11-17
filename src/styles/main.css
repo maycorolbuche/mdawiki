@@ -1,4 +1,22 @@
 :root { --wiki-sidebar: 230px; --wiki-topbar: 54px; --wiki-blue: #4a89dc; }
+.header-logout { background: transparent; color: white; border: 0; }
+.account-card { max-width: 850px; margin-inline: auto; }
+.account-fields { display: grid; gap: 18px; max-width: 600px; }
+.account-fields label { display: grid; gap: 6px; }
+.account-fields .btn { justify-self: start; }
+.account-navigation, .editor-tools { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
+.editor-tools button { border: 1px solid #ccc; background: #f7f7f7; padding: 5px 12px; }
+.wiki-editor, .revision-source, .revision-diff { font-family: ui-monospace, monospace; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.preview-content { border-top: 1px solid #ddd; margin-top: 30px; padding-top: 25px; }
+.revision-source, .revision-diff { padding: 20px; background: #fafafa; border: 1px solid #ddd; margin-top: 20px; }
+.revision-diff .added { background: #d3f9d8; } .revision-diff .removed { background: #ffe3e3; text-decoration: line-through; }
+.profile-photo { max-width: 180px; max-height: 180px; object-fit: contain; margin-bottom: 20px; }
+.user-filters { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 15px; margin-bottom: 25px; }
+.user-filters button { align-self: end; }
+.directory-list { list-style: none; padding: 0; } .directory-list li { border-bottom: 1px solid #eee; padding: 14px 0; } .directory-list a { font-size: 16px; } .directory-list p { margin: 6px 0 0; }
+.statistics-list { display: grid; grid-template-columns: 1fr 1fr; max-width: 500px; gap: 15px; font-size: 18px; }
+.wiki-gallery { display: flex; flex-wrap: wrap; justify-content: center; }
+.article-card h1 small { display: block; font-size: 18px; margin-top: 10px; }
 body { margin: 0; background: #eee; color: #666; font-family: 'Open Sans', Arial, sans-serif; font-size: 13px; line-height: 1.5; }
 a { color: var(--wiki-blue); text-decoration: none; } a:hover { text-decoration: underline; }
 button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #ffca55; outline-offset: 3px; }
@@ -79,3 +97,4 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
   body { background: #fff; } .main-content { margin: 0; padding: 0; min-height: 0; } .article-layout.has-relations { display: block; }
   .article-card { border: 0; } .article-body { padding: 0; } .wiki-content table { min-width: 0 !important; } .wiki-content { print-color-adjust: exact; }
 }
+

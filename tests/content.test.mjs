@@ -21,4 +21,10 @@ test('legacy specialty colors and dimensions survive without accepting CSS injec
   for (const text of ['width="100%"', 'background:#1E90FF', 'color:#FFF', 'padding-left:5px', 'rowspan="2"']) assert.ok(html.includes(text), text)
   for (const text of ['<style', 'position:', 'z-index:', 'url(', 'expression(', 'var(', 'HM-024']) assert.ok(!html.includes(text), text)
 })
+test('videos allow only isolated YouTube embeds', () => {
+  const html = cleanArticle('<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe><iframe src="https://evil.test/embed/x"></iframe><iframe srcdoc="<script>alert(1)</script>"></iframe>')
+  assert.equal((html.match(/<iframe/g) || []).length, 1)
+  assert.ok(html.includes('sandbox="allow-scripts allow-same-origin allow-presentation"'))
+  assert.ok(!html.includes('srcdoc') && !html.includes('evil.test'))
+})
 

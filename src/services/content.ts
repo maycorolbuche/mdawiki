@@ -7,6 +7,7 @@ const tags = [
   'a', 'abbr', 'b', 'bdi', 'bdo', 'br', 'cite', 'code', 'data', 'dfn', 'em', 'i', 'kbd', 'mark', 'q', 'rb', 'rp', 'rt', 'rtc', 'ruby',
   's', 'samp', 'small', 'span', 'strong', 'sub', 'sup', 'time', 'u', 'var', 'wbr',
   'caption', 'col', 'colgroup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'img', 'video', 'source',
+  'iframe',
 ]
 const globalAttributes = ['class', 'id', 'name', 'style']
 const attributes: Record<string, string[]> = {
@@ -15,6 +16,7 @@ const attributes: Record<string, string[]> = {
   td: ['colspan', 'rowspan'], th: ['colspan', 'rowspan', 'scope'],
   ol: ['start', 'type'], video: ['src', 'controls', 'poster'], source: ['src', 'type'],
   table: ['width', 'cellpadding', 'cellspacing', 'border'],
+  iframe: ['src', 'width', 'height', 'allowfullscreen', 'loading', 'title'],
 }
 attributes.td!.push('width', 'height', 'align', 'valign')
 attributes.th!.push('width', 'height', 'align', 'valign')
@@ -64,6 +66,13 @@ DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
 
 DOMPurify.addHook('afterSanitizeAttributes', node => {
   const element = node as Element
+  if (node.nodeName.toLowerCase() === 'iframe') {
+    if (!/^https:\/\/(?:www\.)?youtube(?:-nocookie)?\.com\/embed\/[\w-]{11}(?:\?[\w&=;%-]*)?$/.test(element.getAttribute('src') || '')) { element.remove(); return }
+    element.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation')
+    element.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin')
+    element.setAttribute('loading', 'lazy')
+    if (!element.getAttribute('title')) element.setAttribute('title', 'Vídeo do YouTube')
+  }
   if (node.nodeName.toLowerCase() === 'a' && element.getAttribute('target') === '_blank') {
     element.setAttribute('rel', 'noopener noreferrer')
   }
@@ -77,4 +86,5 @@ export function cleanArticle(html: string): string {
     ALLOW_ARIA_ATTR: false,
   })
 }
+
 

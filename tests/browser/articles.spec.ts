@@ -48,7 +48,7 @@ test('new missing path distinguishes not-found from an unavailable API', async (
 test('every client-side article navigation fetches fresh API content', async ({ page }) => {
   let calls = 0
   await page.route('http://127.0.0.1:8080/**', route => {
-    calls++
+    if (route.request().url().includes('/v1/pages/')) calls++
     return route.fulfill({ headers: { 'access-control-allow-origin': 'http://127.0.0.1:4173' }, json: { data: { ...article, html: '<a href="https://mda.wiki.br/Novo/">Outro artigo</a>' } } })
   })
   await page.goto('/Especialidade_de_C%C3%A3es/')

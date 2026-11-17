@@ -33,6 +33,12 @@ async function document(path, page, fallback = false) {
 }
 await writeFile('dist/index.html', await document('/', null))
 await writeFile('dist/404.html', await document('/__fallback__', null, true))
+const systemPages = ['page@Acesso','page@Cadastre-se','page@EsqueciMinhaSenha','page@RedefinirSenha','page@AtivaConta','page@Perfil','page@AlterarSenha','page@AlterarEmail','page@Busca','page@Listas','page@Estatisticas','page@Usuarios','page@Atualizar','page@Doação']
+for (const slug of systemPages) {
+  const directory = join('dist', slug)
+  await mkdir(directory, { recursive: true })
+  await writeFile(join(directory, 'index.html'), await document('/' + encodeURIComponent(slug) + '/', null, true))
+}
 for (const page of pages) {
   const directory = join('dist', safeSlug(page.slug))
   await mkdir(directory, { recursive: true })
@@ -42,3 +48,4 @@ await writeFile('dist/.nojekyll', '')
 const urls = [siteUrl + '/', ...pages.map(p => `${siteUrl}/${encodeURIComponent(p.slug)}/`)]
 await writeFile('dist/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map(url => `<url><loc>${escapeHtml(url)}</loc></url>`).join('')}</urlset>`)
 console.log(`Generated ${pages.length} articles, homepage and API-backed 404 fallback.`)
+
