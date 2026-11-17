@@ -3,15 +3,12 @@ import { resolve, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { build, loadEnv } from 'vite'
 import { exportPages, head, safeSlug, serialize, escapeHtml } from './static.mjs'
+import { resolveBuildConfig } from './config.mjs'
 
 const env = { ...loadEnv('production', process.cwd(), ''), ...process.env }
-const apiBaseUrl = (env.VITE_API_BASE_URL || '').replace(/\/$/, '')
-const siteUrl = (env.VITE_SITE_URL || '').replace(/\/$/, '')
-const basePath = env.VITE_BASE_PATH || '/'
-for (const [name, value] of Object.entries({ VITE_API_BASE_URL: apiBaseUrl, VITE_SITE_URL: siteUrl })) {
-  if (!value || !/^https?:$/.test(new URL(value).protocol)) throw new Error(`${name} must be an absolute HTTP(S) URL`)
-}
-if (!basePath.startsWith('/') || !basePath.endsWith('/') || basePath.includes('..')) throw new Error('VITE_BASE_PATH must start and end with /')
+const { apiBaseUrl, siteUrl, basePath } = resolveBuildConfig(env)
+// Apply the same resolved values to Vite's client compilation and the static snapshot.
+Object.assign(process.env, { VITE_API_BASE_URL: apiBaseUrl, VITE_SITE_URL: siteUrl, VITE_BASE_PATH: basePath })
 // Fixtures are explicit and for CI/local checks only; deployment never enables this.
 if (env.GITHUB_EVENT_NAME && env.BUILD_FIXTURE && env.DEPLOY_PRODUCTION === 'true') throw new Error('Cannot deploy fixtures')
 const pages = env.BUILD_FIXTURE
