@@ -1,0 +1,15 @@
+import { createApplication } from './app'
+import type { Snapshot } from './types/page'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import './styles/main.css'
+
+const defaults: Snapshot = {
+  page: null, pages: [], apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '',
+  siteUrl: import.meta.env.VITE_SITE_URL || '', basePath: import.meta.env.BASE_URL,
+}
+let snapshot = defaults
+const payload = document.getElementById('page-data')?.textContent
+if (payload && !payload.includes('<!--page-data-->')) snapshot = JSON.parse(payload)
+const { app, router } = createApplication(snapshot, false, Boolean(payload && !payload.includes('<!--page-data-->')))
+await router.isReady()
+app.mount('#app')

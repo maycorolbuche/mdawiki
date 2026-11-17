@@ -1,83 +1,48 @@
-# .
+# MDAWiki frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Nova base **Vue 3 + TypeScript + Vite + Vue Router + Bootstrap 5**, substituindo integralmente a implementação anterior. O backend continua independente, em PHP puro no repositório `maycorolbuche/mdawiki-api`. Não há Inertia, Laravel ou backend Node para hospedar.
 
-## Recommended IDE Setup
+## Modelo de publicação
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+1. A build consulta a exportação pública da API e gera um `index.html` por artigo, com HTML e metatags.
+2. No navegador, Vue monta sobre esse snapshot e sempre consulta a API, inclusive na abertura inicial e nas trocas de artigo.
+3. Alterações aparecem na tela antes da próxima build; o código-fonte e as prévias sociais publicados continuam na versão gerada até o próximo deploy.
+4. `404.html` carrega o mesmo aplicativo no caminho original. Consulta a API e mostra artigos novos ainda não gerados. O HTTP inicial permanece 404 até a próxima build.
+5. Um 404 da API remove o snapshot; falhas de rede/503 preservam o snapshot com aviso e retry. A API é a fonte de verdade, não o payload de build.
 
-## Recommended Browser Setup
+A estrutura inicial inclui leitura e exportação; a migração completa do layout legado, parser, busca, login, edição, histórico e mídia será feita nos próximos PRs. O layout atual é uma base responsiva, não uma reprodução visual final do legado. Não há botões de edição ou login simulados.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+## Desenvolvimento
 
 ```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
+npm ci
+cp .env.example .env
 npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
+npm run typecheck
+npm test
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+A API PHP precisa estar disponível. Para validar sem banco, use explicitamente `BUILD_FIXTURE=tests/fixtures/pages.json VITE_API_BASE_URL=http://127.0.0.1:8080 VITE_SITE_URL=https://mda.wiki.br npm run build`. Fixtures nunca são ativadas pelo deploy de produção. `dist/` não é versionada.
 
-```sh
-npm run lint
-```
+O build falha se a exportação da API estiver indisponível ou inválida, preservando a última publicação. Paginação usa `next_cursor`; há validação contra colisão de rotas e escrita fora de `dist`. Conteúdo HTML é sanitizado no SSR da build e no navegador; não executamos templates ou handlers fornecidos pelos artigos. Estilos inline e scripts antigos não são preservados nessa base: precisam de adaptação explícita durante a migração visual.
 
-## Publicação no Cloudflare Pages
+## GitHub Pages
 
-Ambiente de testes: **https://sites.mda.wiki.br**. O domínio **mda.wiki.br** permanece no legado até a migração final. O build/deploy é feito pela integração Git nativa do Pages, sem branch dist nem workflow de publicação no GitHub.
+Em Settings → Pages, selecione GitHub Actions. Configure as variáveis de repositório:
 
-### Criar o projeto
+| Variável | Valor |
+|---|---|
+| `API_BASE_URL` | URL HTTPS da nova API PHP, sem barra final |
+| `SITE_URL` | URL canônica pública, incluindo subdiretório se houver |
+| `BASE_PATH` | `/` no domínio próprio, `/mdawiki/` no endereço de projeto |
 
-No painel Cloudflare, acessar Workers & Pages, criar uma aplicação **Pages** e escolher importar/conectar um repositório Git existente. Conectar o GitHub e selecionar maycorolbuche/mdawiki. Se a interface abrir a criação de um Worker, voltar e selecionar Pages.
+Configure o domínio próprio no Pages quando aplicável. Nada é publicado pelo PR. Após merge na `main`, o workflow testa, gera com a API real e publica. Há execução manual para atualizar os snapshots sem alterar código. Não há agendamento nem disparo automático por edição nesta etapa.
 
-| Configuração | Valor |
-| --- | --- |
-| Nome do projeto | mdawiki (ou outro disponível) |
-| Branch de produção do projeto de teste | main |
-| Framework preset | Vue / Vite, conforme as opções exibidas |
-| Build command | npm run build |
-| Build output directory | dist |
-| Root directory | raiz do repositório |
-| NODE_VERSION | 24 |
-| VITE_API_BASE_URL | https://api.mda.wiki.br |
+O servidor da API precisa permitir a origem do frontend em `ALLOWED_ORIGINS`. Dados pessoais e conteúdo privado nunca devem participar da exportação pública. Todas as variáveis `VITE_*` e o artefato Pages são públicos; não inclua segredos. Autenticação e a adequação da hospedagem para telas sensíveis continuam pendentes da etapa correspondente.
 
-A branch de produção do projeto Pages alimenta somente o site de testes, não altera o site legado. Definir as variáveis para Production; replicar em Preview se for usar builds de branches. .node-version também fixa Node 24. A URL da API é pública e incorporada no build.
+## Verificação
 
-Após salvar/deploy, testar primeiro o endereço atribuído pelo Pages. Depois acessar o projeto → Custom domains → Set up a custom domain e adicionar **sites.mda.wiki.br**. Confirmar a criação do DNS sugerido quando a zona estiver na mesma conta; se precisar configurar manualmente, seguir o CNAME informado pelo Pages para o endereço atribuído ao projeto. Registrar o domínio no projeto antes de criar somente o CNAME. Aguardar domínio/certificado ativos.
+`npm run test:browser` usa um servidor estático de teste que retorna `404.html` com HTTP 404 para caminhos inexistentes. Testa artigo estático desatualizado, artigo novo, inexistente, indisponibilidade, HTML malicioso e navegação. O servidor é exclusivo dos testes e não implementa backend de produção.
 
-Não alterar registros DNS de mda.wiki.br nem de api.mda.wiki.br.
-
-### API / CORS
-
-A API precisa autorizar https://sites.mda.wiki.br. O PR correspondente adiciona a origem à configuração padrão; publicar a API atualizada antes de usar o site. Se CORS_ORIGINS estiver configurada no Worker, ela substitui os padrões: incluir https://sites.mda.wiki.br nessa variável, mantendo as outras origens necessárias. Sem barra final e sem caminho.
-
-O endereço temporário pages.dev também precisa ser autorizado explicitamente se for utilizado para testar chamadas à API. Não há liberação genérica de domínios de preview.
-
-### Rotas Vue e atualizações
-
-Usar base / (padrão do Vite), sem /mdawiki/. O Pages fornece fallback SPA para index.html quando não existe um 404.html na raiz. Este projeto não gera esse 404.html; acessar ou atualizar diretamente /Especialidade-de-Cães deve carregar o Vue.
-
-Depois da integração, pushes/merges na main geram novos deploys automaticamente pelo Cloudflare. Acompanhar o build no painel Deployments. Não é necessário rodar Wrangler para publicar o frontend nem token Cloudflare no GitHub.
-
-Se o GitHub Pages já tiver sido ativado antes, despublicar/desativar em Settings → Pages para encerrar a hospedagem anterior. Remover o workflow não apaga um site GitHub Pages já publicado.
+API: [maycorolbuche/mdawiki-api](https://github.com/maycorolbuche/mdawiki-api). Origem das regras a migrar: [maycorolbuche/mdawiki-site](https://github.com/maycorolbuche/mdawiki-site), preservado.
