@@ -14,6 +14,8 @@ A estrutura inicial inclui leitura e exportação; a migração completa do layo
 
 ## Desenvolvimento
 
+Use a versão Node 24 indicada em `.node-version` (24.15+). O sanitizador compartilhado usa DOMPurify no navegador e um DOM de servidor apenas durante a geração estática. Não são necessários polyfills de `fs`, `path` ou `url` no frontend.
+
 ```sh
 npm ci
 npm run dev
