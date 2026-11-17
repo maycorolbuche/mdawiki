@@ -1,3 +1,4 @@
+export interface PageLink { id: string; slug: string; title: string }
 export interface Page {
   id: string
   slug: string
@@ -6,6 +7,11 @@ export interface Page {
   description: string
   updated_at: string | null
   canonical_url: string
+  categories?: PageLink[]
+  mentions?: PageLink[]
+  related_pages?: PageLink[]
+  category_members?: PageLink[]
+  missing_links?: PageLink[]
 }
 export interface Snapshot {
   page: Page | null
@@ -14,3 +20,4 @@ export interface Snapshot {
   siteUrl: string
   basePath: string
 }
+

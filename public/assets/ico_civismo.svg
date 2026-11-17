@@ -1,0 +1,26 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="none" x="0px" y="0px" width="50px" height="50px" viewBox="0 0 50 50">
+<defs>
+<image id="Bitmap_4" x="0" y="0" width="225" height="225" xlink:href="./images/Bitmap_4.png"/>
+
+<g id="Layer0_0_FILL">
+<path fill="#FFFFFF" stroke="none" d="
+M 49.95 38.1
+L 49.95 5.25
+Q 37.75 16.4 26.4 9.05 15 -0.55 0.25 9.05
+L 0.25 41.9
+Q 15 32.25 26.4 41.9 37.75 49.2 49.95 38.1
+M 34.45 19.4
+L 34.45 25 26.4 31.6 20.65 19.8 20.65 15.25 34.45 19.4 Z"/>
+</g>
+</defs>
+
+<g transform="matrix( 0.223480224609375, 0, 0, 0.223480224609375, 0,0) ">
+<use xlink:href="#Bitmap_4"/>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use xlink:href="#Layer0_0_FILL"/>
+</g>
+</svg>
+

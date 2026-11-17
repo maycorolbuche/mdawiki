@@ -1,5 +1,11 @@
 # MDAWiki frontend
 
+O layout usa Bootstrap 5 e Open Sans empacotada, logo/ícones originais, cabeçalho escuro, menu lateral com todos os grupos do legado e painéis de categorias, menções, relacionados e links inexistentes. As páginas de categoria também mostram seus membros. Esses dados entram no HTML estático e são atualizados junto com o artigo pela API.
+
+Publique primeiro a API com os campos `categories`, `mentions`, `related_pages`, `category_members` e `missing_links`; depois faça o build/deploy do frontend. Sem esses campos a interface continua funcionando, mas não inventa relações. Editar, histórico, busca, login, cadastro, doação, mídia e a listagem especial de todas as categorias continuam apontando para o legado enquanto seus fluxos não forem migrados.
+
+O HTML conserva cores, dimensões e alinhamentos por uma lista restrita de propriedades CSS; estilos globais, scripts, handlers, posicionamento e URLs em CSS são removidos. Não é carregado Bootstrap antigo ou jQuery. Os testes de navegador verificam as três colunas, cores das especialidades, dados estáticos/dinâmicos e navegação mobile; as capturas ficam no artefato `browser-layout` do Actions.
+
 Nova base **Vue 3 + TypeScript + Vite + Vue Router + Bootstrap 5**, substituindo integralmente a implementação anterior. O backend continua independente, em PHP puro no repositório `maycorolbuche/mdawiki-api`. Não há Inertia, Laravel ou backend Node para hospedar.
 
 ## Modelo de publicação
@@ -62,3 +68,4 @@ O ponto de entrada novo é `/src/entry-client.ts`. A nova base não registra ser
 4. Recarregue com Ctrl+Shift+R. Uma janela anônima nova ajuda a distinguir o cache antigo.
 
 O WebSocket `127.0.0.1:63168` do Console Ninja pertence à extensão e é separado da carga do aplicativo. No domínio público, “There isn't a GitHub Pages site here” é a página padrão do GitHub: confira se houve um deploy concluído e se o domínio próprio foi configurado em Pages.
+
