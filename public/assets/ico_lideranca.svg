@@ -1,0 +1,21 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="none" x="0px" y="0px" width="50px" height="50px" viewBox="0 0 50 50">
+<defs>
+<image id="Bitmap_8" x="0" y="0" width="225" height="225" xlink:href="./images/Bitmap_8.png"/>
+
+<g id="Layer0_0_FILL">
+<path fill="#FFFFFF" stroke="none" d="
+M 0.2 19.95
+L 11.1 32.4 9.95 49 25.3 42.45 40.7 48.75 39.3 32.15 49.85 19.45 33.7 15.7 24.85 1.65 16.4 15.8 0.2 19.95 Z"/>
+</g>
+</defs>
+
+<g transform="matrix( 0.6944122314453125, 0, 0, 0.6944122314453125, -55,-80) ">
+<use xlink:href="#Bitmap_8"/>
+</g>
+
+<g transform="matrix( 1, 0, 0, 1, 0,0) ">
+<use xlink:href="#Layer0_0_FILL"/>
+</g>
+</svg>
+

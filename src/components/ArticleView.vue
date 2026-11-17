@@ -3,6 +3,7 @@ import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ApiError, getPage } from '../services/api'
 import { cleanArticle } from '../services/content'
+import PageRelations from './PageRelations.vue'
 import type { Page, Snapshot } from '../types/page'
 
 const route = useRoute()
@@ -14,6 +15,9 @@ const loading = ref(false)
 const missing = ref(false)
 const failed = ref(false)
 const html = computed(() => cleanArticle(page.value?.html || ''))
+const hasRelations = computed(() => page.value && [page.value.categories, page.value.mentions, page.value.related_pages, page.value.missing_links].some(links => links?.length))
+const legacyArticle = computed(() => `https://mda.wiki.br/${encodeURIComponent(slug.value)}/`)
+function printArticle() { window.print() }
 let controller: AbortController | undefined
 let mounted = false
 
@@ -76,19 +80,24 @@ function followArticleLink(event: MouseEvent) {
   if (!anchor.getAttribute('href') || anchor.getAttribute('href')?.startsWith('#')) return
   const destination = new URL(anchor.href, window.location.href)
   const site = new URL(snapshot.siteUrl || window.location.origin)
-  if (destination.origin !== site.origin || !destination.pathname.startsWith(snapshot.basePath)) return
+  const legacy = destination.origin === 'https://mda.wiki.br'
+  if (!legacy && (destination.origin !== site.origin || !destination.pathname.startsWith(snapshot.basePath))) return
+  if (/^\/(?:page|imagem)@/i.test(decodeURIComponent(destination.pathname))) return
   event.preventDefault()
-  void router.push(destination.pathname.slice(snapshot.basePath.length - 1) + destination.search + destination.hash)
+  void router.push((legacy ? destination.pathname : destination.pathname.slice(snapshot.basePath.length - 1)) + destination.search + destination.hash)
 }
 </script>
 
 <template>
-  <section class="card article-card" :aria-busy="loading">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span>Artigo</span>
-      <button class="btn btn-sm btn-outline-secondary" :disabled="loading" @click="refresh">{{ loading ? 'Atualizando…' : 'Atualizar' }}</button>
+  <div class="article-layout" :class="{ 'has-relations': hasRelations }">
+  <article class="card article-card" :aria-busy="loading">
+    <div class="article-toolbar">
+      <a v-if="page" class="article-action action-edit" :href="legacyArticle + 'editar'" title="Editar no sistema legado"><span aria-hidden="true">✎</span> Editar Página</a>
+      <a v-if="page" class="article-action action-history" :href="legacyArticle + 'historico'" title="Consultar histórico no sistema legado"><span aria-hidden="true">◴</span> Histórico de Edições</a>
+      <button class="article-action action-refresh" :disabled="loading" @click="refresh"><span aria-hidden="true">⟳</span> {{ loading ? 'Atualizando…' : 'Atualizar' }}</button>
+      <button v-if="page" class="article-action action-print" @click="printArticle"><span aria-hidden="true">▣</span> Imprimir</button>
     </div>
-    <div class="card-body p-4">
+    <div class="article-body">
       <div v-if="failed" class="alert alert-warning" role="alert">
         Não foi possível consultar a versão atual.<span v-if="page"> Exibindo o conteúdo publicado.</span>
         <button class="btn btn-link p-0 ms-2" @click="refresh">Tentar novamente</button>
@@ -96,9 +105,16 @@ function followArticleLink(event: MouseEvent) {
       <template v-if="page">
         <h1>{{ page.title }}</h1>
         <div class="wiki-content" @click="followArticleLink" v-html="html" />
+        <section v-if="page.category_members?.length" class="category-members">
+          <h2>Páginas nesta Categoria <span class="badge text-bg-info">{{ page.category_members.length }}</span></h2>
+          <ul class="article-list"><li v-for="member in page.category_members" :key="member.id"><RouterLink :to="`/${encodeURIComponent(member.slug)}/`">{{ member.title }}</RouterLink></li></ul>
+        </section>
       </template>
       <template v-else-if="missing"><h1>Página não encontrada</h1><p>Este artigo não existe ou não está disponível.</p></template>
       <p v-else-if="!failed" role="status">Carregando artigo…</p>
     </div>
-  </section>
+  </article>
+  <PageRelations v-if="page" :page="page" />
+  </div>
 </template>
+

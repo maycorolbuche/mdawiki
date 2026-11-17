@@ -2,6 +2,10 @@ import { createApplication } from './app'
 import type { Snapshot } from './types/page'
 import publicConfig from '../config/public.json'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import '@fontsource/open-sans/latin-300.css'
+import '@fontsource/open-sans/latin-400.css'
+import '@fontsource/open-sans/latin-600.css'
+import '@fontsource/open-sans/latin-700.css'
 import './styles/main.css'
 
 const defaults: Snapshot = {
@@ -14,3 +18,4 @@ if (payload && !payload.includes('<!--page-data-->')) snapshot = JSON.parse(payl
 const { app, router } = createApplication(snapshot, false, Boolean(payload && !payload.includes('<!--page-data-->')))
 await router.isReady()
 app.mount('#app')
+

@@ -9,7 +9,7 @@ createServer(async (req, res) => {
     try {
       if ((await stat(path)).isDirectory()) path += '/index.html'
       const data = await readFile(path)
-      res.setHeader('Content-Type', ({ '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.xml': 'application/xml' })[extname(path)] || 'application/octet-stream')
+      res.setHeader('Content-Type', ({ '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.xml': 'application/xml', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff': 'font/woff', '.woff2': 'font/woff2' })[extname(path)] || 'application/octet-stream')
       res.end(data)
     } catch {
       res.writeHead(404, { 'Content-Type': 'text/html' })

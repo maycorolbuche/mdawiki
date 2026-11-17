@@ -15,3 +15,10 @@ test('external blank-target links retain rel protection without leaking policy b
   assert.ok(html.includes('rel="noopener noreferrer"'))
   assert.equal(cleanArticle('<p>Segundo</p>'), '<p>Segundo</p>')
 })
+
+test('legacy specialty colors and dimensions survive without accepting CSS injection', () => {
+  const html = cleanArticle('<style>body{display:none}</style><table width="100%" class="templ_especialidade_dbv"><tr style="background:#1E90FF;color:#FFF;font-weight:bold;position:fixed;z-index:9999"><td rowspan="2" width="50" style="background:#00BFFF;padding-left:5px;background-image:url(javascript:alert(1))">Área</td></tr></table><template class="mda-code">HM-024</template><p style="color:expression(alert(1));width:var(--x);background:url(https://evil.test)">Texto</p>')
+  for (const text of ['width="100%"', 'background:#1E90FF', 'color:#FFF', 'padding-left:5px', 'rowspan="2"']) assert.ok(html.includes(text), text)
+  for (const text of ['<style', 'position:', 'z-index:', 'url(', 'expression(', 'var(', 'HM-024']) assert.ok(!html.includes(text), text)
+})
+

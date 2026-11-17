@@ -8,17 +8,47 @@ const tags = [
   's', 'samp', 'small', 'span', 'strong', 'sub', 'sup', 'time', 'u', 'var', 'wbr',
   'caption', 'col', 'colgroup', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'img', 'video', 'source',
 ]
-const globalAttributes = ['class', 'id', 'name']
+const globalAttributes = ['class', 'id', 'name', 'style']
 const attributes: Record<string, string[]> = {
   a: ['href', 'title', 'target', 'rel'],
   img: ['src', 'alt', 'width', 'height', 'loading'],
   td: ['colspan', 'rowspan'], th: ['colspan', 'rowspan', 'scope'],
   ol: ['start', 'type'], video: ['src', 'controls', 'poster'], source: ['src', 'type'],
+  table: ['width', 'cellpadding', 'cellspacing', 'border'],
 }
+attributes.td!.push('width', 'height', 'align', 'valign')
+attributes.th!.push('width', 'height', 'align', 'valign')
 const urlAttributes = new Set(['href', 'src', 'poster'])
+
+// Preserve presentation from stored templates, without accepting arbitrary CSS.
+const color = /^(?:#[\da-f]{3,8}|[a-z]+)$/i
+const length = /^(?:0|auto|\d{1,4}(?:\.\d+)?(?:px|em|rem|%|pt))$/i
+const safeStyles: Record<string, RegExp> = {
+  color, background: color, 'background-color': color,
+  width: length, height: length, 'max-width': length, 'min-width': length,
+  'font-size': length, 'font-weight': /^(?:normal|bold|[1-9]00)$/,
+  'font-style': /^(?:normal|italic)$/, 'text-align': /^(?:left|right|center|justify)$/,
+  'vertical-align': /^(?:top|middle|bottom|baseline)$/,
+  'border-collapse': /^(?:collapse|separate)$/, overflow: /^(?:auto|scroll)$/, float: /^(?:left|right|none)$/,
+}
+for (const name of ['padding', 'margin', 'padding-left', 'padding-right', 'padding-top', 'padding-bottom', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom']) safeStyles[name] = length
+for (const name of ['border', 'border-top', 'border-right', 'border-bottom', 'border-left']) safeStyles[name] = /^\d{1,2}px (?:solid|dashed|dotted) (?:#[\da-f]{3,8}|[a-z]+)$/i
+function cleanStyle(value: string) {
+  return value.split(';').flatMap(declaration => {
+    const [property, ...parts] = declaration.split(':')
+    const name = property!.trim().toLowerCase()
+    const val = parts.join(':').trim()
+    return safeStyles[name]?.test(val) ? [`${name}:${val}`] : []
+  }).join(';')
+}
 
 DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
   const tag = node.nodeName.toLowerCase()
+  if (data.attrName === 'style') {
+    data.attrValue = cleanStyle(data.attrValue)
+    data.keepAttr = Boolean(data.attrValue)
+    return
+  }
   if (!globalAttributes.includes(data.attrName) && !attributes[tag]?.includes(data.attrName)) {
     data.keepAttr = false
     return
@@ -47,3 +77,4 @@ export function cleanArticle(html: string): string {
     ALLOW_ARIA_ATTR: false,
   })
 }
+
