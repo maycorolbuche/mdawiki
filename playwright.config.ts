@@ -6,5 +6,8 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:4173',
     launchOptions: process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
   },
-  webServer: { command: 'node tests/serve.mjs', port: 4173, reuseExistingServer: false },
+  webServer: [
+    { command: 'node tests/serve.mjs', port: 4173, reuseExistingServer: false },
+    { command: 'npm run dev -- --port 4174 --strictPort', port: 4174, reuseExistingServer: false },
+  ],
 })
