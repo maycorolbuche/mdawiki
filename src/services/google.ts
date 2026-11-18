@@ -49,7 +49,7 @@ export function installGoogleServices(router: Router, config: GoogleConfig): () 
       script('mdawiki-analytics', `https://www.googletagmanager.com/gtag/js?id=${analyticsId}`)
       initialized = true
     }
-    const title = /^Carregando/.test(document.title) ? decodeURIComponent(route.path).replaceAll('_', ' ').replace(/^\//, '') + ' — MDAWiki' : document.title
+    const title = /^Carregando/.test(document.title) ? String(route.params.slug || route.path).replaceAll('_', ' ').replace(/^\//, '') + ' — MDAWiki' : document.title
     window.gtag!('event', 'page_view', { send_to: analyticsId, page_location: location, page_referrer: referrer, page_title: title })
     referrer = location
   }
