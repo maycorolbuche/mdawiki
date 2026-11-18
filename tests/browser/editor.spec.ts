@@ -8,6 +8,7 @@ async function setup(page: Page, media = false) {
     let data: any = {}
     if (path.endsWith('/auth/session')) data = { user: { ID: 1, NOME: 'Editor', NIVEL: 1 }, csrf_token: 'csrf-editor' }
     else if (path.endsWith('/editor')) data = { title: media ? 'Teste.png' : 'Especialidade de Modelagem e Fabricação de Sabão', source: media ? 'http://127.0.0.1:4173/assets/ico_classe_dbv.svg' : 'Texto original', media, base_version: 'version-1', exists: true }
+    else if (path.endsWith('/visits')) data = { counted: true }
     else if (request.method() !== 'GET') {
       writes.push({ path, body: request.postDataJSON() })
       data = path.endsWith('/media') ? { url: 'https://api.mda.wiki.br/media/wiki/nova.png' } : { slug: media ? 'imagem@Teste.png' : 'Teste', revision: 2 }
