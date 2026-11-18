@@ -1,6 +1,8 @@
 import { createApplication } from './app'
 import type { Snapshot } from './types/page'
 import publicConfig from '../config/public.json'
+import googleConfig from '../config/google.json'
+import { installGoogleServices } from './services/google'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '@fontsource/open-sans/latin-300.css'
 import '@fontsource/open-sans/latin-400.css'
@@ -19,3 +21,11 @@ const { app, router } = createApplication(snapshot, false, Boolean(payload && !p
 await router.isReady()
 app.mount('#app')
 
+
+
+// Do not collect production metrics or show real ads on local/dev previews.
+if (import.meta.env.PROD && window.location.origin === new URL(snapshot.siteUrl).origin) {
+  installGoogleServices(router, { enabled: true, adsenseClient: googleConfig.adsenseClient,
+    analyticsId: (import.meta.env.VITE_GOOGLE_ANALYTICS_ID || googleConfig.analyticsId).trim(),
+  })
+}
