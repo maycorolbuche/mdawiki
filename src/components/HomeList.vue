@@ -3,7 +3,7 @@ import { inject } from 'vue'
 import type { HomeItem } from '../types/home'
 import { homeImage } from '../types/home'
 import type { Snapshot } from '../types/page'
-defineProps<{ title: string; items: HomeItem[]; danger?: boolean }>()
+defineProps<{ title: string; items: HomeItem[]; danger?: boolean; pending?: boolean }>()
 const snapshot = inject<Snapshot>('snapshot')!
 </script>
 
@@ -16,6 +16,7 @@ const snapshot = inject<Snapshot>('snapshot')!
         <td><RouterLink :to="`/${encodeURIComponent(item.slug)}/`" :class="{ 'text-danger': danger }">{{ item.title }}</RouterLink></td>
       </tr></tbody>
     </table>
-    <p v-else class="home-empty">Nenhuma página para exibir no momento.</p>
+    <p v-else-if="!pending" class="home-empty">Nenhuma página para exibir no momento.</p>
   </section>
 </template>
+

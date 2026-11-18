@@ -14,15 +14,6 @@ if (env.GITHUB_EVENT_NAME && env.BUILD_FIXTURE && env.DEPLOY_PRODUCTION === 'tru
 const pages = env.BUILD_FIXTURE
   ? JSON.parse(await readFile(resolve(env.BUILD_FIXTURE), 'utf8'))
   : await exportPages(apiBaseUrl)
-// Home data is optional: an unavailable dashboard must not block article publication.
-let home = null
-if (!env.BUILD_FIXTURE) {
-  try {
-    const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/v1/home`, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) })
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    home = (await response.json()).data ?? null
-  } catch (error) { console.warn('Homepage snapshot unavailable; published articles remain available:', error.message) }
-}
 const slugs = new Set()
 for (const page of pages) {
   safeSlug(page.slug)
@@ -35,7 +26,7 @@ const { render } = await import(pathToFileURL(resolve('.ssr/entry-server.js')).h
 const template = await readFile('dist/index.html', 'utf8')
 const common = { pages: [], apiBaseUrl, siteUrl, basePath }
 async function document(path, page, fallback = false) {
-  const snapshot = { ...common, page, ...(path === '/' ? { home } : {}), pages: path === '/' ? pages.map(p => ({ id: p.id, slug: p.slug, title: p.title, html: '', description: p.description, updated_at: p.updated_at, canonical_url: p.canonical_url })) : [] }
+  const snapshot = { ...common, page }
   const html = await render(path, snapshot)
   return template.replace('<!--page-head-->', () => head(page, siteUrl, fallback))
     .replace('<!--app-html-->', () => html).replace('<!--page-data-->', () => serialize(snapshot))
@@ -57,5 +48,6 @@ await writeFile('dist/.nojekyll', '')
 const urls = [siteUrl + '/', ...pages.map(p => `${siteUrl}/${encodeURIComponent(p.slug)}/`)]
 await writeFile('dist/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map(url => `<url><loc>${escapeHtml(url)}</loc></url>`).join('')}</urlset>`)
 console.log(`Generated ${pages.length} articles, homepage and API-backed 404 fallback.`)
+
 
 
