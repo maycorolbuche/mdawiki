@@ -180,7 +180,11 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
 .legacy-editor-host { width: 100%; min-width: 0; }
 .legacy-editor-host .markItUp, .legacy-editor-host .markItUpContainer { width: 100%; }
 .legacy-editor-host .markItUpEditor { display: block; width: calc(100% - 12px); height: calc(100dvh - 260px); min-height: 240px; resize: vertical; box-sizing: border-box; }
-.legacy-editor-host .markItUpButton { padding: 6px; }
+.legacy-editor-host .markItUpHeader { min-height: 43px; padding: 8px 10px 0; background: #fafafa; border: none; border-bottom: 1px solid #e7e7e7; }
+.legacy-editor-host .markItUpButton { padding: 6px; background: #fff; border: 1px solid #ddd; }
+.legacy-editor-host .markItUpButton + .markItUpButton { border-left: 0; }
+.legacy-editor-host .markItUpHeader ul .markItUpSeparator { height: 25px; background-color: #eee; }
+.legacy-editor-host .markItUpFooter { height: 15px; }
 .legacy-editor-host .markItUpHeader > ul { display: flow-root; }
 .legacy-editor-host .markItUpHeader ul ul { z-index: 50; }
 .legacy-editor-host .markItUpHeader ul ul li { padding: 0; min-height: 24px; display: flex; align-items: center; }
