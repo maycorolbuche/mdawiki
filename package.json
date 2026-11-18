@@ -19,11 +19,13 @@
     "bootstrap": "^5.3.8",
     "diff": "^9.0.0",
     "isomorphic-dompurify": "^4.7.0",
+    "jquery": "3.7.1",
     "vue": "^3.5.0",
     "vue-router": "^4.6.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
+    "@types/jquery": "^3.5.34",
     "@types/node": "^24.0.0",
     "@vitejs/plugin-vue": "^6.0.0",
     "typescript": "~5.9.0",

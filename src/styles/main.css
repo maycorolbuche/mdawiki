@@ -169,3 +169,42 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
   .home-random-image img { max-width: 60px; }
   .home-random-text h3 { font-size: 16px; }
 }
+
+
+/* Original markItUp editor page, adapted only to the responsive Vue shell. */
+.legacy-edit-page .article-body { padding: 25px; min-height: 0; }
+.legacy-edit-page .legacy-edit-title { margin-bottom: 20px; }
+.legacy-edit-badge { display: inline-block; padding: 5px 8px; border-radius: 3px; background: #ddd; color: #777; font-size: 14px; font-weight: 600; vertical-align: middle; }
+.legacy-edit-warning { padding: 10px 15px; margin: 0 0 20px; background: #fcf8e3; color: #8a6d3b; border-left: 4px solid #f6bb42; }
+.legacy-edit-warning > span { padding-right: 10px; font-size: 18px; font-weight: 700; line-height: 1; }
+.legacy-editor-host { width: 100%; min-width: 0; }
+.legacy-editor-host .markItUp, .legacy-editor-host .markItUpContainer { width: 100%; }
+.legacy-editor-host .markItUpEditor { display: block; width: calc(100% - 12px); height: calc(100dvh - 260px); min-height: 240px; resize: vertical; box-sizing: border-box; }
+.legacy-editor-host .markItUpHeader { min-height: 43px; padding: 8px 10px 0; background: #fafafa; border: none; border-bottom: 1px solid #e7e7e7; }
+.legacy-editor-host .markItUpButton { padding: 6px; background: #fff; border: 1px solid #ddd; }
+.legacy-editor-host .markItUpButton + .markItUpButton { border-left: 0; }
+.legacy-editor-host .markItUpHeader ul .markItUpSeparator { height: 25px; background-color: #eee; }
+.legacy-editor-host .markItUpFooter { height: 15px; }
+.legacy-editor-host .markItUpHeader > ul { display: flow-root; }
+.legacy-editor-host .markItUpHeader ul ul { z-index: 50; }
+.legacy-editor-host .markItUpHeader ul ul li { padding: 0; min-height: 24px; display: flex; align-items: center; }
+.legacy-editor-host .markItUpHeader ul ul li a { display: flex; align-items: center; min-height: 24px; height: auto; }
+.legacy-editor-host[aria-disabled="true"] .markItUpHeader { pointer-events: none; opacity: .6; }
+.legacy-editor-host .markItUp a:focus-visible { outline: 2px solid #3bafda; outline-offset: 2px; }
+.legacy-edit-actions { display: flex; flex-direction: row-reverse; flex-wrap: wrap; gap: 10px 30px; padding-top: 10px; }
+.legacy-edit-actions > .btn { min-width: 110px; flex: 0 0 calc(16.666% - 20px); padding: 10px 12px; border-radius: 0; border: 1px solid #0001; font-weight: 600; color: #fff; }
+.legacy-edit-save { background: #3bafda; }
+.legacy-edit-back { background: #f6bb42; }
+.legacy-edit-remove { background: #e9573f; }
+.legacy-edit-actions > .btn:hover { color: #fff; filter: brightness(.95); }
+.legacy-image-editor { text-align: center; }
+.legacy-image-picker { padding: 0; border: 0; background: transparent; max-width: 90%; cursor: pointer; }
+.legacy-image-picker img { max-width: 100%; height: auto; }
+.legacy-image-placeholder { display: flex; width: 300px; max-width: 100%; height: 200px; align-items: center; justify-content: center; background: #eee; color: #777; font-size: 20px; }
+@media (max-width: 575px) {
+  .legacy-edit-page .article-body { padding: 20px 15px; }
+  .legacy-edit-actions { gap: 10px; }
+  .legacy-edit-actions > .btn { flex-basis: calc(50% - 5px); }
+  .legacy-editor-host .markItUp .m_submenu { width: 210px; }
+  .legacy-editor-host .markItUp .m_submenu a { width: 208px; white-space: normal; }
+}

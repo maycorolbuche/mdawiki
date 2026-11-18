@@ -1,0 +1,135 @@
+.markItUp{
+    border:0;
+    margin:0;
+}
+.markItUpContainer{
+    border:1px solid #CCC;
+    width:970px;
+}
+.mdawiki .markItUpEditor {
+    background-image:url('./images/bg-editor.png');
+    padding:5px;
+}
+.markItUpEditor{
+    border:1px solid #CCC;
+}
+.markItUp .m_submenu{
+    width:250px;
+}
+.markItUp .m_submenu a{
+    width:220px;
+}
+
+.markItUp .m_negrito a {
+	background-image:url('./images/bold.png');
+}
+.markItUp .m_italico a {
+	background-image:url('./images/italic.png');
+}
+.markItUp .m_sublinhado a {
+	background-image:url('./images/stroke.png');
+}
+.markItUp .m_linha a {
+	background-image:url('./images/hr.gif');
+}
+.markItUp .m_quebra_linha a {
+	background-image:url('./images/br.png');
+}
+.markItUp .m_font_size a {
+	background-image:url('./images/fontsize.png');
+}
+.markItUp .m_text_center a {
+	background-image:url('./images/text_align_center.png');
+}
+.markItUp .m_text_right a {
+	background-image:url('./images/text_align_right.png');
+}
+.markItUp .m_text_sub a {
+	background-image:url('./images/text_subscript.png');
+}
+.markItUp .m_text_sup a {
+	background-image:url('./images/text_superscript.png');
+}
+.markItUp .m_cor a {
+	background-image:url('./images/color_swatch.png');
+}
+.markItUp .m_lista a {
+	background-image:url('./images/list-bullet.png'); 
+}
+.markItUp .m_lista_numerica a {
+	background-image:url('./images/list-numeric.png');
+}
+.markItUp .m_lista_alfabetica a {
+	background-image:url('./images/list-alfabetica.png');
+}
+.markItUp .m_lista_romana a {
+	background-image:url('./images/list-romana.png');
+}
+
+.markItUp .m_imagem a {
+	background-image:url('./images/picture.png'); 
+}
+.markItUp .m_video a {
+	background-image:url('./images/video.png'); 
+}
+.markItUp .m_link a {
+	background-image:url('./images/link.png');
+}
+.markItUp .m_addlink a {
+	background-image:url('./images/linkadd.ico');
+}
+.markItUp .m_link_externo a {
+	background-image:url('./images/url.png');
+}
+
+.markItUp .m_h1 a {
+	background-image:url('./images/h1.png');
+}
+.markItUp .m_h2 a {
+	background-image:url('./images/h2.png');
+}
+.markItUp .m_h3 a {
+	background-image:url('./images/h3.png');
+}
+.markItUp .m_objeto a {
+	background-image:url('./images/objeto.png');
+}
+
+.markItUp .m_colunas a {
+	background-image:url('./images/colunas.png');
+}
+
+.markItUp .m_categorias a {
+	background-image:url('./images/categorias.png');
+}
+.markItUp .m_include a {
+	background-image:url('./images/include.png');
+}
+.markItUp .m_codigo a {
+	background-image:url('./images/code.png');
+}
+.markItUp .m_listas a {
+	background-image:url('./images/lista.gif');
+}
+.markItUp .m_tabela a {
+	background-image:url('./images/tabela.png');
+}
+
+.markItUp .m_desambiguacao a {
+	background-image:url('./images/desambig16.png');
+}
+.markItUp .m_especialidade_dbv a {
+	background-image:url('./images/especialidade.png');
+}
+.markItUp .m_especialidade_avt a {
+	background-image:url('./images/especialidade_avt.png');
+}
+.markItUp .m_especialidade_obsoleta a {
+	background-image:url('./images/especialidade_obsoleta.png');
+}
+.markItUp .m_comentario a {
+	background-image:url('./images/addchat.png');
+}
+.markItUp .m_redirect a {
+	background-image:url('./images/redirect.png');
+}

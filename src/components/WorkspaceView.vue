@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { diffLines } from 'diff'
-import { cleanArticle } from '../services/content'
+const LegacyWikiEditor = defineAsyncComponent(() => import('./LegacyWikiEditor.vue'))
 import { RequestError, type SessionClient } from '../services/session'
 const route = useRoute(), router = useRouter(), api = inject<SessionClient>('session')!
 const slug = computed(() => String(route.params.slug)), historyMode = computed(() => route.meta.action === 'history')
-const title = ref(''), source = ref(''), original = ref(''), version = ref(''), media = ref(false), busy = ref(false), loading = ref(true), error = ref(''), loginRequired = ref(false), preview = ref(''), revisions = ref<any[]>([]), before = ref<number | null>(null), older = ref<number | null>(null), newer = ref<number | null>(null), compare = ref(false), selected = ref<any>(null)
+const title = ref(''), source = ref(''), original = ref(''), version = ref(''), media = ref(false), busy = ref(false), loading = ref(true), error = ref(''), loginRequired = ref(false), revisions = ref<any[]>([]), before = ref<number | null>(null), older = ref<number | null>(null), newer = ref<number | null>(null), compare = ref(false), selected = ref<any>(null)
 const originalTitle = ref(''), format = ref('wiki')
+const imageInput = ref<HTMLInputElement>()
+const mediaPreview = computed(() => /^https?:\/\//i.test(source.value) ? source.value : '')
 const dirty = computed(() => source.value !== original.value || title.value !== originalTitle.value)
 const loaded = ref(false)
 const changes = computed(() => {
@@ -16,7 +18,7 @@ const changes = computed(() => {
 })
 const endpoint = computed(() => '/pages/' + encodeURIComponent(slug.value))
 async function load() {
-  loading.value = true; loginRequired.value = false; error.value = ''; preview.value = ''; compare.value = false; revisions.value = []; selected.value = null
+  loading.value = true; loginRequired.value = false; error.value = ''; compare.value = false; revisions.value = []; selected.value = null
   loaded.value = false
   document.title = `${historyMode.value ? 'Histórico' : 'Editar'} — ${slug.value.replaceAll('_', ' ')} — MDAWiki`
   document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex,follow')
@@ -40,7 +42,6 @@ async function save() {
   try { await api.request(endpoint.value, 'PUT', { title: title.value, source: source.value, base_version: version.value }); original.value = source.value; originalTitle.value = title.value; await router.push('/' + encodeURIComponent(slug.value) + '/') }
   catch (e) { error.value = (e as Error).message } finally { busy.value = false }
 }
-async function renderPreview() { busy.value = true; error.value = ''; try { const p = await api.request(endpoint.value + '/preview', 'POST', { source: source.value }); preview.value = cleanArticle(p.html) } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
 async function more() { busy.value = true; try { const data = await api.request(endpoint.value + '/history?before=' + before.value); revisions.value.push(...data.revisions); before.value = data.next_cursor } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
 async function restore(id: number) {
   if (!window.confirm('Restaurar esta revisão como uma nova edição?')) return
@@ -48,29 +49,56 @@ async function restore(id: number) {
   try { await api.request(endpoint.value + '/restore', 'POST', { revision: id, base_version: version.value }); await load() } catch (e) { error.value = (e as Error).message } finally { busy.value = false }
 }
 async function upload(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0]; if (!file) return
-  if (file.size > 5000000) { error.value = 'Envie uma imagem de até 5 MB.'; return }
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]; if (!file) return
+  error.value = ''
+  if (file.size > 5000000) { error.value = 'Envie uma imagem de até 5 MB.'; input.value = ''; return }
   busy.value = true
-  try { const data = await new Promise<string>((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(String(r.result)); r.onerror = () => reject(new Error('Falha ao ler a imagem.')); r.readAsDataURL(file) }); const result = await api.request('/media', 'POST', { data }); source.value = media.value ? result.url : source.value + '\n<img src="' + result.url + '" alt="">\n' }
-  catch (e) { error.value = (e as Error).message } finally { busy.value = false }
+  try {
+    const data = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(String(reader.result))
+      reader.onerror = () => reject(new Error('Falha ao ler a imagem.'))
+      reader.readAsDataURL(file)
+    })
+    const result = await api.request('/media', 'POST', { data })
+    source.value = result.url
+    await save()
+  } catch (e) { error.value = (e as Error).message } finally { busy.value = false; input.value = '' }
 }
-function insert(text: string) { source.value += '\n' + text + '\n' }
+async function removeImage() { source.value = ''; await save() }
 </script>
 <template>
-  <section class="card article-card"><div class="article-body">
-    <h1>{{ historyMode ? 'Histórico de Edições' : 'Editar Página' }} <small>{{ title || slug.replaceAll('_', ' ') }}</small></h1>
+  <section class="card article-card" :class="{ 'legacy-edit-page': !historyMode }"><div class="article-body">
+    <h1 v-if="historyMode">Histórico de Edições <small>{{ title || slug.replaceAll('_', ' ') }}</small></h1>
+    <h1 v-else class="legacy-edit-title">{{ media ? 'Imagem: ' : '' }}{{ title || slug.replaceAll('_', ' ') }} <span class="legacy-edit-badge">Editar {{ media ? 'Imagem' : 'Página' }}</span></h1>
     <p v-if="loading" role="status">Carregando…</p><p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
     <RouterLink v-if="loginRequired" :to="{ path: '/page@Acesso', query: { redirect: route.fullPath } }">Fazer login para continuar</RouterLink>
     <template v-if="loaded && !loading && !loginRequired">
-      <form v-if="!historyMode" @submit.prevent="save">
-        <p class="alert alert-warning">Nas especialidades, mantenha os requisitos do manual, sem respostas.</p>
-        <label class="d-block mb-3">Título<input v-model="title" class="form-control" required maxlength="250"></label>
-        <div v-if="!media && format !== 'html'" class="editor-tools"><button type="button" @click="insert('== Seção ==')">Seção</button><button type="button" @click="insert('[[Página|Texto]]')">Link interno</button><button type="button" @click="insert('{{Categoria:Categoria}}')">Categoria</button><button type="button" @click="insert('# Primeiro item\n# Segundo item')">Lista</button><RouterLink to="/doc%40In%C3%ADcio/">Ajuda do código wiki</RouterLink></div>
-        <label class="d-block">{{ media ? 'Endereço da imagem enviada' : format === 'html' ? 'Código HTML' : 'Código wiki' }}<textarea v-model="source" class="form-control wiki-editor" :rows="media ? 3 : 22" spellcheck="false" maxlength="500000" /></label>
-        <label class="d-block my-3">Enviar imagem<input type="file" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" :disabled="busy" @change="upload"></label>
-        <button v-if="media" type="button" class="btn btn-outline-danger mb-3" :disabled="busy" @click="source = ''">Remover imagem desta página</button>
-        <div class="d-flex flex-wrap gap-2"><button class="btn btn-primary" :disabled="busy">{{ busy ? 'Aguarde…' : 'Salvar página' }}</button><button v-if="!media" type="button" class="btn btn-outline-primary" :disabled="busy" @click="renderPreview">Pré-visualizar</button><RouterLink class="btn btn-outline-secondary" :to="`/${encodeURIComponent(slug)}/`">Voltar ao artigo</RouterLink></div>
-        <section v-if="preview" class="wiki-content preview-content" aria-label="Pré-visualização" v-html="preview" />
+      <form v-if="!historyMode" id="frm_edit" @submit.prevent="save">
+        <input type="hidden" name="nome" :value="title"><input type="hidden" name="nome_url" :value="slug">
+        <p class="legacy-edit-warning"><span aria-hidden="true">×</span> Obs.: Não colocar respostas nas especialidades. O foco desta página é somente as perguntas conforme o manual.</p>
+        <template v-if="media">
+          <div class="legacy-image-editor">
+            <button type="button" class="legacy-image-picker" :aria-label="mediaPreview ? 'Trocar Imagem' : 'Adicionar imagem'" :disabled="busy" @click="imageInput?.click()">
+              <img v-if="mediaPreview" :src="mediaPreview" :alt="title">
+              <span v-else class="legacy-image-placeholder">adicionar imagem</span>
+            </button>
+            <input ref="imageInput" type="file" class="visually-hidden" aria-label="Enviar imagem" accept=".jpg,.jpeg,.png,.svg" :disabled="busy" @change="upload">
+          </div>
+          <div v-if="mediaPreview" class="legacy-edit-actions">
+            <button type="button" class="btn legacy-edit-remove" :disabled="busy" @click="removeImage">Remover Imagem</button>
+            <button type="button" class="btn legacy-edit-save" :disabled="busy" @click="imageInput?.click()">Trocar Imagem</button>
+          </div>
+          <p v-if="busy" role="status">Aguarde…</p>
+        </template>
+        <template v-else>
+          <LegacyWikiEditor v-model="source" :key="slug" :disabled="busy" :label="format === 'html' ? 'Código HTML' : 'Código wiki'" @error="error = $event" />
+          <div class="legacy-edit-actions">
+            <button class="btn legacy-edit-save" :disabled="busy">{{ busy ? 'Aguarde…' : 'Salvar' }}</button>
+            <RouterLink class="btn legacy-edit-back" :to="`/${encodeURIComponent(slug)}/`">Voltar</RouterLink>
+          </div>
+        </template>
       </form>
       <template v-else>
         <p v-if="!revisions.length">Ainda não há revisões registradas.</p>
@@ -80,6 +108,7 @@ function insert(text: string) { source.value += '\n' + text + '\n' }
         <section v-if="selected" class="mt-4"><h2>Revisão {{ selected.id }}</h2><pre class="revision-source">{{ selected.source }}</pre></section>
       </template>
     </template>
-    <div v-if="error && !loginRequired" class="mt-3"><button class="btn btn-outline-secondary" @click="load">Recarregar</button><p v-if="dirty">Copie o conteúdo antes de recarregar para preservar suas alterações.</p></div>
+    <div v-if="error && !loginRequired" class="mt-3"><button v-if="media && dirty" class="btn btn-info me-2" :disabled="busy" @click="save">Salvar novamente</button><button class="btn btn-outline-secondary" @click="load">Recarregar</button><p v-if="dirty">Copie o conteúdo antes de recarregar para preservar suas alterações.</p></div>
   </div></section>
 </template>
+

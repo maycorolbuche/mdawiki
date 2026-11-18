@@ -36,7 +36,7 @@ test('login opens the new editor and saves through API with rotated CSRF', async
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
   await expect(page.getByLabel('Código wiki', { exact: true })).toHaveValue('# Original')
   await page.getByLabel('Código wiki', { exact: true }).fill('# Alterado')
-  await page.getByRole('button', { name: 'Salvar página', exact: true }).click()
+  await page.getByRole('button', { name: 'Salvar', exact: true }).click()
   await expect(page.locator('.wiki-content')).toContainText('Conteúdo salvo.')
   expect(saved).toEqual({ title: 'Teste', source: '# Alterado', base_version: 'v1' })
   await expect(page).toHaveURL(/\/Teste\/$/)
@@ -46,7 +46,7 @@ test('conflict keeps the edited source visible and never overwrites silently', a
   await mock(page, path => path.endsWith('/editor') ? { title: 'Teste', source: 'Original', base_version: 'v1' } : { status: 409, error: { code: 'edit_conflict', message: 'Outra edição foi salva.' } }, true)
   await page.goto('/Teste/editar')
   await page.getByLabel('Código wiki', { exact: true }).fill('Minha edição')
-  await page.getByRole('button', { name: 'Salvar página', exact: true }).click()
+  await page.getByRole('button', { name: 'Salvar', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('Outra edição')
   await expect(page.getByLabel('Código wiki', { exact: true })).toHaveValue('Minha edição')
 })
@@ -101,3 +101,4 @@ test('profile saves account fields through API and administration denies ordinar
   await expect(page.getByRole('alert')).toContainText('Acesso restrito')
   await expect(page.locator('tbody tr')).toHaveCount(0)
 })
+
