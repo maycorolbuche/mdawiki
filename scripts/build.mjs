@@ -26,7 +26,7 @@ const { render } = await import(pathToFileURL(resolve('.ssr/entry-server.js')).h
 const template = await readFile('dist/index.html', 'utf8')
 const common = { pages: [], apiBaseUrl, siteUrl, basePath }
 async function document(path, page, fallback = false) {
-  const snapshot = { ...common, page, pages: path === '/' ? pages.map(p => ({ ...p, html: '' })) : [] }
+  const snapshot = { ...common, page, pages: path === '/' ? pages.map(p => ({ id: p.id, slug: p.slug, title: p.title, html: '', description: '', updated_at: p.updated_at, canonical_url: p.canonical_url })) : [] }
   const html = await render(path, snapshot)
   return template.replace('<!--page-head-->', () => head(page, siteUrl, fallback))
     .replace('<!--app-html-->', () => html).replace('<!--page-data-->', () => serialize(snapshot))

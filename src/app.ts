@@ -6,9 +6,9 @@ import HomeView from './components/HomeView.vue'
 import type { Snapshot } from './types/page'
 import { encodedRoutes } from './config/routes'
 import { createSession } from './services/session'
-import AccountView from './components/AccountView.vue'
-import WorkspaceView from './components/WorkspaceView.vue'
-import DirectoryView from './components/DirectoryView.vue'
+const AccountView = () => import('./components/AccountView.vue')
+const WorkspaceView = () => import('./components/WorkspaceView.vue')
+const DirectoryView = () => import('./components/DirectoryView.vue')
 
 export function createApplication(snapshot: Snapshot, server = false, hydrate = true) {
   const router = createRouter({

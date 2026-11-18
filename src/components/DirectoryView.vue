@@ -36,7 +36,7 @@ function createPage() { const slug = term.value.trim().replaceAll(' ', '_'); if 
 function changeType(e: Event) { void router.push({ path: '/page@Listas', query: { type: (e.target as HTMLSelectElement).value } }) }
 async function details(user: any) { busy.value = true; try { selected.value = await api.request('/users/' + user.ID) } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
 async function rebuild(row: any) { busy.value = true; error.value = ''; try { await api.request('/pages/' + encodeURIComponent(row.slug) + '/rebuild', 'POST', {}); rows.value = rows.value.filter(item => item.id !== row.id) } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
-const labels: Record<string, string> = { pages: 'Páginas', images: 'Imagens', categories: 'Categorias' }
+const labels: Record<string, string> = { pages: 'Páginas', images: 'Imagens', categories: 'Categorias', redirects: 'Redirecionamentos', uncategorized: 'Sem categoria', unused_images: 'Imagens sem uso', missing_images: 'Imagens inexistentes', videos: 'Vídeos', documentation: 'Documentação', missing_links: 'Links inexistentes', views: 'Acessos' }
 </script>
 <template>
   <section class="card article-card"><div class="article-body">

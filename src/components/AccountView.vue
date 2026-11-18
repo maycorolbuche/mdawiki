@@ -65,7 +65,7 @@ async function photo(event: Event) {
         <label v-if="['activate','email'].includes(action)">Código recebido por e-mail<input v-model="form.code" class="form-control" :required="action === 'activate'" maxlength="32" autocomplete="one-time-code"></label>
         <template v-if="action === 'profile'">
           <img v-if="form.photo" :src="form.photo" class="profile-photo" alt="Sua foto">
-          <label>Foto<input type="file" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp" @change="photo"></label>
+          <label>Foto<input type="file" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" @change="photo"></label>
           <label v-for="[key, label] in personal" :key="key">{{ label }}<input v-model="form[key]" :type="key === 'DATA_NASC' ? 'date' : 'text'" :required="key === 'NOME'" class="form-control" :maxlength="key === 'ESTADO' ? 2 : key === 'APELIDO' || key === 'CLUBE' || key === 'ASSOCIACAO' ? 50 : 150"></label>
           <label>Tipo de clube<select v-model="form.TIPO_CLUBE" class="form-select"><option value=""></option><option>Desbravadores</option><option>Aventureiros</option></select></label>
           <label>Biografia<textarea v-model="form.BIOGRAFIA" class="form-control" rows="5" maxlength="10000" /></label>
