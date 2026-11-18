@@ -30,7 +30,17 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
 .facebook-link { font-family: Arial, sans-serif; font-weight: bold; color: #fff; font-size: 20px; }
 .site-search input { width: 182px; height: 28px; border: 1px solid #ccc; border-radius: 20px; padding: 3px 13px; background: #fff; color: #555; }
 .account-links { margin-left: auto; display: flex; gap: 20px; } .account-links a { color: #fff; }
-.site-menu { position: fixed; inset: var(--wiki-topbar) auto 0 0; width: var(--wiki-sidebar); overflow-y: auto; background: #30363e; color: #fff; z-index: 35; scrollbar-width: thin; }
+.site-menu { position: fixed; inset: var(--wiki-topbar) auto 0 0; width: var(--wiki-sidebar); overflow-y: auto; overflow-x: hidden; background: #30363e; color: #fff; z-index: 35; scrollbar-width: thin; scrollbar-color: #64778a #262c33; scrollbar-gutter: stable; }
+.site-menu::-webkit-scrollbar { width: 8px; }
+.site-menu::-webkit-scrollbar-track { background: #262c33; }
+.site-menu::-webkit-scrollbar-thumb { background: #64778a; border: 2px solid #262c33; border-radius: 12px; }
+.site-menu::-webkit-scrollbar-thumb:hover { background: #8aa3bb; }
+.site-menu::-webkit-scrollbar-corner { background: #262c33; }
+.site-menu, .header-brand { transition: width .24s ease, padding .24s ease, transform .24s ease, visibility .24s; }
+.main-content, .site-footer { transition: margin-left .24s ease; }
+.menu-text { white-space: nowrap; overflow: hidden; max-width: 190px; opacity: 1; transition: max-width .2s ease, opacity .15s ease; }
+.menu-symbol { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; font-size: 20px; }
+.menu-section h2 { overflow: hidden; max-height: 24px; transition: max-height .2s ease, opacity .15s ease, margin .2s ease; }
 .site-menu a, .site-menu summary { color: #f4f4f4; font-weight: 600; text-decoration: none; }
 .donation-link, .menu-link, .home-link { display: flex; align-items: center; gap: 10px; min-height: 35px; padding: 7px 15px; }
 .donation-link { min-height: 43px; } .donation-badge { margin-left: auto; background: #4a89dc; border-radius: 2px; padding: 0 5px; font-size: 11px; }
@@ -75,12 +85,26 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
 .category-members { margin: 30px -25px -28px; padding: 20px 25px; background: #fafafa; border-top: 1px solid #eee; } .category-members h2 { font-size: 15px; margin-bottom: 20px; }
 .article-list { columns: 280px; padding-left: 20px; } .article-list li { margin-bottom: 10px; break-inside: avoid; }
 .site-footer { margin-left: var(--wiki-sidebar); padding: 16px 20px; text-align: center; font-size: 12px; color: #888; }
-.menu-backdrop { display: none; } .menu-collapsed .site-menu { display: none; } .menu-collapsed :is(.main-content,.site-footer) { margin-left: 0; }
+.menu-backdrop { display: none; }
+.menu-backdrop-enter-active, .menu-backdrop-leave-active { transition: opacity .24s ease; }
+.menu-backdrop-enter-from, .menu-backdrop-leave-to { opacity: 0; }
+@media (min-width: 992px) {
+  .menu-collapsed { --wiki-sidebar: 64px; }
+  .menu-collapsed .header-brand { padding: 0; justify-content: center; }
+  .menu-collapsed .header-brand > a { display: none; }
+  .menu-collapsed .site-menu :is(.menu-link,.donation-link,.menu-group summary) { justify-content: center; gap: 0; padding-inline: 0; }
+  .menu-collapsed .site-menu .menu-text { max-width: 0; opacity: 0; }
+  .menu-collapsed .site-menu :is(.menu-caret,.donation-badge) { display: none; }
+  .menu-collapsed .menu-section h2 { max-height: 0; opacity: 0; margin: 8px 0 0; }
+  .menu-collapsed .menu-group ul { display: none; }
+}
 @media (min-width: 992px) and (max-width: 1250px) { .article-layout.has-relations { grid-template-columns: minmax(0,1fr) 250px; } .main-content { padding-left: 20px; } .article-body { padding-left: 20px; padding-right: 20px; } }
 @media (max-width: 1100px) { .article-layout.has-relations { grid-template-columns: minmax(0,1fr); } .page-relations { display: grid; grid-template-columns: repeat(auto-fit,minmax(230px,1fr)); gap: 15px; } }
 @media (max-width: 991px) {
   .desktop-menu-toggle { display: none; } .mobile-menu-toggle { display: block; }
-  .site-menu { display: none; } .site-menu.is-open { display: block; } .menu-collapsed .site-menu.is-open { display: block; }
+  .site-menu { display: block; transform: translateX(-100%); visibility: hidden; pointer-events: none; }
+  .site-menu.is-open { transform: translateX(0); visibility: visible; pointer-events: auto; transition-delay: 0s; }
+  .site-menu:not(.is-open) { transition: transform .24s ease, visibility 0s linear .24s; }
   .main-content { margin-left: 0; padding: calc(var(--wiki-topbar) + 15px) 15px 20px; } .site-footer { margin-left: 0; }
   .menu-backdrop { display: block; position: fixed; inset: var(--wiki-topbar) 0 0; background: #0005; border: 0; z-index: 30; }
   .article-body { padding: 25px 20px; } .article-card h1 { font-size: 26px; }
@@ -97,4 +121,8 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
   body { background: #fff; } .main-content { margin: 0; padding: 0; min-height: 0; } .article-layout.has-relations { display: block; }
   .article-card { border: 0; } .article-body { padding: 0; } .wiki-content table { min-width: 0 !important; } .wiki-content { print-color-adjust: exact; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .site-menu, .site-menu:not(.is-open), .header-brand, .main-content, .site-footer, .menu-text, .menu-section h2, .menu-backdrop-enter-active, .menu-backdrop-leave-active { transition: none !important; }
+}
+
 
