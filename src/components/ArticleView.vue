@@ -17,12 +17,13 @@ const loading = ref(false)
 const missing = ref(false)
 const failed = ref(false)
 const html = computed(() => cleanArticle(page.value?.html || ''))
-const hasRelations = computed(() => page.value && [page.value.categories, page.value.mentions, page.value.related_pages, page.value.missing_links].some(links => links?.length))
+const hasRelations = computed(() => page.value && [page.value.categories, page.value.mentions, page.value.related_pages, page.value.missing_links, page.value.image_usage].some(links => links?.length))
 const articlePath = computed(() => `/${encodeURIComponent(slug.value)}/`)
 function printArticle() { window.print() }
 let controller: AbortController | undefined
 let mounted = false
 let redirects = 0
+let lastVisited = ''
 
 function updateMetadata(value: Page | null) {
   document.title = value ? `${value.title} — MDAWiki` : 'Página não encontrada — MDAWiki'
@@ -56,6 +57,11 @@ async function refresh() {
     redirects = 0
     page.value = value
     updateMetadata(value)
+    if (value.is_public !== false && lastVisited !== slug.value) {
+      lastVisited = slug.value
+      const visitedSlug = slug.value
+      void session.initialize().then(() => session.request('/visits', 'POST', { slug: visitedSlug })).catch(() => {})
+    }
   } catch (error) {
     if (controller !== request) return
     if ((error instanceof ApiError || error instanceof RequestError) && error.status === 404) {

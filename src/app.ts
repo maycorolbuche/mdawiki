@@ -20,6 +20,7 @@ export function createApplication(snapshot: Snapshot, server = false, hydrate = 
       ].map(([path, action]) => ({ path: `/page@${path}/:extra?`, component: AccountView, meta: { action } })),
       { path: '/page@Busca/:term?', component: DirectoryView, meta: { action: 'search' } },
       { path: '/page@Listas', component: DirectoryView, meta: { action: 'catalog' } },
+      { path: '/page@Criar', component: DirectoryView, meta: { action: 'create' } },
       ...[['Categorias','categorias'],['Páginas','paginas'],['Imagens','imagens'],['Vídeos','videos'],['Documentação','documentacao'],['Listas','listas'],['Links_Inexistentes','links_inexistentes'],['Páginas_Sem_Categoria','paginas_sem_categoria'],['Redirecionamentos','redirecionamentos'],['Imagens_sem_Página','imagens_sem_pagina'],['Imagens_Inexistentes','imagens_inexistentes']].map(([path, catalogType]) => ({ path: `/@${path}`, component: DirectoryView, meta: { action: 'catalog', catalogType } })),
       { path: '/page@Estatisticas', alias: '/page@Estatísticas', component: DirectoryView, meta: { action: 'statistics' } },
       { path: '/page@Usuarios', alias: '/page@Usuários', component: DirectoryView, meta: { action: 'users' } },

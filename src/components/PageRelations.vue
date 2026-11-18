@@ -6,6 +6,7 @@ const panels = computed(() => [
   { key: 'categories', title: 'Categorias', links: props.page.categories || [], color: 'blue', tags: true },
   { key: 'mentions', title: 'Menções à esta página', links: props.page.mentions || [], color: 'cyan', tags: false },
   { key: 'related', title: 'Páginas Relacionadas', links: props.page.related_pages || [], color: 'green', tags: false },
+  { key: 'image-usage', title: 'Páginas que utilizam esta imagem', links: props.page.image_usage || [], color: 'blue', tags: false },
   { key: 'missing', title: 'Links inexistentes', links: props.page.missing_links || [], color: 'red', tags: false },
 ].filter(panel => panel.links.length))
 function path(slug: string) {

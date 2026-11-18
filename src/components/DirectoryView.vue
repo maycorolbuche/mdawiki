@@ -6,7 +6,7 @@ const route = useRoute(), router = useRouter(), api = inject<SessionClient>('ses
 const mode = computed(() => String(route.meta.action)), rows = ref<any[]>([]), stats = ref<Record<string, number>>({}), busy = ref(false), error = ref(''), loginRequired = ref(false), next = ref<number | null>(null), term = ref(''), selected = ref<any>(null)
 const types = [['paginas','Todas as páginas'],['categorias','Categorias'],['imagens','Imagens'],['videos','Vídeos'],['documentacao','Documentação'],['listas','Listas'],['links_inexistentes','Links inexistentes'],['paginas_sem_categoria','Páginas sem categoria'],['redirecionamentos','Redirecionamentos'],['imagens_sem_pagina','Imagens sem página'],['imagens_inexistentes','Imagens inexistentes']]
 const type = computed(() => String(route.query.type || route.meta.catalogType || 'paginas'))
-const title = computed(() => ({ search: 'Localizar na MDAWiki', catalog: types.find(([key]) => key === type.value)?.[1] || 'Listas', statistics: 'Estatísticas', users: 'Usuários', rebuild: 'Atualizar páginas', donate: 'Faça uma Doação' }[mode.value] || 'MDAWiki'))
+const title = computed(() => ({ search: 'Localizar na MDAWiki', catalog: types.find(([key]) => key === type.value)?.[1] || 'Listas', statistics: 'Estatísticas', users: 'Usuários', rebuild: 'Atualizar páginas', donate: 'Faça uma Doação', create: 'Nova página' }[mode.value] || 'MDAWiki'))
 const filters = ref<Record<string, string>>({})
 const userFields = [['NOME','Nome'],['APELIDO','Apelido'],['EMAIL','E-mail'],['CIDADE','Cidade'],['ESTADO','Estado'],['CLUBE','Clube'],['ASSOCIACAO','Associação'],['TIPO_CLUBE','Tipo de clube'],['ATIVO','Ativo'],['HAS_PHOTO','Tem foto']] as const
 let generation = 0
@@ -18,7 +18,7 @@ async function load(append = false) {
   try {
     let endpoint = ''
     const params = new URLSearchParams({ limit: '50', offset: String(append ? next.value : 0) })
-    if (mode.value === 'donate') return
+    if (['donate','create'].includes(mode.value)) return
     if (mode.value === 'search') { term.value = String(route.query.q || route.params.term || '').replace(/^buscar:/i, ''); params.set('q', term.value); endpoint = '/search' }
     if (mode.value === 'catalog' || mode.value === 'rebuild') { endpoint = '/catalog'; params.set('type', mode.value === 'rebuild' ? 'atualizar' : type.value) }
     if (mode.value === 'users') { endpoint = '/users'; for (const [key, value] of Object.entries(filters.value)) if (value) params.set(key, value) }
@@ -32,6 +32,7 @@ async function load(append = false) {
 }
 onMounted(() => load()); watch(() => route.fullPath, () => load())
 function search() { void router.push({ path: '/page@Busca', query: { q: term.value } }) }
+function createPage() { const slug = term.value.trim().replaceAll(' ', '_'); if (!slug || /[/\\?#\x00-\x1f]/.test(slug) || slug.length > 250) { error.value = 'Informe um título válido, sem barras, ? ou #.'; return }; void router.push('/' + encodeURIComponent(slug) + '/editar') }
 function changeType(e: Event) { void router.push({ path: '/page@Listas', query: { type: (e.target as HTMLSelectElement).value } }) }
 async function details(user: any) { busy.value = true; try { selected.value = await api.request('/users/' + user.ID) } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
 async function rebuild(row: any) { busy.value = true; error.value = ''; try { await api.request('/pages/' + encodeURIComponent(row.slug) + '/rebuild', 'POST', {}); rows.value = rows.value.filter(item => item.id !== row.id) } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
@@ -42,6 +43,7 @@ const labels: Record<string, string> = { pages: 'Páginas', images: 'Imagens', c
     <h1>{{ title }}</h1><p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p><p v-if="busy" role="status">Carregando…</p>
     <RouterLink v-if="loginRequired" :to="{ path: '/page@Acesso', query: { redirect: route.fullPath } }">Fazer login para continuar</RouterLink>
     <form v-if="mode === 'search'" class="input-group mb-4" @submit.prevent="search"><input v-model="term" class="form-control" type="search" aria-label="Termo da busca" maxlength="100" required><button class="btn btn-primary">Pesquisar</button></form>
+    <form v-if="mode === 'create'" class="account-fields" @submit.prevent="createPage"><label>Título da nova página<input v-model="term" class="form-control" maxlength="250" required></label><button class="btn btn-primary">Abrir editor</button></form>
     <select v-if="mode === 'catalog'" class="form-select mb-4" :value="type" aria-label="Lista de páginas" @change="changeType"><option v-for="[key, label] in types" :key="key" :value="key">{{ label }}</option></select>
     <dl v-if="mode === 'statistics'" class="statistics-list"><template v-for="(count, key) in stats" :key="key"><dt>{{ labels[key] || key }}</dt><dd>{{ count }}</dd></template></dl>
     <template v-if="mode === 'users' && !loginRequired">

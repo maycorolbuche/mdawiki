@@ -7,7 +7,8 @@ import { RequestError, type SessionClient } from '../services/session'
 const route = useRoute(), router = useRouter(), api = inject<SessionClient>('session')!
 const slug = computed(() => String(route.params.slug)), historyMode = computed(() => route.meta.action === 'history')
 const title = ref(''), source = ref(''), original = ref(''), version = ref(''), media = ref(false), busy = ref(false), loading = ref(true), error = ref(''), loginRequired = ref(false), preview = ref(''), revisions = ref<any[]>([]), before = ref<number | null>(null), older = ref<number | null>(null), newer = ref<number | null>(null), compare = ref(false), selected = ref<any>(null)
-const dirty = computed(() => source.value !== original.value)
+const originalTitle = ref(''), format = ref('wiki')
+const dirty = computed(() => source.value !== original.value || title.value !== originalTitle.value)
 const loaded = ref(false)
 const changes = computed(() => {
   const a = revisions.value.find(r => Number(r.id) === Number(older.value))?.source || '', b = revisions.value.find(r => Number(r.id) === Number(newer.value))?.source || ''
@@ -23,8 +24,9 @@ async function load() {
     await api.initialize()
     const data = await api.request(endpoint.value + (historyMode.value ? '/history' : '/editor'))
     title.value = data.title; version.value = data.base_version
+    originalTitle.value = data.title
     if (historyMode.value) { revisions.value = data.revisions; before.value = data.next_cursor; older.value = data.revisions[1]?.id; newer.value = data.revisions[0]?.id }
-    else { source.value = data.source; original.value = data.source; media.value = data.media }
+    else { source.value = data.source; original.value = data.source; media.value = data.media; format.value = data.format || 'wiki' }
     loaded.value = true
   } catch (e) { error.value = (e as Error).message; loginRequired.value = e instanceof RequestError && e.status === 401 }
   finally { loading.value = false }
@@ -35,7 +37,7 @@ function unload(e: BeforeUnloadEvent) { if (dirty.value && !historyMode.value) {
 onMounted(() => window.addEventListener('beforeunload', unload)); onBeforeUnmount(() => window.removeEventListener('beforeunload', unload))
 async function save() {
   busy.value = true; error.value = ''
-  try { await api.request(endpoint.value, 'PUT', { title: title.value, source: source.value, base_version: version.value }); original.value = source.value; await router.push('/' + encodeURIComponent(slug.value) + '/') }
+  try { await api.request(endpoint.value, 'PUT', { title: title.value, source: source.value, base_version: version.value }); original.value = source.value; originalTitle.value = title.value; await router.push('/' + encodeURIComponent(slug.value) + '/') }
   catch (e) { error.value = (e as Error).message } finally { busy.value = false }
 }
 async function renderPreview() { busy.value = true; error.value = ''; try { const p = await api.request(endpoint.value + '/preview', 'POST', { source: source.value }); preview.value = cleanArticle(p.html) } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
@@ -63,9 +65,10 @@ function insert(text: string) { source.value += '\n' + text + '\n' }
       <form v-if="!historyMode" @submit.prevent="save">
         <p class="alert alert-warning">Nas especialidades, mantenha os requisitos do manual, sem respostas.</p>
         <label class="d-block mb-3">Título<input v-model="title" class="form-control" required maxlength="250"></label>
-        <div v-if="!media" class="editor-tools"><button type="button" @click="insert('== Seção ==')">Seção</button><button type="button" @click="insert('[[Página|Texto]]')">Link interno</button><button type="button" @click="insert('{{Categoria:Categoria}}')">Categoria</button><button type="button" @click="insert('# Primeiro item\n# Segundo item')">Lista</button><RouterLink to="/doc%40In%C3%ADcio/">Ajuda do código wiki</RouterLink></div>
-        <label class="d-block">{{ media ? 'Endereço da imagem enviada' : 'Código wiki' }}<textarea v-model="source" class="form-control wiki-editor" :rows="media ? 3 : 22" spellcheck="false" maxlength="500000" /></label>
+        <div v-if="!media && format !== 'html'" class="editor-tools"><button type="button" @click="insert('== Seção ==')">Seção</button><button type="button" @click="insert('[[Página|Texto]]')">Link interno</button><button type="button" @click="insert('{{Categoria:Categoria}}')">Categoria</button><button type="button" @click="insert('# Primeiro item\n# Segundo item')">Lista</button><RouterLink to="/doc%40In%C3%ADcio/">Ajuda do código wiki</RouterLink></div>
+        <label class="d-block">{{ media ? 'Endereço da imagem enviada' : format === 'html' ? 'Código HTML' : 'Código wiki' }}<textarea v-model="source" class="form-control wiki-editor" :rows="media ? 3 : 22" spellcheck="false" maxlength="500000" /></label>
         <label class="d-block my-3">Enviar imagem<input type="file" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp" :disabled="busy" @change="upload"></label>
+        <button v-if="media" type="button" class="btn btn-outline-danger mb-3" :disabled="busy" @click="source = ''">Remover imagem desta página</button>
         <div class="d-flex flex-wrap gap-2"><button class="btn btn-primary" :disabled="busy">{{ busy ? 'Aguarde…' : 'Salvar página' }}</button><button v-if="!media" type="button" class="btn btn-outline-primary" :disabled="busy" @click="renderPreview">Pré-visualizar</button><RouterLink class="btn btn-outline-secondary" :to="`/${encodeURIComponent(slug)}/`">Voltar ao artigo</RouterLink></div>
         <section v-if="preview" class="wiki-content preview-content" aria-label="Pré-visualização" v-html="preview" />
       </form>

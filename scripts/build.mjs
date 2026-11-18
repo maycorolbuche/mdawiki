@@ -33,7 +33,7 @@ async function document(path, page, fallback = false) {
 }
 await writeFile('dist/index.html', await document('/', null))
 await writeFile('dist/404.html', await document('/__fallback__', null, true))
-const systemPages = ['page@Acesso','page@Cadastre-se','page@EsqueciMinhaSenha','page@RedefinirSenha','page@AtivaConta','page@Perfil','page@AlterarSenha','page@AlterarEmail','page@Busca','page@Listas','page@Estatisticas','page@Usuarios','page@Atualizar','page@Doação']
+const systemPages = ['page@Criar','page@Acesso','page@Cadastre-se','page@EsqueciMinhaSenha','page@RedefinirSenha','page@AtivaConta','page@Perfil','page@AlterarSenha','page@AlterarEmail','page@Busca','page@Listas','page@Estatisticas','page@Usuarios','page@Atualizar','page@Doação']
 for (const slug of systemPages) {
   const directory = join('dist', slug)
   await mkdir(directory, { recursive: true })
