@@ -37,6 +37,8 @@ test('home refreshes legacy panels from API and keeps internal links in SPA', as
   await expect(page.locator('.home-update-error')).toHaveCount(0)
   await page.screenshot({ path: 'test-results/home-desktop.png', fullPage: true })
   await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.locator('.main-content')).toHaveCSS('margin-left', '0px')
+  await expect(page.locator('#site-menu')).toBeHidden()
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   const columns = await page.locator('.home-rankings .home-panel').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().top))
   expect(columns[1]).toBeGreaterThan(columns[0]!)
