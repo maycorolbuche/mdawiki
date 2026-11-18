@@ -52,6 +52,7 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
 .menu-link img, .menu-group img { object-fit: contain; flex-shrink: 0; } .menu-grid-icon { width: 20px; font-size: 22px; line-height: 20px; }
 .menu-link:hover, .menu-group summary:hover, .menu-group a:hover, .home-link:hover { background: #272d34; }
 .site-menu .router-link-exact-active { background: #262c33; border-left: 3px solid #4a89dc; padding-left: 12px; }
+.site-menu .menu-group .router-link-exact-active { padding-left: 42px; }
 .menu-group summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 8px 15px; }
 .menu-group summary::-webkit-details-marker { display: none; } .menu-caret { margin-left: auto; } .menu-group[open] .menu-caret { transform: rotate(180deg); }
 .menu-group ul { list-style: none; padding: 0; margin: 0; background: #272d34; } .menu-group li a { display: block; padding: 7px 15px 7px 45px; font-size: 12px; }
