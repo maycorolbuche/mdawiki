@@ -17,13 +17,6 @@ onMounted(() => {
 watch(collapsed, value => {
   try { localStorage.setItem(sidebarPreference, String(value)) } catch { /* Keep the menu usable without storage. */ }
 })
-function expandGroup(event: MouseEvent) {
-  if (!collapsed.value || !window.matchMedia('(min-width: 992px)').matches) return
-  event.preventDefault()
-  collapsed.value = false
-  const details = (event.currentTarget as HTMLElement).closest('details')
-  if (details) details.open = true
-}
 const search = ref('')
 const base = import.meta.env.BASE_URL
 watch(() => route.path, () => { menuOpen.value = false })
@@ -42,12 +35,14 @@ function submitSearch() {
         <button class="menu-toggle mobile-menu-toggle" type="button" aria-label="Menu do site" :aria-expanded="menuOpen" aria-controls="site-menu" @click="menuOpen = !menuOpen"><span aria-hidden="true">☰</span></button>
       </div>
       <div class="header-tools">
+        <RouterLink class="compact-topbar-logo" to="/" aria-label="MDAWiki — Página inicial"><img :src="`${base}assets/logo_mdawiki.svg`" width="140" height="44" alt="MDAWiki"></RouterLink>
         <a class="facebook-link" href="https://www.facebook.com/mdawiki" target="_blank" rel="noopener noreferrer" aria-label="MDAWiki no Facebook">f</a>
         <form class="site-search" role="search" @submit.prevent="submitSearch"><label class="visually-hidden" for="site-search">Localizar na MDAWiki</label><input id="site-search" v-model="search" type="search" placeholder="Localizar…" autocomplete="off"><button class="visually-hidden" type="submit">Pesquisar</button></form>
         <nav class="account-links" aria-label="Conta"><template v-if="session.state.user"><RouterLink to="/page@Perfil">{{ session.state.user.APELIDO || session.state.user.NOME }}</RouterLink><button class="header-logout" @click="logout">Sair</button></template><template v-else><RouterLink to="/page@Acesso">Login</RouterLink><RouterLink to="/page@Cadastre-se">Cadastre-se</RouterLink></template></nav>
       </div>
     </header>
     <Transition name="menu-backdrop"><button v-if="menuOpen" class="menu-backdrop" aria-label="Fechar menu" @click="menuOpen = false" /></Transition>
+    <div class="desktop-menu-backdrop" aria-hidden="true" />
     <aside id="site-menu" class="site-menu" :class="{ 'is-open': menuOpen }" aria-label="Menu do site">
       <nav>
         <RouterLink class="donation-link" to="/page@Doação" aria-label="Faça uma Doação" title="Faça uma Doação"><span class="menu-symbol" aria-hidden="true">▣</span><span class="menu-text">Faça uma Doação</span><span class="donation-badge">Doar</span></RouterLink>
@@ -55,7 +50,7 @@ function submitSearch() {
           <h2>{{ section.title }}</h2>
           <template v-for="item in section.items" :key="item.title">
             <details v-if="item.children" class="menu-group">
-              <summary :aria-label="`${section.title} — ${item.title}`" :title="`${section.title} — ${item.title}`" @click="expandGroup"><img :src="`${base}assets/ico_${item.icon}.svg`" alt="" width="20" height="20"><span class="menu-text">{{ item.title }}</span><span class="menu-caret" aria-hidden="true">▾</span></summary>
+              <summary :aria-label="`${section.title} — ${item.title}`" :title="`${section.title} — ${item.title}`"><img :src="`${base}assets/ico_${item.icon}.svg`" alt="" width="20" height="20"><span class="menu-text">{{ item.title }}</span><span class="menu-caret" aria-hidden="true">▾</span></summary>
               <ul><li v-for="child in item.children" :key="child.slug"><RouterLink :to="`/${encodeURIComponent(child.slug)}/`">{{ child.title }}</RouterLink></li></ul>
             </details>
             <RouterLink v-else-if="item.legacy" class="menu-link" to="/page@Listas?type=categorias" :aria-label="item.title" :title="item.title"><span class="menu-grid-icon" aria-hidden="true">▦</span><span class="menu-text">{{ item.title }}</span></RouterLink>
@@ -77,5 +72,6 @@ function submitSearch() {
     <footer class="site-footer">MDAWiki · A Wikipedia dos Desbravadores e Aventureiros</footer>
   </div>
 </template>
+
 
 
