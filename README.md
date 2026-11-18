@@ -26,3 +26,23 @@ O conteúdo é sanitizado tanto no build quanto no navegador, com CSS restrito, 
 ## Validação
 
 `npm run typecheck`, `npm test` e `npm run test:browser`. Para build de testes: `BUILD_FIXTURE=tests/fixtures/pages.json npm run build`. O deploy nunca usa fixtures. Os testes de navegador cobrem também login, edição/conflito, restauração, busca e perfil; as capturas desktop/mobile ficam no artefato `browser-layout` do Actions.
+
+
+
+## Google Analytics e AdSense
+
+`config/google.json` mantém o publisher AdSense do legado: `ca-pub-4184100205220975`. A build publica a metatag de verificação e `public/ads.txt` com o mesmo publisher. O script de anúncios automáticos é inserido uma única vez no head e permanece disponível na navegação SPA; os formatos e posições continuam definidos no painel AdSense, como no legado (não havia slots fixos no código).
+
+O Analytics legado `UA-75685104-1` é Universal Analytics, encerrado pelo Google. Para ativar a coleta atual, informe o **ID de medição GA4** (`G-...`) em uma destas opções:
+
+- GitHub → Settings → Secrets and variables → Actions → Variables: `VITE_GOOGLE_ANALYTICS_ID`; depois execute uma nova build.
+- Desenvolvimento/configuração local: `VITE_GOOGLE_ANALYTICS_ID` no `.env`.
+- Configuração versionada: `analyticsId` em `config/google.json`.
+
+Sem ID GA4, o AdSense funciona independentemente e o Analytics permanece desativado. IDs `UA-...` são rejeitados com uma mensagem explícita na build.
+
+A navegação é acompanhada manualmente por `page_view`, incluindo a abertura inicial e as mudanças de rota. Para evitar duplicação, em **GA4 → Administrador → Fluxos de dados → Web → Medição otimizada → Visualizações de página → Configurações avançadas**, desative **Alterações de página com base em eventos do histórico do navegador**. A configuração do código já usa `send_page_view: false` para a abertura inicial. Como no header legado, as telas de edição não enviam visualizações. Query strings e fragmentos (como tokens de acesso e recuperação) não entram nos parâmetros de URL enviados pelo nosso código.
+
+A inicialização automática só ocorre em build de produção e no domínio configurado em `SITE_URL`. Servidor Vite, localhost e prévias em outro domínio não enviam métricas nem carregam anúncios reais. Bloqueio dos scripts por extensões não interrompe a wiki.
+
+Referências oficiais: [migração do Universal Analytics](https://support.google.com/analytics/answer/11583528?hl=pt-BR), [pageviews manuais e eventos de histórico](https://developers.google.com/analytics/devguides/collection/ga4/views), [ads.txt](https://support.google.com/adsense/answer/12171612?hl=pt-BR).
