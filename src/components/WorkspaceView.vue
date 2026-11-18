@@ -9,7 +9,7 @@ const slug = computed(() => String(route.params.slug)), historyMode = computed((
 const title = ref(''), source = ref(''), original = ref(''), version = ref(''), media = ref(false), busy = ref(false), loading = ref(true), error = ref(''), loginRequired = ref(false), revisions = ref<any[]>([]), before = ref<number | null>(null), older = ref<number | null>(null), newer = ref<number | null>(null), compare = ref(false), selected = ref<any>(null)
 const originalTitle = ref(''), format = ref('wiki')
 const imageInput = ref<HTMLInputElement>()
-const mediaPreview = computed(() => /^https?:\/\//i.test(source.value) ? source.value : '')
+const mediaPreview = computed(() => /^(?:https?:\/\/|data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,)/i.test(source.value) ? source.value : '')
 const dirty = computed(() => source.value !== original.value || title.value !== originalTitle.value)
 const loaded = ref(false)
 const changes = computed(() => {
@@ -61,8 +61,7 @@ async function upload(event: Event) {
       reader.onerror = () => reject(new Error('Falha ao ler a imagem.'))
       reader.readAsDataURL(file)
     })
-    const result = await api.request('/media', 'POST', { data })
-    source.value = result.url
+    source.value = data
     await save()
   } catch (e) { error.value = (e as Error).message } finally { busy.value = false; input.value = '' }
 }
@@ -111,4 +110,5 @@ async function removeImage() { source.value = ''; await save() }
     <div v-if="error && !loginRequired" class="mt-3"><button v-if="media && dirty" class="btn btn-info me-2" :disabled="busy" @click="save">Salvar novamente</button><button class="btn btn-outline-secondary" @click="load">Recarregar</button><p v-if="dirty">Copie o conteúdo antes de recarregar para preservar suas alterações.</p></div>
   </div></section>
 </template>
+
 
