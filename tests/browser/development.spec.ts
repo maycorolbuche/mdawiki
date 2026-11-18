@@ -9,7 +9,7 @@ test('fresh Vite development loads the current entry and renders without PWA fil
     if (/externalized for browser compatibility|Cannot access .*client code|Hydration.*mismatch/i.test(message.text())) compatibilityWarnings.push(message.text())
   })
   page.on('request', request => requests.push(request.url()))
-  await page.route('http://127.0.0.1:4174/api/**', route => route.fulfill({ json: { data: [{ id: 'a', slug: 'Floricultura', title: 'Floricultura' }] } }))
+  await page.route('http://127.0.0.1:4174/api/**', route => route.fulfill({ json: { data: { random: [{ id: 'a', slug: 'Floricultura', title: 'Floricultura' }], top_today: [], top_week: [], top_month: [], missing: [], recent: [] } } }))
   await page.goto('http://127.0.0.1:4174/')
   await expect(page.getByRole('heading', { name: 'A Wikipedia dos Desbravadores e Aventureiros' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Floricultura' })).toBeVisible()
@@ -37,3 +37,4 @@ test('development article sanitizes untrusted HTML without Node compatibility wa
   expect(await page.evaluate(() => (window as any).compromised)).toBeUndefined()
   expect(problems).toEqual([])
 })
+

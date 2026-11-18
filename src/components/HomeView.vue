@@ -1,14 +1,28 @@
 <script setup lang="ts">
 import { inject, onMounted, ref } from 'vue'
-import type { Snapshot, Page } from '../types/page'
+import type { Snapshot } from '../types/page'
 import type { SessionClient } from '../services/session'
+import { homeImage, isHomeData, type HomeData } from '../types/home'
+import HomeList from './HomeList.vue'
+
 const snapshot = inject<Snapshot>('snapshot')!
-const pages = ref<Page[]>(snapshot.pages)
-const failed = ref(false)
 const api = inject<SessionClient>('session')!
-const home = ref<any>(null)
-onMounted(() => { void api.request('/home').then(data => { if (data?.statistics) home.value = data }).catch(() => {}) })
-onMounted(async () => {
+const base = import.meta.env.BASE_URL
+const home = ref<HomeData>(isHomeData(snapshot.home) ? snapshot.home : {
+  random: snapshot.pages.slice(0, 3), top_today: [], top_week: [], top_month: [], missing: [], recent: [],
+})
+const failed = ref(false)
+const loading = ref(false)
+async function refresh() {
+  loading.value = true
+  failed.value = false
+  try {
+    const data: unknown = await api.request('/home')
+    if (!isHomeData(data)) throw new Error('Invalid home response')
+    home.value = data
+  } catch { failed.value = true } finally { loading.value = false }
+}
+onMounted(() => {
   document.title = 'MDAWiki — Tudo sobre Desbravadores e Aventureiros'
   document.querySelector('meta[name="robots"]')?.setAttribute('content', 'index,follow')
   document.querySelector('meta[name="description"]')?.setAttribute('content', 'A Wikipedia dos Desbravadores e Aventureiros')
@@ -16,27 +30,35 @@ onMounted(async () => {
   document.querySelector('meta[property="og:description"]')?.setAttribute('content', 'A Wikipedia dos Desbravadores e Aventureiros')
   document.querySelector('meta[property="og:url"]')?.setAttribute('content', snapshot.siteUrl + '/')
   document.querySelector('link[rel="canonical"]')?.setAttribute('href', snapshot.siteUrl + '/')
-  if (!snapshot.apiBaseUrl) return
-  try {
-    const response = await fetch(`${snapshot.apiBaseUrl}/v1/pages?limit=100`, { cache: 'no-store', signal: AbortSignal.timeout(15000) })
-    if (!response.ok) throw new Error('API unavailable')
-    const body = await response.json()
-    if (!Array.isArray(body.data)) throw new Error('Invalid response')
-    pages.value = body.data
-  } catch { failed.value = true }
+  if (snapshot.apiBaseUrl) void refresh()
 })
 </script>
 
 <template>
-  <section class="card article-card">
-    <div class="card-body p-4">
-      <h1>A Wikipedia dos Desbravadores e Aventureiros</h1>
-      <section v-if="home" class="home-overview"><p>{{ home.statistics.pages }} páginas · {{ home.statistics.images }} imagens · {{ home.statistics.categories }} categorias</p><div class="row"><section class="col-md-6"><h2>Últimas alterações</h2><ul><li v-for="item in home.recent" :key="item.id"><RouterLink :to="`/${encodeURIComponent(item.slug)}/`">{{ item.title }}</RouterLink></li></ul></section><section class="col-md-6"><h2>Mais acessadas</h2><ul><li v-for="item in home.popular" :key="item.id"><RouterLink :to="`/${encodeURIComponent(item.slug)}/`">{{ item.title }}</RouterLink></li></ul></section></div></section>
-      <p v-if="failed" class="alert alert-warning" role="status">Não foi possível atualizar a lista. O conteúdo publicado continua disponível.</p>
-      <ul class="article-list">
-        <li v-for="page in pages" :key="page.id"><RouterLink :to="`/${encodeURIComponent(page.slug)}/`">{{ page.title }}</RouterLink></li>
-      </ul>
-      <p v-if="!pages.length && !failed" class="text-muted">Os artigos serão exibidos quando o conteúdo estiver disponível.</p>
+  <div class="wiki-home" :aria-busy="loading">
+    <div class="home-cover"><img :src="`${base}assets/logo_mdawiki_capa.svg`" alt="MDAWiki" width="315" height="80" fetchpriority="high"></div>
+    <h1 class="home-title">A Wikipedia dos Desbravadores e Aventureiros</h1>
+
+    <section class="home-panel home-random">
+      <header class="home-panel-heading text-center"><h2>Páginas Aleatórias</h2></header>
+      <div class="home-random-body">
+        <article v-for="item in home.random" :key="item.id" class="home-random-card">
+          <RouterLink v-if="homeImage(item.image, snapshot.apiBaseUrl, snapshot.siteUrl)" class="home-random-image" :to="`/${encodeURIComponent(item.slug)}/`" tabindex="-1" aria-hidden="true"><img :src="homeImage(item.image, snapshot.apiBaseUrl, snapshot.siteUrl)" alt="" width="80" loading="lazy"></RouterLink>
+          <RouterLink class="home-random-text" :to="`/${encodeURIComponent(item.slug)}/`"><h3>{{ item.title }}</h3><p v-if="item.description">{{ item.description }}</p></RouterLink>
+        </article>
+        <p v-if="!home.random.length" class="home-empty">Nenhuma página para exibir no momento.</p>
+      </div>
+    </section>
+
+    <div class="row g-4 home-rankings">
+      <div class="col-md-4"><HomeList title="Top 10 de Hoje" :items="home.top_today" /></div>
+      <div class="col-md-4"><HomeList title="Top 10 dos últimos 7 dias" :items="home.top_week" /></div>
+      <div class="col-md-4"><HomeList title="Top 10 dos últimos 30 dias" :items="home.top_month" /></div>
     </div>
-  </section>
+    <div class="row g-4 home-contributions">
+      <div class="col-md-6"><HomeList title="Nos ajude com esses conteúdos" :items="home.missing" danger /></div>
+      <div class="col-md-6"><HomeList title="Últimas alterações" :items="home.recent" /></div>
+    </div>
+    <div v-if="failed" class="alert alert-warning home-update-error" role="status">Não foi possível atualizar a página inicial. O conteúdo publicado continua disponível. <button class="btn btn-sm btn-outline-secondary ms-2" :disabled="loading" @click="refresh">Tentar novamente</button></div>
+  </div>
 </template>

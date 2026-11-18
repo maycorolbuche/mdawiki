@@ -1,3 +1,4 @@
+import type { HomeData } from './home'
 export interface PageLink { id: string; slug: string; title: string }
 export interface Page {
   id: string
@@ -17,10 +18,12 @@ export interface Page {
   missing_links?: PageLink[]
 }
 export interface Snapshot {
+  home?: HomeData | null
   page: Page | null
   pages: Page[]
   apiBaseUrl: string
   siteUrl: string
   basePath: string
 }
+
 

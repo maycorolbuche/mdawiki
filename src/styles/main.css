@@ -134,3 +134,37 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
 
 
 
+
+
+/* Homepage keeps the panels and cover of the original wiki. */
+.home-cover { padding: 20px; }
+.home-cover img { display: block; width: 100%; height: auto; }
+.home-title { text-align: center; font-size: 36px; font-weight: 300; line-height: 1.1; color: #666; margin: 20px 0 30px; }
+.home-panel { background: #fff; border: 1px solid #e2e2e2; margin-bottom: 20px; box-shadow: 0 1px 1px #0000000d; }
+.home-panel-heading { min-height: 40px; padding: 10px 15px; background: #fafafa; border-top: 3px solid #ddd; border-bottom: 1px solid #e2e2e2; }
+.home-panel-heading h2 { font-size: 14px; font-weight: 600; line-height: 20px; margin: 0; color: #666; }
+.home-random-body { padding: 15px; }
+.home-random-card { display: flex; align-items: flex-start; padding: 15px; margin-bottom: 5px; background: #fafafa; border: 1px solid #e7e7e7; }
+.home-random-image { flex: 0 0 100px; margin-right: 10px; text-align: center; }
+.home-random-image img { max-width: 80px; height: auto; }
+.home-random-text { flex: 1; min-width: 0; color: #999; text-decoration: none !important; overflow-wrap: anywhere; }
+.home-random-text:hover { color: #777; }
+.home-random-text h3 { font-size: 18px; line-height: 1.1; font-weight: 500; margin: 10px 0; }
+.home-random-text p { margin: 0 0 10px; text-align: justify; font-weight: 400; }
+.home-table { --bs-table-color: #666; --bs-table-bg: transparent; --bs-table-border-color: #eee; }
+.home-table > tbody > tr > td { padding: 9px; vertical-align: middle; }
+.home-table > tbody > tr:last-child > td { border-bottom: 0; }
+.home-table a { font-weight: 600; overflow-wrap: anywhere; }
+.home-table-image { width: 48px; text-align: center; }
+.home-table-image img { max-width: 30px; height: auto; }
+.home-empty { margin: 0; padding: 15px; color: #999; }
+.home-random-body > .home-empty { padding: 0; }
+.home-update-error { margin-top: 4px; }
+@media (max-width: 575px) {
+  .home-cover { padding: 10px 0; }
+  .home-title { font-size: 26px; margin: 15px 0 25px; }
+  .home-random-body, .home-random-card { padding: 10px; }
+  .home-random-image { flex-basis: 65px; margin-right: 10px; }
+  .home-random-image img { max-width: 60px; }
+  .home-random-text h3 { font-size: 16px; }
+}
