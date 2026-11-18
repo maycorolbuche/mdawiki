@@ -16,7 +16,7 @@ onMounted(() => {
   try {
     installMarkItUp($)
     editor = $(textarea.value)
-    editor.markItUp({ ...settings, root: import.meta.env.BASE_URL,
+    editor.markItUp({ ...settings, markupSet: structuredClone(settings.markupSet), root: import.meta.env.BASE_URL,
       // markItUp changes the native value directly; inform Vue after every insertion.
       afterInsert: () => textarea.value?.dispatchEvent(new Event('input', { bubbles: true })),
     })

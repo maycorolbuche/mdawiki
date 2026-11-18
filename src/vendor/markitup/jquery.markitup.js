@@ -228,7 +228,7 @@ export default function installMarkItUp($) {
 							return false;
 						}).bind('mouseenter.markItUp', function() {
 								$('> ul', this).show();
-								$(document).one('click', function() { // close dropmenu if click outside
+								$(document).one('click.markItUp', function() { // close dropmenu if click outside
 										$('ul ul', header).hide();
 									}
 								);
@@ -636,6 +636,10 @@ export default function installMarkItUp($) {
 			}
 
 			function remove() {
+				$(document).unbind('click.markItUp');
+				$('html').unbind('mousemove.markItUp').unbind('mouseup.markItUp');
+				if ($.markItUp.focused === textarea) $.markItUp.focused = null;
+				li = resizeHandle = range = null;
 				$$.unbind(".markItUp").removeClass('markItUpEditor');
 				$$.parent('div').parent('div.markItUp').parent('div').replaceWith($$);
 				$$.data('markItUp', null);
