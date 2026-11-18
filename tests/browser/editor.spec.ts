@@ -91,8 +91,8 @@ test('image replacement uploads and saves immediately like the legacy editor', a
   await expect(page.locator('.markItUp')).toHaveCount(0)
   await page.getByLabel('Enviar imagem', { exact: true }).setInputFiles({ name: 'nova.png', mimeType: 'image/png', buffer: Buffer.from('image') })
   await expect(page).toHaveURL(/\/imagem%40Teste.png\/$/)
-  expect(writes.map(w => w.path)).toEqual(['/v1/media', '/v1/pages/imagem%40Teste.png'])
-  expect(writes[1]?.body.source).toBe('https://api.mda.wiki.br/media/wiki/nova.png')
+  expect(writes.map(w => w.path)).toEqual(['/v1/pages/imagem%40Teste.png'])
+  expect(writes[0]?.body.source).toBe('data:image/png;base64,' + Buffer.from('image').toString('base64'))
 })
 
 test('removing an image saves an empty source immediately', async ({ page }) => {
@@ -103,3 +103,4 @@ test('removing an image saves an empty source immediately', async ({ page }) => 
   expect(writes).toHaveLength(1)
   expect(writes[0]?.body.source).toBe('')
 })
+
