@@ -26,13 +26,19 @@ const { render } = await import(pathToFileURL(resolve('.ssr/entry-server.js')).h
 const template = await readFile('dist/index.html', 'utf8')
 const common = { pages: [], apiBaseUrl, siteUrl, basePath }
 async function document(path, page, fallback = false) {
-  const snapshot = { ...common, page, pages: path === '/' ? pages.map(p => ({ ...p, html: '' })) : [] }
+  const snapshot = { ...common, page, pages: path === '/' ? pages.map(p => ({ id: p.id, slug: p.slug, title: p.title, html: '', description: '', updated_at: p.updated_at, canonical_url: p.canonical_url })) : [] }
   const html = await render(path, snapshot)
   return template.replace('<!--page-head-->', () => head(page, siteUrl, fallback))
     .replace('<!--app-html-->', () => html).replace('<!--page-data-->', () => serialize(snapshot))
 }
 await writeFile('dist/index.html', await document('/', null))
 await writeFile('dist/404.html', await document('/__fallback__', null, true))
+const systemPages = ['page@Criar','page@Acesso','page@Cadastre-se','page@EsqueciMinhaSenha','page@RedefinirSenha','page@AtivaConta','page@Perfil','page@AlterarSenha','page@AlterarEmail','page@Busca','page@Listas','page@Estatisticas','page@Usuarios','page@Atualizar','page@Doação']
+for (const slug of systemPages) {
+  const directory = join('dist', slug)
+  await mkdir(directory, { recursive: true })
+  await writeFile(join(directory, 'index.html'), await document('/' + encodeURIComponent(slug) + '/', null, true))
+}
 for (const page of pages) {
   const directory = join('dist', safeSlug(page.slug))
   await mkdir(directory, { recursive: true })
@@ -42,3 +48,4 @@ await writeFile('dist/.nojekyll', '')
 const urls = [siteUrl + '/', ...pages.map(p => `${siteUrl}/${encodeURIComponent(p.slug)}/`)]
 await writeFile('dist/sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map(url => `<url><loc>${escapeHtml(url)}</loc></url>`).join('')}</urlset>`)
 console.log(`Generated ${pages.length} articles, homepage and API-backed 404 fallback.`)
+

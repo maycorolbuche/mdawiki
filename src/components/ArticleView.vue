@@ -3,23 +3,27 @@ import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ApiError, getPage } from '../services/api'
 import { cleanArticle } from '../services/content'
+import { RequestError, type SessionClient } from '../services/session'
 import PageRelations from './PageRelations.vue'
 import type { Page, Snapshot } from '../types/page'
 
 const route = useRoute()
 const router = useRouter()
 const snapshot = inject<Snapshot>('snapshot')!
+const session = inject<SessionClient>('session')!
 const slug = computed(() => String(route.params.slug || '').replace(/\/$/, ''))
 const page = ref<Page | null>(snapshot.page?.slug === slug.value ? snapshot.page : null)
 const loading = ref(false)
 const missing = ref(false)
 const failed = ref(false)
 const html = computed(() => cleanArticle(page.value?.html || ''))
-const hasRelations = computed(() => page.value && [page.value.categories, page.value.mentions, page.value.related_pages, page.value.missing_links].some(links => links?.length))
-const legacyArticle = computed(() => `https://mda.wiki.br/${encodeURIComponent(slug.value)}/`)
+const hasRelations = computed(() => page.value && [page.value.categories, page.value.mentions, page.value.related_pages, page.value.missing_links, page.value.image_usage].some(links => links?.length))
+const articlePath = computed(() => `/${encodeURIComponent(slug.value)}/`)
 function printArticle() { window.print() }
 let controller: AbortController | undefined
 let mounted = false
+let redirects = 0
+let lastVisited = ''
 
 function updateMetadata(value: Page | null) {
   document.title = value ? `${value.title} — MDAWiki` : 'Página não encontrada — MDAWiki'
@@ -29,7 +33,7 @@ function updateMetadata(value: Page | null) {
     ['meta[property="og:description"]', 'content', value?.description || ''],
     ['meta[property="og:url"]', 'content', value?.canonical_url || ''],
     ['link[rel="canonical"]', 'href', value?.canonical_url || ''],
-    ['meta[name="robots"]', 'content', value ? 'index,follow' : 'noindex,follow'],
+    ['meta[name="robots"]', 'content', value && value.is_public !== false ? 'index,follow' : 'noindex,follow'],
   ]) document.querySelector(selector!)?.setAttribute(attribute!, content!)
 }
 
@@ -43,13 +47,24 @@ async function refresh() {
   const timeout = setTimeout(() => request.abort(new Error('timeout')), 15000)
   try {
     if (!snapshot.apiBaseUrl) throw new Error('API not configured')
-    const value = await getPage(snapshot.apiBaseUrl, slug.value, request.signal)
+    const value = session.state.user ? await session.request('/view/' + encodeURIComponent(slug.value)) : await getPage(snapshot.apiBaseUrl, slug.value, request.signal)
     if (controller !== request) return
+    if (value.redirect_slug && value.redirect_slug !== slug.value) {
+      if (++redirects > 8) throw new Error('Redirecionamento circular.')
+      await router.replace('/' + encodeURIComponent(value.redirect_slug) + '/')
+      return
+    }
+    redirects = 0
     page.value = value
     updateMetadata(value)
+    if (value.is_public !== false && lastVisited !== slug.value) {
+      lastVisited = slug.value
+      const visitedSlug = slug.value
+      void session.initialize().then(() => session.request('/visits', 'POST', { slug: visitedSlug })).catch(() => {})
+    }
   } catch (error) {
     if (controller !== request) return
-    if (error instanceof ApiError && error.status === 404) {
+    if ((error instanceof ApiError || error instanceof RequestError) && error.status === 404) {
       page.value = null
       missing.value = true
       updateMetadata(null)
@@ -72,6 +87,7 @@ watch(slug, () => {
   }
 })
 onMounted(() => { mounted = true; void refresh() })
+watch(() => session.state.user, user => { if (!user && page.value?.is_public === false) page.value = null; if (mounted) void refresh() })
 onBeforeUnmount(() => { controller?.abort(); controller = undefined })
 
 function followArticleLink(event: MouseEvent) {
@@ -82,7 +98,6 @@ function followArticleLink(event: MouseEvent) {
   const site = new URL(snapshot.siteUrl || window.location.origin)
   const legacy = destination.origin === 'https://mda.wiki.br'
   if (!legacy && (destination.origin !== site.origin || !destination.pathname.startsWith(snapshot.basePath))) return
-  if (/^\/(?:page|imagem)@/i.test(decodeURIComponent(destination.pathname))) return
   event.preventDefault()
   void router.push((legacy ? destination.pathname : destination.pathname.slice(snapshot.basePath.length - 1)) + destination.search + destination.hash)
 }
@@ -92,8 +107,8 @@ function followArticleLink(event: MouseEvent) {
   <div class="article-layout" :class="{ 'has-relations': hasRelations }">
   <article class="card article-card" :aria-busy="loading">
     <div class="article-toolbar">
-      <a v-if="page" class="article-action action-edit" :href="legacyArticle + 'editar'" title="Editar no sistema legado"><span aria-hidden="true">✎</span> Editar Página</a>
-      <a v-if="page" class="article-action action-history" :href="legacyArticle + 'historico'" title="Consultar histórico no sistema legado"><span aria-hidden="true">◴</span> Histórico de Edições</a>
+      <RouterLink class="article-action action-edit" :to="articlePath + 'editar'"><span aria-hidden="true">✎</span> {{ page ? 'Editar Página' : 'Criar Página' }}</RouterLink>
+      <RouterLink v-if="page" class="article-action action-history" :to="articlePath + 'historico'"><span aria-hidden="true">◴</span> Histórico de Edições</RouterLink>
       <button class="article-action action-refresh" :disabled="loading" @click="refresh"><span aria-hidden="true">⟳</span> {{ loading ? 'Atualizando…' : 'Atualizar' }}</button>
       <button v-if="page" class="article-action action-print" @click="printArticle"><span aria-hidden="true">▣</span> Imprimir</button>
     </div>
@@ -117,4 +132,5 @@ function followArticleLink(event: MouseEvent) {
   <PageRelations v-if="page" :page="page" />
   </div>
 </template>
+
 

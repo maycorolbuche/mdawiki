@@ -52,7 +52,7 @@ test('API refresh updates relation panels and category members together with art
   await expect(page.locator('.relation-green')).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Página integrante' })).toBeVisible()
   expect(problems).toEqual([])
-  await page.getByRole('link', { name: 'Editar Página' }).getAttribute('href').then(href => expect(href).toBe('https://mda.wiki.br/' + encodeURIComponent(article.slug) + '/editar'))
+  await page.getByRole('link', { name: 'Editar Página' }).getAttribute('href').then(href => expect(href).toBe('/' + encodeURIComponent(article.slug) + '/editar'))
 })
 
 test('mobile menu opens, expands groups and closes after SPA navigation without page overflow', async ({ page }) => {
