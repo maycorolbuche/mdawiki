@@ -4,6 +4,7 @@ import App from './App.vue'
 import ArticleView from './components/ArticleView.vue'
 import HomeView from './components/HomeView.vue'
 import type { Snapshot } from './types/page'
+import { encodedRoutes } from './config/routes'
 import { createSession } from './services/session'
 import AccountView from './components/AccountView.vue'
 import WorkspaceView from './components/WorkspaceView.vue'
@@ -12,7 +13,7 @@ import DirectoryView from './components/DirectoryView.vue'
 export function createApplication(snapshot: Snapshot, server = false, hydrate = true) {
   const router = createRouter({
     history: server ? createMemoryHistory(snapshot.basePath) : createWebHistory(snapshot.basePath),
-    routes: [
+    routes: encodedRoutes([
       { path: '/', alias: '/page@Inicio', component: HomeView },
       ...[
         ['Acesso','login'],['Cadastre-se','register'],['EsqueciMinhaSenha','forgot'],['RedefinirSenha','reset'],['AtivaConta','activate'],['Perfil','profile'],['AlterarSenha','password'],['AlterarEmail','email'],
@@ -27,7 +28,7 @@ export function createApplication(snapshot: Snapshot, server = false, hydrate = 
       { path: '/:slug/editar', component: WorkspaceView, meta: { action: 'editor' } },
       { path: '/:slug/historico', component: WorkspaceView, meta: { action: 'history' } },
       { path: '/:slug(.*)', component: ArticleView },
-    ],
+    ]),
     scrollBehavior(to, from, saved) {
       if (saved) return saved
       if (to.hash) return { el: to.hash, top: 80 }
