@@ -25,7 +25,10 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
 .header-brand { width: var(--wiki-sidebar); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; background: #30333f; }
 .header-brand img { object-fit: contain; display: block; }
 .menu-toggle { border: 0; background: transparent; color: #fff; padding: 8px 3px; font-size: 17px; cursor: pointer; }
-.mobile-menu-toggle { display: none; }
+.mobile-menu-toggle, .compact-topbar-logo { display: none; }
+.compact-topbar-logo { flex-shrink: 0; }
+.compact-topbar-logo img { display: block; object-fit: contain; }
+.desktop-menu-backdrop { position: fixed; inset: var(--wiki-topbar) 0 0; z-index: 34; background: #0006; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .24s ease, visibility .24s; }
 .header-tools { flex: 1; min-width: 0; display: flex; align-items: center; gap: 24px; padding: 0 22px; }
 .facebook-link { font-family: Arial, sans-serif; font-weight: bold; color: #fff; font-size: 20px; }
 .site-search input { width: 182px; height: 28px; border: 1px solid #ccc; border-radius: 20px; padding: 3px 13px; background: #fff; color: #555; }
@@ -92,11 +95,14 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
   .menu-collapsed { --wiki-sidebar: 64px; }
   .menu-collapsed .header-brand { padding: 0; justify-content: center; }
   .menu-collapsed .header-brand > a { display: none; }
-  .menu-collapsed .site-menu :is(.menu-link,.donation-link,.menu-group summary) { justify-content: center; gap: 0; padding-inline: 0; }
-  .menu-collapsed .site-menu .menu-text { max-width: 0; opacity: 0; }
-  .menu-collapsed .site-menu :is(.menu-caret,.donation-badge) { display: none; }
-  .menu-collapsed .menu-section h2 { max-height: 0; opacity: 0; margin: 8px 0 0; }
-  .menu-collapsed .menu-group ul { display: none; }
+  .menu-collapsed .compact-topbar-logo { display: block; }
+  .menu-collapsed .site-menu:is(:hover, :focus-within) { width: 230px; box-shadow: 6px 0 18px #0003; }
+  .menu-collapsed:has(.site-menu:is(:hover, :focus-within)) .desktop-menu-backdrop { opacity: 1; visibility: visible; }
+  .menu-collapsed .site-menu:not(:hover):not(:focus-within) :is(.menu-link,.donation-link,.menu-group summary) { justify-content: center; gap: 0; padding-inline: 0; }
+  .menu-collapsed .site-menu:not(:hover):not(:focus-within) .menu-text { max-width: 0; opacity: 0; }
+  .menu-collapsed .site-menu:not(:hover):not(:focus-within) :is(.menu-caret,.donation-badge) { display: none; }
+  .menu-collapsed .site-menu:not(:hover):not(:focus-within) .menu-section h2 { max-height: 0; opacity: 0; margin: 8px 0 0; }
+  .menu-collapsed .site-menu:not(:hover):not(:focus-within) .menu-group ul { display: none; }
 }
 @media (min-width: 992px) and (max-width: 1250px) { .article-layout.has-relations { grid-template-columns: minmax(0,1fr) 250px; } .main-content { padding-left: 20px; } .article-body { padding-left: 20px; padding-right: 20px; } }
 @media (max-width: 1100px) { .article-layout.has-relations { grid-template-columns: minmax(0,1fr); } .page-relations { display: grid; grid-template-columns: repeat(auto-fit,minmax(230px,1fr)); gap: 15px; } }
@@ -122,7 +128,8 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
   .article-card { border: 0; } .article-body { padding: 0; } .wiki-content table { min-width: 0 !important; } .wiki-content { print-color-adjust: exact; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .site-menu, .site-menu:not(.is-open), .header-brand, .main-content, .site-footer, .menu-text, .menu-section h2, .menu-backdrop-enter-active, .menu-backdrop-leave-active { transition: none !important; }
+  .site-menu, .site-menu:not(.is-open), .header-brand, .main-content, .site-footer, .menu-text, .menu-section h2, .menu-backdrop-enter-active, .menu-backdrop-leave-active, .desktop-menu-backdrop { transition: none !important; }
 }
+
 
 
