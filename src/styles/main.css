@@ -96,13 +96,13 @@ button, input { font: inherit; } button:focus-visible, a:focus-visible, summary:
   .menu-collapsed .header-brand { padding: 0; justify-content: center; }
   .menu-collapsed .header-brand > a { display: none; }
   .menu-collapsed .compact-topbar-logo { display: block; }
-  .menu-collapsed .site-menu:is(:hover, :focus-within) { width: 230px; box-shadow: 6px 0 18px #0003; }
-  .menu-collapsed:has(.site-menu:is(:hover, :focus-within)) .desktop-menu-backdrop { opacity: 1; visibility: visible; }
-  .menu-collapsed .site-menu:not(:hover):not(:focus-within) :is(.menu-link,.donation-link,.menu-group summary) { justify-content: center; gap: 0; padding-inline: 0; }
-  .menu-collapsed .site-menu:not(:hover):not(:focus-within) .menu-text { max-width: 0; opacity: 0; }
-  .menu-collapsed .site-menu:not(:hover):not(:focus-within) :is(.menu-caret,.donation-badge) { display: none; }
-  .menu-collapsed .site-menu:not(:hover):not(:focus-within) .menu-section h2 { max-height: 0; opacity: 0; margin: 8px 0 0; }
-  .menu-collapsed .site-menu:not(:hover):not(:focus-within) .menu-group ul { display: none; }
+  .menu-collapsed .site-menu:is(:hover, :has(:focus-visible)) { width: 230px; box-shadow: 6px 0 18px #0003; }
+  .menu-collapsed:has(.site-menu:is(:hover, :has(:focus-visible))) .desktop-menu-backdrop { opacity: 1; visibility: visible; }
+  .menu-collapsed .site-menu:not(:hover):not(:has(:focus-visible)) :is(.menu-link,.donation-link,.menu-group summary) { justify-content: center; gap: 0; padding-inline: 0; }
+  .menu-collapsed .site-menu:not(:hover):not(:has(:focus-visible)) .menu-text { max-width: 0; opacity: 0; }
+  .menu-collapsed .site-menu:not(:hover):not(:has(:focus-visible)) :is(.menu-caret,.donation-badge) { display: none; }
+  .menu-collapsed .site-menu:not(:hover):not(:has(:focus-visible)) .menu-section h2 { max-height: 0; opacity: 0; margin: 8px 0 0; }
+  .menu-collapsed .site-menu:not(:hover):not(:has(:focus-visible)) .menu-group ul { display: none; }
 }
 @media (min-width: 992px) and (max-width: 1250px) { .article-layout.has-relations { grid-template-columns: minmax(0,1fr) 250px; } .main-content { padding-left: 20px; } .article-body { padding-left: 20px; padding-right: 20px; } }
 @media (max-width: 1100px) { .article-layout.has-relations { grid-template-columns: minmax(0,1fr); } .page-relations { display: grid; grid-template-columns: repeat(auto-fit,minmax(230px,1fr)); gap: 15px; } }
