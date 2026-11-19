@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, inject, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { SessionClient } from '../services/session'
 import { RequestError } from '../services/session'
+const AvatarCropModal = defineAsyncComponent(() => import('./AvatarCropModal.vue'))
+const cropSource = ref('')
+function closeCrop() { if (cropSource.value) URL.revokeObjectURL(cropSource.value); cropSource.value = '' }
+onBeforeUnmount(closeCrop)
 const route = useRoute(), router = useRouter(), api = inject<SessionClient>('session')!
 const action = computed(() => String(route.meta.action))
 const titles: Record<string, string> = { login: 'Entrar na MDAWiki', register: 'Criar conta', forgot: 'Recuperar senha', reset: 'Redefinir senha', activate: 'Ativar conta', profile: 'Meu perfil', password: 'Alterar senha', email: 'Alterar e-mail' }
@@ -10,6 +14,7 @@ const form = reactive<Record<string, any>>({}), busy = ref(false), loading = ref
 const personal = [['NOME','Nome'],['APELIDO','Apelido'],['DATA_NASC','Data de nascimento'],['CIDADE','Cidade'],['ESTADO','Estado'],['CLUBE','Clube'],['ASSOCIACAO','Associação / Missão']] as const
 const protectedAction = computed(() => ['profile','password','email'].includes(action.value))
 async function load() {
+  closeCrop()
   Object.keys(form).forEach(k => delete form[k]); error.value = ''; message.value = ''; loginRequired.value = false
   form.email = String(route.query.email || ''); form.token = String(route.query.token || ''); form.code = String(route.query.code || '')
   document.title = `${titles[action.value]} — MDAWiki`
@@ -41,11 +46,18 @@ async function resend() {
   try { const result = await api.request('/auth/resend', 'POST', { email: form.email }); message.value = result.message }
   catch (e) { error.value = (e as Error).message } finally { busy.value = false }
 }
-async function photo(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0]; if (!file) return
+function photo(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]; input.value = ''; if (!file) return
+  error.value = ''; message.value = ''
   if (file.size > 5000000) { error.value = 'A imagem deve ter até 5 MB.'; return }
-  busy.value = true
-  try { const data = await new Promise<string>((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(String(r.result)); r.onerror = () => reject(new Error('Não foi possível ler a imagem.')); r.readAsDataURL(file) }); const result = await api.request('/profile/photo', 'POST', { data }); form.photo = result.url; if (api.state.user) api.state.user.photo = result.url; message.value = 'Foto atualizada.' }
+  if (!['image/png','image/jpeg','image/gif','image/webp','image/svg+xml'].includes(file.type)) { error.value = 'Escolha uma imagem PNG, JPEG, GIF, WebP ou SVG.'; return }
+  closeCrop(); cropSource.value = URL.createObjectURL(file)
+}
+async function savePhoto(data: string) {
+  const selected = cropSource.value
+  busy.value = true; error.value = ''
+  try { const result = await api.request('/profile/photo', 'POST', { data }); if (selected !== cropSource.value) return; form.photo = result.url; if (api.state.user) api.state.user.photo = result.url; message.value = 'Foto atualizada.'; closeCrop() }
   catch (e) { error.value = (e as Error).message } finally { busy.value = false }
 }
 </script>
@@ -78,4 +90,5 @@ async function photo(event: Event) {
     <form v-if="action === 'activate'" class="mt-4" @submit.prevent="resend"><label for="resend-email">Reenviar código de ativação</label><div class="input-group"><input id="resend-email" v-model="form.email" type="email" class="form-control" placeholder="Seu e-mail" required><button class="btn btn-outline-primary" :disabled="busy">Reenviar</button></div></form>
     <nav class="account-navigation"><RouterLink to="/page@Acesso">Login</RouterLink><RouterLink to="/page@Cadastre-se">Criar conta</RouterLink><RouterLink to="/page@EsqueciMinhaSenha">Esqueci minha senha</RouterLink><template v-if="api.state.user"><RouterLink to="/page@Perfil">Perfil</RouterLink><RouterLink to="/page@AlterarSenha">Alterar senha</RouterLink><RouterLink to="/page@AlterarEmail">Alterar e-mail</RouterLink></template></nav>
   </div></section>
+  <AvatarCropModal v-if="cropSource" :source="cropSource" :busy="busy" :error="error" @close="closeCrop" @confirm="savePhoto" />
 </template>
