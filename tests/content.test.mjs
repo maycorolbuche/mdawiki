@@ -2,6 +2,23 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { cleanArticle } from '../src/services/content.ts'
 
+test('legacy topics recover safe anchors and a keyboard-accessible toggle', () => {
+  const source = '<div class="panel"><div class="panel-heading">Tópicos [<a id="indice_link" onclick="evil()">Mostrar</a>]</div><div id="indice_conteudo"><ol><li><a>Introdução</a></li></ol></div></div><h2 name="introducao">Introdução</h2><h3 name="cores">Cores</h3><h4 name="cores">Cores repetidas</h4><h2 id="fim">Fim</h2>'
+  const html = cleanArticle(source)
+  for (const value of ['id="introducao"', 'href="#introducao"', 'href="#cores"', 'href="#cores-2"', 'href="#fim"', 'type="button"', 'aria-expanded="false"', 'hidden=""']) assert.ok(html.includes(value), value)
+  assert.equal((html.match(/id="indice_conteudo"/g) || []).length, 1)
+  assert.ok(!html.includes('onclick') && !html.includes('javascript:'))
+  const expanded = cleanArticle(source, true)
+  assert.ok(expanded.includes('aria-expanded="true"') && expanded.includes('>Esconder</button>') && !expanded.includes('hidden='))
+})
+
+test('newly rendered headings get topics without depending on legacy event handlers', () => {
+  const html = cleanArticle('<h2 id="one">Um &lt;img onerror=x&gt;</h2><h3 id="two">Dois</h3>')
+  assert.ok(html.includes('article-topics') && html.includes('href="#one"') && html.includes('href="#two"'))
+  assert.ok(!html.includes('<img'))
+  assert.ok(!cleanArticle('<h2>Único</h2>').includes('article-topics'))
+})
+
 test('static sanitizer preserves article structure and relative/anchor links', () => {
   const html = cleanArticle('<h2 id="flores">Flores</h2><figure class="imagem"><img src="/flores.png" alt="Flores"><figcaption>Legenda</figcaption></figure><a href="#flores">Índice</a><table><tr><td colspan="2">Texto</td></tr></table>')
   for (const text of ['<h2 id="flores">', '<figure class="imagem">', 'src="/flores.png"', 'href="#flores"', 'colspan="2"']) assert.ok(html.includes(text), text)

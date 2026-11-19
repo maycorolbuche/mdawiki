@@ -33,3 +33,15 @@
 .wiki-content .mb5 { margin-bottom: 5px; }
 .wiki-content .ph10 { padding-left: 10px; padding-right: 10px; }
 .wiki-content .pb5 { padding-bottom: 5px; }
+
+.wiki-content .article-topics { border: 1px solid #eee; margin-bottom: 25px; }
+.wiki-content .article-topics .panel-heading { background: #fafafa; border-bottom: 1px solid #eee; padding: 10px 15px; }
+.wiki-content .article-topics .panel-title { font-weight: 600; }
+.wiki-content .article-topics .panel-body { padding: 10px; }
+.wiki-content .article-topics #indice_link { border: 0; padding: 0; background: transparent; color: var(--bs-link-color); font: inherit; text-decoration: underline; cursor: pointer; }
+.wiki-content .article-topics #indice_link:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.wiki-content .article-topics ol { counter-reset: topic; list-style: none; padding-left: 30px; margin-bottom: 0; }
+.wiki-content .article-topics li { counter-increment: topic; padding: 1px 0; font-weight: 400; }
+.wiki-content .article-topics li::before { content: counters(topic, '.') ' '; font-weight: 700; }
+.wiki-content .article-topics > .panel-body > ol { margin-bottom: 10px; }
+.wiki-content :is(h2, h3, h4, h5, h6) { scroll-margin-top: 75px; }

@@ -12,7 +12,7 @@ for (const javascript of [false, true]) {
     if (javascript) await page.route('http://127.0.0.1:8080/**', route => route.fulfill({ headers, json: { data: route.request().url().includes('/auth/session') ? { user: null, csrf_token: 'test' } : article } }))
     await page.goto('http://127.0.0.1:4173' + path)
     const content = page.locator('.wiki-content')
-    const nested = content.locator('ol ol').first()
+    const nested = content.locator('ol[style*="lower-alpha"]').first()
     await expect(nested).toHaveCSS('list-style-type', 'lower-alpha')
     await expect(content.locator('ol[start="3"]')).toHaveCSS('list-style-type', 'upper-roman')
     await expect(content.locator('ul')).toHaveCSS('list-style-type', 'square')
