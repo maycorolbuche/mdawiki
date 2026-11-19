@@ -103,7 +103,7 @@ test('SPA return shows cache during refresh and retains it on invalid response o
   })
   await page.goto('/')
   await expect(page.getByRole('link', { name: 'Primeira página' })).toBeVisible()
-  await page.getByRole('link', { name: 'Todas as páginas', exact: true }).first().click()
+  await page.getByRole('link', { name: 'Faça uma Doação', exact: true }).first().click()
   await page.getByRole('link', { name: 'MDAWiki — Página inicial', exact: true }).first().click()
   await expect.poll(() => calls).toBe(2)
   await expect(page.getByRole('link', { name: 'Primeira página' })).toBeVisible()
