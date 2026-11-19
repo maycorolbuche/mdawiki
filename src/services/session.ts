@@ -1,11 +1,13 @@
 import { reactive, watch } from 'vue'
 import { createPageCache } from './page-cache'
+import { createHomeCache } from './home-cache'
 import type { Snapshot } from '../types/page'
 export interface User { ID: number; NOME: string; APELIDO: string; EMAIL: string; NIVEL: number; photo?: string; [key: string]: unknown }
 export class RequestError extends Error { constructor(public status: number, public code: string, message: string) { super(message) } }
 export function createSession(snapshot: Snapshot) {
   const state = reactive({ user: null as User | null, csrf: '', ready: false })
   const articles = createPageCache(snapshot.apiBaseUrl)
+  const homeCache = createHomeCache(snapshot.apiBaseUrl)
   watch(() => state.user?.ID, () => articles.clearPrivate(), { flush: 'sync' })
   let initialization: Promise<void> | undefined
   async function request(path: string, method = 'GET', body?: unknown): Promise<any> {
@@ -30,6 +32,6 @@ export function createSession(snapshot: Snapshot) {
     return initialization ??= request('/auth/session').then(() => { state.ready = true }).catch(error => { state.ready = true; initialization = undefined; throw error })
   }
   async function logout() { await request('/auth/logout', 'POST', {}); state.user = null }
-  return { state, request, initialize, logout, articles }
+  return { state, request, initialize, logout, articles, homeCache }
 }
 export type SessionClient = ReturnType<typeof createSession>

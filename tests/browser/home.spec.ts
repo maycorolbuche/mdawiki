@@ -51,7 +51,7 @@ test('home loads legacy panels from API and keeps internal links in SPA', async 
   expect(errors).toEqual([])
 })
 
-test('initial load and F5 stay empty until the current API response arrives', async ({ page }) => {
+test('initial load is empty and F5 shows cached panels while API revalidates', async ({ page }) => {
   let calls = 0
   let release = () => {}
   await page.route('http://127.0.0.1:8080/**', async route => {
@@ -69,7 +69,9 @@ test('initial load and F5 stay empty until the current API response arrives', as
   await page.reload({ waitUntil: 'domcontentloaded' })
   await expect.poll(() => calls).toBe(2)
   await expect(page.locator('.home-loading')).toBeVisible()
-  await expect(page.locator('.home-random-card')).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Primeira página' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Artigo atualizado', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Artigo de hoje', exact: true })).toBeVisible()
   release()
   await expect(page.getByRole('link', { name: 'Novo sorteio da API' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Primeira página' })).toHaveCount(0)
@@ -88,3 +90,36 @@ test('home failure shows no preloaded items and retry loads every block', async 
   await expect(page.locator('.home-update-error')).toHaveCount(0)
 })
 
+
+test('SPA return shows cache during refresh and retains it on invalid response or API failure', async ({ page }) => {
+  let mode: 'success' | 'invalid' | 'failure' = 'success'
+  let calls = 0
+  let release = () => {}
+  await page.route('http://127.0.0.1:8080/**', async route => {
+    if (!route.request().url().endsWith('/home')) return route.fulfill({ headers, json: { data: { user: null, csrf_token: 'test' } } })
+    calls++
+    if (calls > 1) await new Promise<void>(resolve => { release = resolve })
+    return route.fulfill({ headers, status: mode === 'failure' ? 503 : 200, json: mode === 'failure' ? { error: { message: 'Unavailable' } } : { data: mode === 'invalid' ? { random: [] } : home } })
+  })
+  await page.goto('/')
+  await expect(page.getByRole('link', { name: 'Primeira página' })).toBeVisible()
+  await page.getByRole('link', { name: 'Faça uma Doação', exact: true }).first().click()
+  await page.getByRole('link', { name: 'MDAWiki — Página inicial', exact: true }).first().click()
+  await expect.poll(() => calls).toBe(2)
+  await expect(page.getByRole('link', { name: 'Primeira página' })).toBeVisible()
+  await expect(page.locator('.home-loading')).toContainText('Atualizando')
+  mode = 'invalid'; release()
+  await expect(page.locator('.home-update-error')).toContainText('Exibindo os dados salvos')
+  await expect(page.getByRole('link', { name: 'Artigo da semana', exact: true })).toBeVisible()
+  mode = 'failure'
+  await page.getByRole('button', { name: 'Tentar novamente' }).click()
+  await expect.poll(() => calls).toBe(3)
+  release()
+  await expect(page.locator('.home-update-error')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Primeira página' })).toBeVisible()
+  mode = 'success'
+  await page.getByRole('button', { name: 'Tentar novamente' }).click()
+  await expect.poll(() => calls).toBe(4)
+  release()
+  await expect(page.locator('.home-update-error')).toHaveCount(0)
+})

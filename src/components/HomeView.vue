@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, onMounted, ref } from 'vue'
+import { inject, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { Snapshot } from '../types/page'
 import type { SessionClient } from '../services/session'
 import { homeImage, isHomeData, type HomeData } from '../types/home'
@@ -11,16 +11,23 @@ const base = import.meta.env.BASE_URL
 const home = ref<HomeData>({
   random: [], top_today: [], top_week: [], top_month: [], missing: [], recent: [],
 })
+const hasData = ref(false)
+let disposed = false
+onBeforeUnmount(() => { disposed = true })
 const failed = ref(false)
 const loading = ref(true)
 async function refresh() {
+  if (disposed) return
   loading.value = true
   failed.value = false
   try {
     const data: unknown = await api.request('/home')
     if (!isHomeData(data)) throw new Error('Invalid home response')
+    if (disposed) return
     home.value = data
-  } catch { failed.value = true } finally { loading.value = false }
+    hasData.value = true
+    api.homeCache.write(data)
+  } catch { if (!disposed) failed.value = true } finally { if (!disposed) loading.value = false }
 }
 onMounted(() => {
   document.title = 'MDAWiki — Tudo sobre Desbravadores e Aventureiros'
@@ -30,6 +37,8 @@ onMounted(() => {
   document.querySelector('meta[property="og:description"]')?.setAttribute('content', 'A Wikipedia dos Desbravadores e Aventureiros')
   document.querySelector('meta[property="og:url"]')?.setAttribute('content', snapshot.siteUrl + '/')
   document.querySelector('link[rel="canonical"]')?.setAttribute('href', snapshot.siteUrl + '/')
+  const cached = api.homeCache.read()
+  if (cached) { home.value = cached; hasData.value = true }
   void refresh()
 })
 </script>
@@ -39,7 +48,7 @@ onMounted(() => {
     <div class="home-cover"><img :src="`${base}assets/logo_mdawiki_capa.svg`" alt="MDAWiki" width="315" height="80" fetchpriority="high"></div>
     <h1 class="home-title">A Wikipedia dos Desbravadores e Aventureiros</h1>
 
-    <p v-if="loading" class="home-loading" role="status"><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Carregando conteúdo da página inicial…</p>
+    <p v-if="loading" class="home-loading" role="status"><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>{{ hasData ? 'Atualizando conteúdo da página inicial…' : 'Carregando conteúdo da página inicial…' }}</p>
 
     <section class="home-panel home-random">
       <header class="home-panel-heading text-center"><h2>Páginas Aleatórias</h2></header>
@@ -61,7 +70,7 @@ onMounted(() => {
       <div class="col-md-6"><HomeList title="Nos ajude com esses conteúdos" :pending="loading || failed" :items="home.missing" danger /></div>
       <div class="col-md-6"><HomeList title="Últimas alterações" :pending="loading || failed" :items="home.recent" /></div>
     </div>
-    <div v-if="failed" class="alert alert-warning home-update-error" role="status">Não foi possível carregar a página inicial. <button class="btn btn-sm btn-outline-secondary ms-2" :disabled="loading" @click="refresh">Tentar novamente</button></div>
+    <div v-if="failed" class="alert alert-warning home-update-error" role="status">{{ hasData ? 'Não foi possível atualizar a página inicial. Exibindo os dados salvos.' : 'Não foi possível carregar a página inicial.' }} <button class="btn btn-sm btn-outline-secondary ms-2" :disabled="loading" @click="refresh">Tentar novamente</button></div>
   </div>
 </template>
 
