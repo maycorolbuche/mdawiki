@@ -28,3 +28,15 @@ test('videos allow only isolated YouTube embeds', () => {
   assert.ok(!html.includes('srcdoc') && !html.includes('evil.test'))
 })
 
+test('legacy list markers and gallery/column presentation survive sanitization', () => {
+  const html = cleanArticle('<ol style="list-style-type:lower-alpha"><li><span class="texto">Item</span></li></ol><ul style="list-style-type:square"><li>Item</li></ul><div class="imagens" style="display:flex;flex-wrap:wrap;justify-content:center"><figure style="flex-grow:1;flex-shrink:1;flex-basis:100px"><img src="/image.png" style="max-height:80px"><figcaption>Legenda</figcaption></figure></div><div style="column-count:3;column-gap:20px">Colunas</div>')
+  for (const value of ['list-style-type:lower-alpha', 'list-style-type:square', 'class="imagens"', 'display:flex', 'flex-wrap:wrap', 'justify-content:center', 'flex-basis:100px', 'max-height:80px', 'column-count:3']) assert.ok(html.includes(value), value)
+})
+
+test('article layout styles do not permit hidden overlays or external CSS resources', () => {
+  const html = cleanArticle('<div style="display:none;position:fixed;inset:0;z-index:9999;list-style-image:url(https://evil.test/x);column-count:999;flex-basis:expression(x);background-image:url(x);gap:var(--x);display:flex">Conteúdo</div>')
+  assert.ok(html.includes('display:flex'))
+  for (const value of ['display:none', 'position:', 'inset:', 'z-index:', 'url(', 'expression(', 'var(', 'column-count:999']) assert.ok(!html.includes(value), value)
+})
+
+

@@ -31,6 +31,18 @@ const safeStyles: Record<string, RegExp> = {
   'font-size': length, 'font-weight': /^(?:normal|bold|[1-9]00)$/,
   'font-style': /^(?:normal|italic)$/, 'text-align': /^(?:left|right|center|justify)$/,
   'vertical-align': /^(?:top|middle|bottom|baseline)$/,
+  'list-style-type': /^(?:decimal|lower-alpha|upper-alpha|lower-roman|upper-roman|disc|circle|square|none)$/,
+  'list-style-position': /^(?:inside|outside)$/,
+  display: /^(?:block|inline|inline-block|flex|inline-flex)$/,
+  'flex-wrap': /^(?:nowrap|wrap|wrap-reverse)$/,
+  'flex-direction': /^(?:row|row-reverse|column|column-reverse)$/,
+  'justify-content': /^(?:normal|start|end|center|flex-start|flex-end|space-between|space-around|space-evenly)$/,
+  'align-items': /^(?:normal|stretch|start|end|center|flex-start|flex-end|baseline)$/,
+  'flex-grow': /^(?:0|1|2|3|4|5|6|7|8|9|10)$/,
+  'flex-shrink': /^(?:0|1|2|3|4|5|6|7|8|9|10)$/,
+  'flex-basis': length, 'max-height': length, 'min-height': length,
+  'column-count': /^(?:auto|[1-9]|1[0-2])$/,
+  'column-gap': length, gap: length,
   'border-collapse': /^(?:collapse|separate)$/, overflow: /^(?:auto|scroll)$/, float: /^(?:left|right|none)$/,
 }
 for (const name of ['padding', 'margin', 'padding-left', 'padding-right', 'padding-top', 'padding-bottom', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom']) safeStyles[name] = length
@@ -86,5 +98,6 @@ export function cleanArticle(html: string): string {
     ALLOW_ARIA_ATTR: false,
   })
 }
+
 
 
