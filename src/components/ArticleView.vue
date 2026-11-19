@@ -133,10 +133,10 @@ function followArticleLink(event: MouseEvent) {
   <div class="article-layout" :class="{ 'has-relations': hasRelations }">
   <article class="card article-card" :aria-busy="loading">
     <div class="article-toolbar">
-      <RouterLink class="article-action action-edit" :to="articlePath + 'editar'"><span aria-hidden="true">✎</span> {{ page ? 'Editar Página' : 'Criar Página' }}</RouterLink>
-      <RouterLink v-if="page" class="article-action action-history" :to="articlePath + 'historico'"><span aria-hidden="true">◴</span> Histórico de Edições</RouterLink>
-      <button class="article-action action-refresh" :disabled="loading" @click="refresh"><span aria-hidden="true">⟳</span> {{ loading ? 'Atualizando…' : 'Atualizar' }}</button>
-      <button v-if="page" class="article-action action-print" @click="printArticle"><span aria-hidden="true">▣</span> Imprimir</button>
+      <RouterLink class="article-action action-edit" :to="articlePath + 'editar'"><i class="bi bi-pencil-fill" aria-hidden="true"></i> {{ page ? 'Editar Página' : 'Criar Página' }}</RouterLink>
+      <RouterLink v-if="page" class="article-action action-history" :to="articlePath + 'historico'"><i class="bi bi-clock-history" aria-hidden="true"></i> Histórico de Edições</RouterLink>
+      <button class="article-action action-refresh" :disabled="loading" @click="refresh"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> {{ loading ? 'Atualizando…' : 'Atualizar' }}</button>
+      <button v-if="page" class="article-action action-print" @click="printArticle"><i class="bi bi-printer-fill" aria-hidden="true"></i> Imprimir</button>
     </div>
     <div class="article-body">
       <div v-if="failed" class="alert alert-warning" role="alert">
