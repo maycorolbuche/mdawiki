@@ -31,6 +31,12 @@ let mounted = false
 let redirects = 0
 let lastVisited = ''
 
+function restoreCachedPage() {
+  page.value = session.articles.read(slug.value, !!session.state.user)
+    || (snapshot.page?.slug === slug.value ? snapshot.page : null)
+  if (page.value) updateMetadata(page.value)
+}
+
 function updateMetadata(value: Page | null) {
   document.title = value ? `${value.title} — MDAWiki` : 'Página não encontrada — MDAWiki'
   for (const [selector, attribute, content] of [
@@ -46,6 +52,8 @@ function updateMetadata(value: Page | null) {
 async function refresh() {
   controller?.abort()
   const request = new AbortController()
+  const requestedSlug = slug.value
+  const requestedUser = session.state.user?.ID
   controller = request
   loading.value = true
   failed.value = false
@@ -53,14 +61,16 @@ async function refresh() {
   const timeout = setTimeout(() => request.abort(new Error('timeout')), 15000)
   try {
     if (!snapshot.apiBaseUrl) throw new Error('API not configured')
-    const value = session.state.user ? await session.request('/view/' + encodeURIComponent(slug.value)) : await getPage(snapshot.apiBaseUrl, slug.value, request.signal)
-    if (controller !== request) return
+    const value = requestedUser ? await session.request('/view/' + encodeURIComponent(requestedSlug)) : await getPage(snapshot.apiBaseUrl, requestedSlug, request.signal)
+    if (controller !== request || requestedUser !== session.state.user?.ID) return
     if (value.redirect_slug && value.redirect_slug !== slug.value) {
+      session.articles.remove(requestedSlug)
       if (++redirects > 8) throw new Error('Redirecionamento circular.')
       await router.replace('/' + encodeURIComponent(value.redirect_slug) + '/')
       return
     }
     redirects = 0
+    session.articles.write(value, !!requestedUser)
     page.value = value
     updateMetadata(value)
     if (value.is_public !== false && lastVisited !== slug.value) {
@@ -69,8 +79,9 @@ async function refresh() {
       void session.initialize().then(() => session.request('/visits', 'POST', { slug: visitedSlug })).catch(() => {})
     }
   } catch (error) {
-    if (controller !== request) return
-    if ((error instanceof ApiError || error instanceof RequestError) && error.status === 404) {
+    if (controller !== request || requestedUser !== session.state.user?.ID) return
+    if ((error instanceof ApiError || error instanceof RequestError) && [401, 403, 404].includes(error.status)) {
+      session.articles.remove(requestedSlug)
       page.value = null
       missing.value = true
       updateMetadata(null)
@@ -88,12 +99,13 @@ watch(slug, () => {
   missing.value = false
   failed.value = false
   if (mounted) {
+    restoreCachedPage()
     document.title = page.value ? `${page.value.title} — MDAWiki` : 'Carregando — MDAWiki'
     void refresh()
   }
 })
-onMounted(() => { mounted = true; void refresh() })
-watch(() => session.state.user, user => { if (!user && page.value?.is_public === false) page.value = null; if (mounted) void refresh() })
+onMounted(() => { mounted = true; restoreCachedPage(); void refresh() })
+watch(() => session.state.user?.ID, () => { if (mounted) { restoreCachedPage(); void refresh() } })
 onBeforeUnmount(() => { controller?.abort(); controller = undefined })
 
 function followArticleLink(event: MouseEvent) {
