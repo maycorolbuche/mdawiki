@@ -17,6 +17,12 @@ const loading = ref(false)
 const missing = ref(false)
 const failed = ref(false)
 const html = computed(() => cleanArticle(page.value?.html || ''))
+const studyMaterial = computed(() => {
+  try {
+    const url = new URL(page.value?.study_material_url || '')
+    return url.protocol === 'https:' && url.hostname === 'plus.mda.wiki.br' && !url.username && !url.password && !url.port ? url.href : null
+  } catch { return null }
+})
 const hasRelations = computed(() => page.value && [page.value.categories, page.value.mentions, page.value.related_pages, page.value.missing_links, page.value.image_usage].some(links => links?.length))
 const articlePath = computed(() => `/${encodeURIComponent(slug.value)}/`)
 function printArticle() { window.print() }
@@ -118,7 +124,8 @@ function followArticleLink(event: MouseEvent) {
         <button class="btn btn-link p-0 ms-2" @click="refresh">Tentar novamente</button>
       </div>
       <template v-if="page">
-        <h1>{{ page.title }}</h1>
+        <h1 :class="{ 'has-study-material': studyMaterial }">{{ page.title }}</h1>
+        <p v-if="studyMaterial" class="study-material">Material de apoio para estudos: <a :href="studyMaterial" target="_blank" rel="noopener noreferrer">{{ studyMaterial }}</a></p>
         <div class="wiki-content" @click="followArticleLink" v-html="html" />
         <section v-if="page.category_members?.length" class="category-members">
           <h2>Páginas nesta Categoria <span class="badge text-bg-info">{{ page.category_members.length }}</span></h2>
@@ -132,5 +139,10 @@ function followArticleLink(event: MouseEvent) {
   <PageRelations v-if="page" :page="page" />
   </div>
 </template>
+
+<style scoped>
+.article-card h1.has-study-material { border-bottom: 0; padding-bottom: 0; margin-bottom: 16px; }
+.study-material { border-bottom: 1px solid #e7e7e7; padding-bottom: 18px; margin-bottom: 20px; overflow-wrap: anywhere; }
+</style>
 
 

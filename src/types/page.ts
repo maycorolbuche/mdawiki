@@ -4,6 +4,7 @@ export interface Page {
   slug: string
   title: string
   html: string
+  study_material_url?: string | null
   description: string
   updated_at: string | null
   canonical_url: string
