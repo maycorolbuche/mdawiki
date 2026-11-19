@@ -90,13 +90,72 @@ DOMPurify.addHook('afterSanitizeAttributes', node => {
   }
 })
 
-export function cleanArticle(html: string): string {
-  return DOMPurify.sanitize(html, {
+export function cleanArticle(html: string, topicsExpanded = false): string {
+  const body = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: tags,
     ALLOWED_ATTR: [...new Set([...globalAttributes, ...Object.values(attributes).flat()])],
     ALLOW_DATA_ATTR: false,
     ALLOW_ARIA_ATTR: false,
-  })
+    RETURN_DOM: true,
+  }) as HTMLElement
+  const previous = body.querySelector('#indice_conteudo')?.closest('.panel')
+  const headings = [...body.querySelectorAll('h2, h3, h4, h5, h6')].filter(heading => !previous?.contains(heading))
+  if (headings.length < 2 && !previous) return body.innerHTML
+  if (!headings.length) { previous?.remove(); return body.innerHTML }
+
+  // Legacy links relied on removed javascript:/onclick handlers. Rebuild them
+  // from the actual headings, using native fragment links and valid nested lists.
+  const document = body.ownerDocument
+  const panel = document.createElement('div')
+  panel.className = 'panel mb10 article-topics'
+  const heading = document.createElement('div')
+  heading.className = 'panel-heading'
+  const title = document.createElement('span')
+  title.className = 'panel-title'
+  title.textContent = 'Tópicos '
+  const toggle = document.createElement('button')
+  toggle.id = 'indice_link'
+  toggle.type = 'button'
+  toggle.textContent = topicsExpanded ? 'Esconder' : 'Mostrar'
+  toggle.setAttribute('aria-controls', 'indice_conteudo')
+  toggle.setAttribute('aria-expanded', String(topicsExpanded))
+  heading.append(title, '[', toggle, ']')
+  const content = document.createElement('div')
+  content.id = 'indice_conteudo'
+  content.className = 'panel-body p10 indice'
+  content.hidden = !topicsExpanded
+  const root = document.createElement('ol')
+  root.className = 'topic-list'
+  content.append(root)
+  const firstLevel = Math.min(...headings.map(section => Number(section.tagName.slice(1))))
+  const stack: { level: number; list: HTMLOListElement; last: HTMLLIElement | null }[] = [{ level: firstLevel, list: root, last: null }]
+  const used = new Set([...body.querySelectorAll('[id]')].filter(element => !headings.includes(element)).map(element => element.id))
+  for (const [index, section] of headings.entries()) {
+    const base = section.id || section.getAttribute('name') || 'topico-' + (index + 1)
+    let id = base
+    let suffix = 2
+    while (used.has(id)) id = base + '-' + suffix++
+    used.add(id)
+    section.id = id
+    const level = Number(section.tagName.slice(1))
+    while (stack.length > 1 && level < stack.at(-1)!.level) stack.pop()
+    if (level > stack.at(-1)!.level && stack.at(-1)!.last) {
+      const list = document.createElement('ol')
+      stack.at(-1)!.last!.append(list)
+      stack.push({ level, list, last: null })
+    }
+    const item = document.createElement('li')
+    const link = document.createElement('a')
+    link.href = '#' + encodeURIComponent(id)
+    link.textContent = section.textContent || 'Tópico ' + (index + 1)
+    item.append(link)
+    stack.at(-1)!.list.append(item)
+    stack.at(-1)!.last = item
+  }
+  panel.append(heading, content)
+  if (previous) previous.replaceWith(panel)
+  else body.prepend(panel)
+  return body.innerHTML
 }
 
 

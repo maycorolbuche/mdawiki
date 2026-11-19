@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ApiError, getPage } from '../services/api'
 import { cleanArticle } from '../services/content'
@@ -16,7 +16,8 @@ const page = ref<Page | null>(snapshot.page?.slug === slug.value ? snapshot.page
 const loading = ref(false)
 const missing = ref(false)
 const failed = ref(false)
-const html = computed(() => cleanArticle(page.value?.html || ''))
+const topicsExpanded = ref(false)
+const html = computed(() => cleanArticle(page.value?.html || '', topicsExpanded.value))
 const studyMaterial = computed(() => {
   try {
     const url = new URL(page.value?.study_material_url || '')
@@ -95,6 +96,7 @@ async function refresh() {
 }
 
 watch(slug, () => {
+  topicsExpanded.value = false
   page.value = snapshot.page?.slug === slug.value ? snapshot.page : null
   missing.value = false
   failed.value = false
@@ -109,6 +111,12 @@ watch(() => session.state.user?.ID, () => { if (mounted) { restoreCachedPage(); 
 onBeforeUnmount(() => { controller?.abort(); controller = undefined })
 
 function followArticleLink(event: MouseEvent) {
+  if ((event.target as Element).closest('button#indice_link')) {
+    const content = event.currentTarget as HTMLElement
+    topicsExpanded.value = !topicsExpanded.value
+    void nextTick(() => content.querySelector<HTMLButtonElement>('#indice_link')?.focus())
+    return
+  }
   const anchor = (event.target as Element).closest('a')
   if (!anchor || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0 || anchor.target === '_blank') return
   if (!anchor.getAttribute('href') || anchor.getAttribute('href')?.startsWith('#')) return
