@@ -1,0 +1,35 @@
+/* Article presentation from mdawiki-site/page_inc_header.php and @lib/estilo.css.
+   Keep it inside wiki-content so it also applies to previews, without changing menus. */
+.wiki-content :is(ol, ul) > li::marker { font-weight: 700; }
+.wiki-content .imagens { display: flex; flex-wrap: wrap; justify-content: center; }
+.wiki-content figure { margin: 15px; }
+.wiki-content .imagens figure { flex-grow: 1; flex-shrink: 1; flex-basis: 100px; min-width: 0; }
+.wiki-content figure figcaption { font-size: 11px; color: #999; text-align: center; }
+.wiki-content img { max-width: min(240px, 100%); }
+.wiki-content .biography { float: right; width: 250px; max-width: calc(100% - 30px); margin: 15px; }
+.wiki-content h2 { border-bottom: 1px solid #eee; }
+
+.wiki-content .indice li { padding: 1px; }
+.wiki-content ol.indice_1 { counter-reset: ordem; }
+.wiki-content ol.indice_1 li.indice_1 { font-weight: normal; counter-increment: ordem; }
+.wiki-content ol.indice_2 { font-weight: normal; counter-reset: indice_2; padding-left: 15px; }
+.wiki-content ol.indice_2 li { list-style-type: none; }
+.wiki-content ol.indice_2 li::before { counter-increment: indice_2; content: counter(ordem) "." counter(indice_2) " "; }
+.wiki-content ol.indice_3 { font-weight: normal; counter-reset: indice_3; padding-left: 15px; }
+.wiki-content ol.indice_3 li { list-style-type: none; }
+.wiki-content ol.indice_3 li::before { counter-increment: indice_3; content: counter(ordem) "." counter(indice_2) "." counter(indice_3) " "; }
+
+/* Presentation helpers used by the stored legacy templates. */
+.wiki-content .text-justify { text-align: justify; }
+.wiki-content .br-a { border: 1px solid #ddd; }
+.wiki-content .br-b { border-bottom: 1px solid #ddd; }
+.wiki-content .fw200, .wiki-content .fw300 { font-weight: 300; }
+.wiki-content .fw400 { font-weight: 400; }
+.wiki-content .fw500 { font-weight: 500; }
+.wiki-content .fw600 { font-weight: 600; }
+.wiki-content .fw700 { font-weight: 700; }
+.wiki-content .mbn { margin-bottom: 0; }
+.wiki-content .mt5 { margin-top: 5px; }
+.wiki-content .mb5 { margin-bottom: 5px; }
+.wiki-content .ph10 { padding-left: 10px; padding-right: 10px; }
+.wiki-content .pb5 { padding-bottom: 5px; }

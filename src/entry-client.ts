@@ -9,6 +9,7 @@ import '@fontsource/open-sans/latin-400.css'
 import '@fontsource/open-sans/latin-600.css'
 import '@fontsource/open-sans/latin-700.css'
 import './styles/main.css'
+import './styles/article-legacy.css'
 
 const defaults: Snapshot = {
   page: null, pages: [], apiBaseUrl: import.meta.env.VITE_API_BASE_URL || publicConfig.apiBaseUrl,
@@ -29,3 +30,4 @@ if (import.meta.env.PROD && window.location.origin === new URL(snapshot.siteUrl)
     analyticsId: (import.meta.env.VITE_GOOGLE_ANALYTICS_ID || googleConfig.analyticsId).trim(),
   })
 }
+

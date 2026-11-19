@@ -83,5 +83,21 @@
     ],
     "category_members": [],
     "missing_links": []
+  },
+  {
+    "id": "conteudo_formatado",
+    "slug": "Conteúdo_formatado",
+    "title": "Conteúdo formatado",
+    "html": "<h2>Requisitos</h2><ol><li><span class=\"texto\">Ter a especialidade.</span></li><li><span class=\"texto\">Identificar os equipamentos:</span><ol style=\"list-style-type:lower-alpha\"><li><span class=\"texto\">Incubadoras</span></li><li><span class=\"texto\">Poleiros <strong>importantes</strong></span></li></ol></li></ol><ol style=\"list-style-type:upper-roman\" start=\"3\"><li><span class=\"texto\">Terceiro</span></li></ol><ul style=\"list-style-type:square\"><li><span class=\"texto\">Marcador quadrado</span></li></ul><h2>Especialidades ADRA</h2><div class=\"imagens\" style=\"display:flex;flex-wrap:wrap;justify-content:center\"><figure style=\"text-align:center\"><img src=\"/assets/logo_mdawiki.svg\" width=\"100\" height=\"80\" alt=\"Especialidade 1\"><figcaption><b>AD-001</b><br><a href=\"/Especialidade_1/\">Especialidade 1</a></figcaption></figure><figure style=\"text-align:center\"><img src=\"/assets/logo_mdawiki.svg\" width=\"100\" height=\"80\" alt=\"Especialidade 2\"><figcaption><b>AD-002</b><br><a href=\"/Especialidade_2/\">Especialidade 2</a></figcaption></figure><figure style=\"text-align:center\"><img src=\"/assets/logo_mdawiki.svg\" width=\"100\" height=\"80\" alt=\"Especialidade 3\"><figcaption><b>AD-003</b><br><a href=\"/Especialidade_3/\">Especialidade 3</a></figcaption></figure><figure style=\"text-align:center\"><img src=\"/assets/logo_mdawiki.svg\" width=\"100\" height=\"80\" alt=\"Especialidade 4\"><figcaption><b>AD-004</b><br><a href=\"/Especialidade_4/\">Especialidade 4</a></figcaption></figure><figure style=\"text-align:center\"><img src=\"/assets/logo_mdawiki.svg\" width=\"100\" height=\"80\" alt=\"Especialidade 5\"><figcaption><b>AD-005</b><br><a href=\"/Especialidade_5/\">Especialidade 5</a></figcaption></figure><figure style=\"text-align:center\"><img src=\"/assets/logo_mdawiki.svg\" width=\"100\" height=\"80\" alt=\"Especialidade 6\"><figcaption><b>AD-006</b><br><a href=\"/Especialidade_6/\">Especialidade 6</a></figcaption></figure><figure style=\"text-align:center\"><img src=\"/assets/logo_mdawiki.svg\" width=\"100\" height=\"80\" alt=\"Especialidade 7\"><figcaption><b>AD-007</b><br><a href=\"/Especialidade_7/\">Especialidade 7</a></figcaption></figure><figure style=\"text-align:center\"><img src=\"/assets/logo_mdawiki.svg\" width=\"100\" height=\"80\" alt=\"Especialidade 8\"><figcaption><b>AD-008</b><br><a href=\"/Especialidade_8/\">Especialidade 8</a></figcaption></figure><figure style=\"text-align:center\"><img src=\"/assets/logo_mdawiki.svg\" width=\"100\" height=\"80\" alt=\"Especialidade 9\"><figcaption><b>AD-009</b><br><a href=\"/Especialidade_9/\">Especialidade 9</a></figcaption></figure></div><div class=\"br-a biography\"><h4 class=\"mt5 mb5 ph10 pb5 br-b fw500 text-center\">Biografia</h4><p>Texto biográfico.</p></div><p>Conteúdo do artigo.</p>",
+    "description": "Listas e galeria do legado.",
+    "updated_at": null,
+    "canonical_url": "https://mda.wiki.br/Conte%C3%BAdo_formatado/",
+    "categories": [
+      {
+        "id": "especialidades",
+        "slug": "Especialidades",
+        "title": "Especialidades"
+      }
+    ]
   }
 ]
