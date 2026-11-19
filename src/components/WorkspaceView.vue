@@ -4,6 +4,7 @@ import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { diffLines } from 'diff'
 const LegacyWikiEditor = defineAsyncComponent(() => import('./LegacyWikiEditor.vue'))
 import { RequestError, type SessionClient } from '../services/session'
+import AuthorAvatar from './AuthorAvatar.vue'
 const route = useRoute(), router = useRouter(), api = inject<SessionClient>('session')!
 const slug = computed(() => String(route.params.slug)), historyMode = computed(() => route.meta.action === 'history')
 const title = ref(''), source = ref(''), original = ref(''), version = ref(''), media = ref(false), busy = ref(false), loading = ref(true), error = ref(''), loginRequired = ref(false), revisions = ref<any[]>([]), before = ref<number | null>(null), older = ref<number | null>(null), newer = ref<number | null>(null), compare = ref(false), selected = ref<any>(null)
@@ -101,7 +102,7 @@ async function removeImage() { source.value = ''; await save() }
       </form>
       <template v-else>
         <p v-if="!revisions.length">Ainda não há revisões registradas.</p>
-        <div class="table-responsive"><table v-if="revisions.length" class="table align-middle"><thead><tr><th>Comparar</th><th>Revisão</th><th>Autor</th><th>Data</th><th>Ações</th></tr></thead><tbody><tr v-for="r in revisions" :key="r.id"><td><input v-model="older" type="radio" :value="r.id" name="older" :aria-label="`Versão anterior ${r.id}`"> <input v-model="newer" type="radio" :value="r.id" name="newer" :aria-label="`Versão nova ${r.id}`"></td><td>{{ r.id }}</td><td>{{ r.author || 'Usuário' }}</td><td>{{ r.created_at }}</td><td><button class="btn btn-sm btn-outline-primary me-2" @click="selected = r">Visualizar</button><button class="btn btn-sm btn-outline-secondary" :disabled="busy" @click="restore(r.id)">Restaurar</button></td></tr></tbody></table></div>
+        <div class="table-responsive"><table v-if="revisions.length" class="table align-middle"><thead><tr><th>Comparar</th><th>Revisão</th><th>Autor</th><th>Data</th><th>Ações</th></tr></thead><tbody><tr v-for="r in revisions" :key="r.id"><td><input v-model="older" type="radio" :value="r.id" name="older" :aria-label="`Versão anterior ${r.id}`"> <input v-model="newer" type="radio" :value="r.id" name="newer" :aria-label="`Versão nova ${r.id}`"></td><td>{{ r.id }}</td><td><span class="history-author"><AuthorAvatar :photo="r.author_photo" /><span>{{ r.author || 'Usuário' }}</span></span></td><td>{{ r.created_at }}</td><td><button class="btn btn-sm btn-outline-primary me-2" @click="selected = r">Visualizar</button><button class="btn btn-sm btn-outline-secondary" :disabled="busy" @click="restore(r.id)">Restaurar</button></td></tr></tbody></table></div>
         <button v-if="before" class="btn btn-outline-primary me-2" :disabled="busy" @click="more">Mais revisões</button><button v-if="revisions.length > 1" class="btn btn-primary" @click="compare = true">Comparar versões</button>
         <div v-if="compare" class="revision-diff"><span v-for="(part, i) in changes" :key="i" :class="{ added: part.added, removed: part.removed }">{{ part.value }}</span></div>
         <section v-if="selected" class="mt-4"><h2>Revisão {{ selected.id }}</h2><pre class="revision-source">{{ selected.source }}</pre></section>
@@ -112,3 +113,7 @@ async function removeImage() { source.value = ''; await save() }
 </template>
 
 
+
+<style scoped>
+.history-author { display: inline-flex; align-items: center; gap: 12px; white-space: nowrap; }
+</style>
