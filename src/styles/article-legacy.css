@@ -43,5 +43,6 @@
 .wiki-content .article-topics ol { counter-reset: topic; list-style: none; padding-left: 30px; margin-bottom: 0; }
 .wiki-content .article-topics li { counter-increment: topic; padding: 1px 0; font-weight: 400; }
 .wiki-content .article-topics li::before { content: counters(topic, '.') ' '; font-weight: 700; }
+.wiki-content .article-topics .topic-list > li::before { content: counter(topic) '. '; }
 .wiki-content .article-topics > .panel-body > ol { margin-bottom: 10px; }
 .wiki-content :is(h2, h3, h4, h5, h6) { scroll-margin-top: 75px; }
