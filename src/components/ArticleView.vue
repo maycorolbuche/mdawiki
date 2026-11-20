@@ -55,7 +55,7 @@ const hasRelations = computed(
       page.value.image_usage,
     ].some((links) => links?.length),
 );
-const articlePath = computed(() => `/${encodeURIComponent(slug.value)}/`);
+const articlePath = computed(() => `/${encodeURIComponent(page.value?.slug || slug.value)}/`);
 function printArticle() {
   window.print();
 }
@@ -117,6 +117,11 @@ async function refresh() {
     session.articles.write(value, !!requestedUser);
     page.value = value;
     updateMetadata(value);
+    if (value.slug !== requestedSlug) {
+      session.articles.remove(requestedSlug);
+      await router.replace({ path: "/" + encodeURIComponent(value.slug) + "/", query: route.query, hash: route.hash });
+      if (controller !== request || requestedUser !== session.state.user?.ID || slug.value !== value.slug) return;
+    }
     if (value.is_public !== false && lastVisited !== slug.value) {
       lastVisited = slug.value;
       const visitedSlug = slug.value;
@@ -146,6 +151,8 @@ async function refresh() {
 }
 
 watch(slug, () => {
+  // Canonical replacement already has the response: keep it without a second fetch.
+  if (page.value?.slug === slug.value) { updateMetadata(page.value); return; }
   topicsExpanded.value = false;
   page.value = snapshot.page?.slug === slug.value ? snapshot.page : null;
   missing.value = false;
