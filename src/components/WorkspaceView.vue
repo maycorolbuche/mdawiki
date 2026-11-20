@@ -6,6 +6,7 @@ const LegacyWikiEditor = defineAsyncComponent(() => import('./LegacyWikiEditor.v
 import { RequestError, type SessionClient } from '../services/session'
 import AuthorAvatar from './AuthorAvatar.vue'
 import RevisionComparison from './RevisionComparison.vue'
+import RevisionMetadata from './RevisionMetadata.vue'
 import WorkspaceModal from './WorkspaceModal.vue'
 import { cleanArticle } from '../services/content'
 const route = useRoute(), router = useRouter(), api = inject<SessionClient>('session')!
@@ -39,6 +40,8 @@ const changes = computed(() => {
   const a = revisions.value.find(r => Number(r.id) === Number(older.value))?.source || '', b = revisions.value.find(r => Number(r.id) === Number(newer.value))?.source || ''
   return compare.value ? diffLines(a, b, { timeout: 1000 }) || [] : []
 })
+const olderRevision = computed(() => revisions.value.find(r => Number(r.id) === Number(older.value)))
+const newerRevision = computed(() => revisions.value.find(r => Number(r.id) === Number(newer.value)))
 const endpoint = computed(() => '/pages/' + encodeURIComponent(slug.value))
 async function load() {
   closeModal()
@@ -142,8 +145,8 @@ async function removeImage() { source.value = ''; await save() }
       <div v-else-if="previewError" class="alert alert-danger" role="alert">{{ previewError }} <button type="button" class="btn btn-link" @click="preview">Tentar novamente</button></div>
       <template v-else><h2>{{ title }}</h2><img v-if="media && mediaPreview" class="workspace-image-preview" :src="mediaPreview" :alt="title"><p v-else-if="media">Nenhuma imagem selecionada.</p><div v-else class="wiki-content" @click="($event.target as Element).closest('a') && $event.preventDefault()" v-html="previewHtml" /></template>
     </template>
-    <RevisionComparison v-else-if="modal === 'compare'" :changes="changes" :older="older" :newer="newer" />
-    <pre v-else-if="selected" class="revision-source">{{ selected.source }}</pre>
+    <RevisionComparison v-else-if="modal === 'compare'" :changes="changes" :older="older" :newer="newer" :older-revision="olderRevision" :newer-revision="newerRevision" />
+    <template v-else-if="selected"><RevisionMetadata :revision="selected" /><pre class="revision-source">{{ selected.source }}</pre></template>
   </WorkspaceModal>
 </template>
 
