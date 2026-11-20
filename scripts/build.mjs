@@ -13,7 +13,7 @@ Object.assign(process.env, { VITE_API_BASE_URL: apiBaseUrl, VITE_SITE_URL: siteU
 if (env.GITHUB_EVENT_NAME && env.BUILD_FIXTURE && env.DEPLOY_PRODUCTION === 'true') throw new Error('Cannot deploy fixtures')
 const pages = env.BUILD_FIXTURE
   ? JSON.parse(await readFile(resolve(env.BUILD_FIXTURE), 'utf8'))
-  : await exportPages(apiBaseUrl)
+  : await exportPages(apiBaseUrl, { onProgress: message => console.log(`[export] ${message}`) })
 const slugs = new Set()
 for (const page of pages) {
   safeSlug(page.slug)

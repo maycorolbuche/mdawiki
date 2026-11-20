@@ -42,8 +42,47 @@ test('API failure and repeated cursors stop static publication', async () => {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   try {
     const base = `http://127.0.0.1:${server.address().port}`
-    await assert.rejects(exportPages(base), /503/)
+    await assert.rejects(exportPages(base, { wait: async () => {} }), /503/)
     unavailable = false
     await assert.rejects(exportPages(base), /Repeated export cursor/)
   } finally { await new Promise(resolve => server.close(resolve)) }
+})
+
+test('export retries timeouts and temporary failures on the same cursor without duplicating pages', async () => {
+  const requests = [], delays = [], progress = []
+  const article = slug => ({ id: slug, slug, title: slug, html: '<p>x</p>', description: '' })
+  let nextAttempts = 0
+  const data = await exportPages('https://api.example', {
+    wait: async ms => delays.push(ms), onProgress: text => progress.push(text),
+    fetchImpl: async url => {
+      requests.push(url.href)
+      assert.equal(url.searchParams.get('limit'), '25')
+      if (!url.searchParams.has('after')) return Response.json({ data: [article('First')], next_cursor: 'next' })
+      nextAttempts++
+      if (nextAttempts === 1) throw new DOMException('timeout', 'TimeoutError')
+      if (nextAttempts === 2) return new Response('', { status: 503 })
+      return Response.json({ data: [article('Second')], next_cursor: null })
+    },
+  })
+  assert.deepEqual(data.map(p => p.slug), ['First', 'Second'])
+  assert.equal(new Set(requests.slice(1)).size, 1)
+  assert.deepEqual(delays, [1000, 2000])
+  assert.ok(progress.some(text => text.includes('Exportados 2')))
+})
+test('permanent timeout reports URL and attempts and never returns a partial export', async () => {
+  let calls = 0
+  await assert.rejects(exportPages('https://api.example', {
+    wait: async () => {}, fetchImpl: async () => { calls++; throw new DOMException('timeout', 'TimeoutError') },
+  }), /Article export failed: https:\/\/api.example\/v1\/pages\?limit=25.*tentativa 3\/3.*60s/)
+  assert.equal(calls, 3)
+})
+test('invalid responses and non-transient HTTP errors fail without retries', async () => {
+  for (const status of [401, 404]) {
+    let calls = 0
+    await assert.rejects(exportPages('https://api.example', {
+      fetchImpl: async () => { calls++; return new Response('', { status }) },
+    }), new RegExp('HTTP ' + status))
+    assert.equal(calls, 1)
+  }
+  await assert.rejects(exportPages('https://api.example', { fetchImpl: async () => Response.json({ data: 'bad', next_cursor: null }) }), /Invalid API export response/)
 })
