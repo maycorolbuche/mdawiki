@@ -12,8 +12,8 @@ import { cleanArticle } from '../services/content'
 const route = useRoute(), router = useRouter(), api = inject<SessionClient>('session')!
 const slug = computed(() => String(route.params.slug)), historyMode = computed(() => route.meta.action === 'history')
 const title = ref(''), source = ref(''), original = ref(''), version = ref(''), media = ref(false), busy = ref(false), loading = ref(true), error = ref(''), loginRequired = ref(false), revisions = ref<any[]>([]), before = ref<number | null>(null), older = ref<number | null>(null), newer = ref<number | null>(null), compare = ref(false), selected = ref<any>(null)
-const originalTitle = ref(''), format = ref('wiki'), saveNotice = ref('')
-const modal = ref<'preview' | 'revision' | 'compare' | null>(null)
+const originalTitle = ref(''), format = ref('wiki'), saveNotice = ref(''), pageExists = ref(false)
+const modal = ref<'preview' | 'revision' | 'compare' | 'delete' | null>(null)
 const previewHtml = ref(''), previewError = ref(''), previewBusy = ref(false)
 let previewGeneration = 0
 function closeModal() { modal.value = null; compare.value = false; selected.value = null; previewGeneration++; previewBusy.value = false }
@@ -52,7 +52,7 @@ async function load() {
   try {
     await api.initialize()
     const data = await api.request(endpoint.value + (historyMode.value ? '/history' : '/editor'))
-    title.value = data.title; version.value = data.base_version
+    title.value = data.title; version.value = data.base_version; pageExists.value = data.exists !== false
     originalTitle.value = data.title
     if (historyMode.value) { revisions.value = data.revisions; before.value = data.next_cursor; older.value = data.revisions[1]?.id; newer.value = data.revisions[0]?.id }
     else { source.value = data.source; original.value = data.source; media.value = data.media; format.value = data.format || 'wiki' }
@@ -64,11 +64,21 @@ onMounted(load); watch(() => route.fullPath, load)
 onBeforeRouteLeave(() => !dirty.value || historyMode.value || window.confirm('Descartar as alterações não salvas?'))
 function unload(e: BeforeUnloadEvent) { if (dirty.value && !historyMode.value) { e.preventDefault(); e.returnValue = '' } }
 onMounted(() => window.addEventListener('beforeunload', unload)); onBeforeUnmount(() => { closeModal(); window.removeEventListener('beforeunload', unload) })
-async function save() {
+async function save() { await persist(source.value) }
+async function persist(nextSource: string): Promise<boolean> {
+  if (busy.value) return false
   busy.value = true; error.value = ''; saveNotice.value = ''
-  try { const result = await api.request(endpoint.value, 'PUT', { title: title.value, source: source.value, base_version: version.value }); original.value = source.value; originalTitle.value = title.value; if (result.unchanged === true) { version.value = result.base_version; saveNotice.value = 'Não foram detectadas alterações na página. Nenhuma revisão foi criada.'; return }; await router.push('/' + encodeURIComponent(slug.value) + '/') }
-  catch (e) { error.value = (e as Error).message } finally { busy.value = false }
+  try {
+    const result = await api.request(endpoint.value, 'PUT', { title: title.value, source: nextSource, base_version: version.value })
+    source.value = nextSource; original.value = nextSource; originalTitle.value = title.value
+    if (result.unchanged === true) { version.value = result.base_version; saveNotice.value = 'Não foram detectadas alterações na página. Nenhuma revisão foi criada.'; return true }
+    await router.push('/' + encodeURIComponent(slug.value) + '/')
+    return true
+  } catch (e) { error.value = (e as Error).message; return false }
+  finally { busy.value = false }
 }
+function confirmDelete() { closeModal(); error.value = ''; modal.value = 'delete' }
+async function deletePage() { if (await persist('')) closeModal() }
 async function more() { busy.value = true; try { const data = await api.request(endpoint.value + '/history?before=' + before.value); revisions.value.push(...data.revisions); before.value = data.next_cursor } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
 async function restore(id: number) {
   if (!window.confirm('Restaurar esta revisão como uma nova edição?')) return
@@ -99,6 +109,7 @@ async function removeImage() { source.value = ''; await save() }
     <nav class="article-toolbar" aria-label="Ações da página">
       <RouterLink class="article-action" :to="`/${encodeURIComponent(slug)}/`"><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar</RouterLink>
       <button v-if="!historyMode" type="button" class="article-action" :disabled="!loaded || loading || busy" @click="preview"><i class="bi bi-eye" aria-hidden="true"></i> Visualizar página</button>
+      <button v-if="!historyMode && loaded && pageExists" type="button" class="article-action text-danger" :disabled="loading || busy" @click="confirmDelete"><i class="bi bi-trash" aria-hidden="true"></i> Excluir página</button>
     </nav>
     <div class="article-body">
     <h1 v-if="historyMode">Histórico de Edições <small>{{ title || slug.replaceAll('_', ' ') }}</small></h1>
@@ -139,8 +150,14 @@ async function removeImage() { source.value = ''; await save() }
     </template>
     <div v-if="error && !loginRequired" class="mt-3"><button v-if="media && dirty" class="btn btn-info me-2" :disabled="busy" @click="save">Salvar novamente</button><button class="btn btn-outline-secondary" @click="load">Recarregar</button><p v-if="dirty">Copie o conteúdo antes de recarregar para preservar suas alterações.</p></div>
   </div></section>
-  <WorkspaceModal v-if="modal" :title="modal === 'preview' ? 'Visualizar página' : modal === 'compare' ? 'Comparar versões' : `Revisão ${selected?.id}`" @close="closeModal">
-    <template v-if="modal === 'preview'">
+  <WorkspaceModal v-if="modal" :busy="modal === 'delete' && busy" :title="modal === 'delete' ? 'Excluir página' : modal === 'preview' ? 'Visualizar página' : modal === 'compare' ? 'Comparar versões' : `Revisão ${selected?.id}`" @close="closeModal">
+    <template v-if="modal === 'delete'">
+      <p>Deseja excluir o conteúdo de <strong>{{ title }}</strong>?</p>
+      <p>Esta ação equivale a salvar a página em branco. O histórico será preservado.</p>
+      <p v-if="dirty">As alterações ainda não salvas serão descartadas ao confirmar.</p>
+      <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
+    </template>
+    <template v-else-if="modal === 'preview'">
       <p class="text-muted">Prévia das alterações ainda não salvas.</p>
       <p v-if="previewBusy" role="status">Carregando prévia…</p>
       <div v-else-if="previewError" class="alert alert-danger" role="alert">{{ previewError }} <button type="button" class="btn btn-link" @click="preview">Tentar novamente</button></div>
@@ -148,6 +165,10 @@ async function removeImage() { source.value = ''; await save() }
     </template>
     <RevisionComparison v-else-if="modal === 'compare'" :changes="changes" :older="older" :newer="newer" :older-revision="olderRevision" :newer-revision="newerRevision" />
     <template v-else-if="selected"><RevisionMetadata :revision="selected" /><pre class="revision-source">{{ selected.source }}</pre></template>
+    <template v-if="modal === 'delete'" #footer>
+      <button type="button" class="btn btn-secondary" :disabled="busy" @click="closeModal">Cancelar</button>
+      <button type="button" class="btn btn-danger" :disabled="busy" @click="deletePage">{{ busy ? 'Excluindo…' : 'Excluir página' }}</button>
+    </template>
   </WorkspaceModal>
 </template>
 
