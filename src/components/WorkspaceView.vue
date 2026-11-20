@@ -5,6 +5,7 @@ import { diffLines } from 'diff'
 const LegacyWikiEditor = defineAsyncComponent(() => import('./LegacyWikiEditor.vue'))
 import { RequestError, type SessionClient } from '../services/session'
 import AuthorAvatar from './AuthorAvatar.vue'
+import RevisionComparison from './RevisionComparison.vue'
 import WorkspaceModal from './WorkspaceModal.vue'
 import { cleanArticle } from '../services/content'
 const route = useRoute(), router = useRouter(), api = inject<SessionClient>('session')!
@@ -141,7 +142,7 @@ async function removeImage() { source.value = ''; await save() }
       <div v-else-if="previewError" class="alert alert-danger" role="alert">{{ previewError }} <button type="button" class="btn btn-link" @click="preview">Tentar novamente</button></div>
       <template v-else><h2>{{ title }}</h2><img v-if="media && mediaPreview" class="workspace-image-preview" :src="mediaPreview" :alt="title"><p v-else-if="media">Nenhuma imagem selecionada.</p><div v-else class="wiki-content" @click="($event.target as Element).closest('a') && $event.preventDefault()" v-html="previewHtml" /></template>
     </template>
-    <template v-else-if="modal === 'compare'"><p>Revisão {{ older }} → Revisão {{ newer }}</p><div class="revision-diff"><span v-for="(part, i) in changes" :key="i" :class="{ added: part.added, removed: part.removed }">{{ part.value }}</span></div></template>
+    <RevisionComparison v-else-if="modal === 'compare'" :changes="changes" :older="older" :newer="newer" />
     <pre v-else-if="selected" class="revision-source">{{ selected.source }}</pre>
   </WorkspaceModal>
 </template>
