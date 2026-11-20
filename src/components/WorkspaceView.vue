@@ -66,7 +66,6 @@ function unload(e: BeforeUnloadEvent) { if (dirty.value && !historyMode.value) {
 onMounted(() => window.addEventListener('beforeunload', unload)); onBeforeUnmount(() => { closeModal(); window.removeEventListener('beforeunload', unload) })
 async function save() { await persist(source.value) }
 async function persist(nextSource: string): Promise<boolean> {
-  if (busy.value) return false
   busy.value = true; error.value = ''; saveNotice.value = ''
   try {
     const result = await api.request(endpoint.value, 'PUT', { title: title.value, source: nextSource, base_version: version.value })
@@ -78,7 +77,7 @@ async function persist(nextSource: string): Promise<boolean> {
   finally { busy.value = false }
 }
 function confirmDelete() { closeModal(); error.value = ''; modal.value = 'delete' }
-async function deletePage() { if (await persist('')) closeModal() }
+async function deletePage() { if (busy.value) return; if (await persist('')) closeModal() }
 async function more() { busy.value = true; try { const data = await api.request(endpoint.value + '/history?before=' + before.value); revisions.value.push(...data.revisions); before.value = data.next_cursor } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
 async function restore(id: number) {
   if (!window.confirm('Restaurar esta revisão como uma nova edição?')) return
