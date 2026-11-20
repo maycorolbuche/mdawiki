@@ -5,10 +5,31 @@ import { diffLines } from 'diff'
 const LegacyWikiEditor = defineAsyncComponent(() => import('./LegacyWikiEditor.vue'))
 import { RequestError, type SessionClient } from '../services/session'
 import AuthorAvatar from './AuthorAvatar.vue'
+import WorkspaceModal from './WorkspaceModal.vue'
+import { cleanArticle } from '../services/content'
 const route = useRoute(), router = useRouter(), api = inject<SessionClient>('session')!
 const slug = computed(() => String(route.params.slug)), historyMode = computed(() => route.meta.action === 'history')
 const title = ref(''), source = ref(''), original = ref(''), version = ref(''), media = ref(false), busy = ref(false), loading = ref(true), error = ref(''), loginRequired = ref(false), revisions = ref<any[]>([]), before = ref<number | null>(null), older = ref<number | null>(null), newer = ref<number | null>(null), compare = ref(false), selected = ref<any>(null)
 const originalTitle = ref(''), format = ref('wiki')
+const modal = ref<'preview' | 'revision' | 'compare' | null>(null)
+const previewHtml = ref(''), previewError = ref(''), previewBusy = ref(false)
+let previewGeneration = 0
+function closeModal() { modal.value = null; compare.value = false; selected.value = null; previewGeneration++; previewBusy.value = false }
+async function preview() {
+  closeModal(); modal.value = 'preview'; previewHtml.value = ''; previewError.value = ''
+  if (media.value) return
+  const generation = ++previewGeneration
+  previewBusy.value = true
+  try {
+    const result = await api.request(endpoint.value + '/preview', 'POST', { source: source.value })
+    if (generation !== previewGeneration) return
+    if (typeof result?.html !== 'string') throw new Error('A API retornou uma prévia inválida.')
+    previewHtml.value = cleanArticle(result.html)
+  } catch (e) { if (generation === previewGeneration) previewError.value = (e as Error).message }
+  finally { if (generation === previewGeneration) previewBusy.value = false }
+}
+function showRevision(revision: any) { closeModal(); selected.value = revision; modal.value = 'revision' }
+function showComparison() { closeModal(); compare.value = true; modal.value = 'compare' }
 const imageInput = ref<HTMLInputElement>()
 const mediaPreview = computed(() => /^(?:https?:\/\/|data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,)/i.test(source.value) ? source.value : '')
 const dirty = computed(() => source.value !== original.value || title.value !== originalTitle.value)
@@ -19,6 +40,7 @@ const changes = computed(() => {
 })
 const endpoint = computed(() => '/pages/' + encodeURIComponent(slug.value))
 async function load() {
+  closeModal()
   loading.value = true; loginRequired.value = false; error.value = ''; compare.value = false; revisions.value = []; selected.value = null
   loaded.value = false
   document.title = `${historyMode.value ? 'Histórico' : 'Editar'} — ${slug.value.replaceAll('_', ' ')} — MDAWiki`
@@ -37,7 +59,7 @@ async function load() {
 onMounted(load); watch(() => route.fullPath, load)
 onBeforeRouteLeave(() => !dirty.value || historyMode.value || window.confirm('Descartar as alterações não salvas?'))
 function unload(e: BeforeUnloadEvent) { if (dirty.value && !historyMode.value) { e.preventDefault(); e.returnValue = '' } }
-onMounted(() => window.addEventListener('beforeunload', unload)); onBeforeUnmount(() => window.removeEventListener('beforeunload', unload))
+onMounted(() => window.addEventListener('beforeunload', unload)); onBeforeUnmount(() => { closeModal(); window.removeEventListener('beforeunload', unload) })
 async function save() {
   busy.value = true; error.value = ''
   try { await api.request(endpoint.value, 'PUT', { title: title.value, source: source.value, base_version: version.value }); original.value = source.value; originalTitle.value = title.value; await router.push('/' + encodeURIComponent(slug.value) + '/') }
@@ -69,7 +91,12 @@ async function upload(event: Event) {
 async function removeImage() { source.value = ''; await save() }
 </script>
 <template>
-  <section class="card article-card" :class="{ 'legacy-edit-page': !historyMode }"><div class="article-body">
+  <section class="card article-card" :class="{ 'legacy-edit-page': !historyMode }">
+    <nav class="article-toolbar" aria-label="Ações da página">
+      <RouterLink class="article-action" :to="`/${encodeURIComponent(slug)}/`"><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar</RouterLink>
+      <button v-if="!historyMode" type="button" class="article-action" :disabled="!loaded || loading || busy" @click="preview"><i class="bi bi-eye" aria-hidden="true"></i> Visualizar página</button>
+    </nav>
+    <div class="article-body">
     <h1 v-if="historyMode">Histórico de Edições <small>{{ title || slug.replaceAll('_', ' ') }}</small></h1>
     <h1 v-else class="legacy-edit-title">{{ media ? 'Imagem: ' : '' }}{{ title || slug.replaceAll('_', ' ') }} <span class="legacy-edit-badge">Editar {{ media ? 'Imagem' : 'Página' }}</span></h1>
     <p v-if="loading" role="status">Carregando…</p><p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
@@ -96,24 +123,32 @@ async function removeImage() { source.value = ''; await save() }
           <LegacyWikiEditor v-model="source" :key="slug" :disabled="busy" :label="format === 'html' ? 'Código HTML' : 'Código wiki'" @error="error = $event" />
           <div class="legacy-edit-actions">
             <button class="btn legacy-edit-save" :disabled="busy">{{ busy ? 'Aguarde…' : 'Salvar' }}</button>
-            <RouterLink class="btn legacy-edit-back" :to="`/${encodeURIComponent(slug)}/`">Voltar</RouterLink>
           </div>
         </template>
       </form>
       <template v-else>
         <p v-if="!revisions.length">Ainda não há revisões registradas.</p>
-        <div class="table-responsive"><table v-if="revisions.length" class="table align-middle"><thead><tr><th>Comparar</th><th>Revisão</th><th>Autor</th><th>Data</th><th>Ações</th></tr></thead><tbody><tr v-for="r in revisions" :key="r.id"><td><input v-model="older" type="radio" :value="r.id" name="older" :aria-label="`Versão anterior ${r.id}`"> <input v-model="newer" type="radio" :value="r.id" name="newer" :aria-label="`Versão nova ${r.id}`"></td><td>{{ r.id }}</td><td><span class="history-author"><AuthorAvatar :photo="r.author_photo" /><span>{{ r.author || 'Usuário' }}</span></span></td><td>{{ r.created_at }}</td><td><button class="btn btn-sm btn-outline-primary me-2" @click="selected = r">Visualizar</button><button class="btn btn-sm btn-outline-secondary" :disabled="busy" @click="restore(r.id)">Restaurar</button></td></tr></tbody></table></div>
-        <button v-if="before" class="btn btn-outline-primary me-2" :disabled="busy" @click="more">Mais revisões</button><button v-if="revisions.length > 1" class="btn btn-primary" @click="compare = true">Comparar versões</button>
-        <div v-if="compare" class="revision-diff"><span v-for="(part, i) in changes" :key="i" :class="{ added: part.added, removed: part.removed }">{{ part.value }}</span></div>
-        <section v-if="selected" class="mt-4"><h2>Revisão {{ selected.id }}</h2><pre class="revision-source">{{ selected.source }}</pre></section>
+        <div class="table-responsive"><table v-if="revisions.length" class="table align-middle"><thead><tr><th>Comparar</th><th>Revisão</th><th>Autor</th><th>Data</th><th>Ações</th></tr></thead><tbody><tr v-for="r in revisions" :key="r.id"><td><input v-model="older" type="radio" :value="r.id" name="older" :aria-label="`Versão anterior ${r.id}`"> <input v-model="newer" type="radio" :value="r.id" name="newer" :aria-label="`Versão nova ${r.id}`"></td><td>{{ r.id }}</td><td><span class="history-author"><AuthorAvatar :photo="r.author_photo" /><span>{{ r.author || 'Usuário' }}</span></span></td><td>{{ r.created_at }}</td><td><button class="btn btn-sm btn-outline-primary me-2" @click="showRevision(r)">Visualizar</button><button class="btn btn-sm btn-outline-secondary" :disabled="busy" @click="restore(r.id)">Restaurar</button></td></tr></tbody></table></div>
+        <button v-if="before" class="btn btn-outline-primary me-2" :disabled="busy" @click="more">Mais revisões</button><button v-if="revisions.length > 1" class="btn btn-primary" @click="showComparison">Comparar versões</button>
       </template>
     </template>
     <div v-if="error && !loginRequired" class="mt-3"><button v-if="media && dirty" class="btn btn-info me-2" :disabled="busy" @click="save">Salvar novamente</button><button class="btn btn-outline-secondary" @click="load">Recarregar</button><p v-if="dirty">Copie o conteúdo antes de recarregar para preservar suas alterações.</p></div>
   </div></section>
+  <WorkspaceModal v-if="modal" :title="modal === 'preview' ? 'Visualizar página' : modal === 'compare' ? 'Comparar versões' : `Revisão ${selected?.id}`" @close="closeModal">
+    <template v-if="modal === 'preview'">
+      <p class="text-muted">Prévia das alterações ainda não salvas.</p>
+      <p v-if="previewBusy" role="status">Carregando prévia…</p>
+      <div v-else-if="previewError" class="alert alert-danger" role="alert">{{ previewError }} <button type="button" class="btn btn-link" @click="preview">Tentar novamente</button></div>
+      <template v-else><h2>{{ title }}</h2><img v-if="media && mediaPreview" class="workspace-image-preview" :src="mediaPreview" :alt="title"><p v-else-if="media">Nenhuma imagem selecionada.</p><div v-else class="wiki-content" @click="($event.target as Element).closest('a') && $event.preventDefault()" v-html="previewHtml" /></template>
+    </template>
+    <template v-else-if="modal === 'compare'"><p>Revisão {{ older }} → Revisão {{ newer }}</p><div class="revision-diff"><span v-for="(part, i) in changes" :key="i" :class="{ added: part.added, removed: part.removed }">{{ part.value }}</span></div></template>
+    <pre v-else-if="selected" class="revision-source">{{ selected.source }}</pre>
+  </WorkspaceModal>
 </template>
 
 
 
 <style scoped>
+.workspace-image-preview { max-width: 100%; height: auto; }
 .history-author { display: inline-flex; align-items: center; gap: 12px; white-space: nowrap; }
 </style>

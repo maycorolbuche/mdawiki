@@ -58,9 +58,19 @@ test('history compares and restores an actual selected revision through API', as
     return { title: 'Teste', base_version: 'v2', next_cursor: null, revisions: [ ...(restored ? [{ id: 3, source: 'Antigo\n', author: 'Editor', created_at: '2026-11-17 13:00:00' }] : []), { id: 2, source: 'Novo\n', author: 'Editor', created_at: '2026-11-17 12:00:00' }, { id: 1, source: 'Antigo\n', author: 'Editor', created_at: '2026-11-17 11:00:00' }] }
   }, true)
   await page.goto('/Teste/historico')
+  const toolbar = page.getByRole('navigation', { name: 'Ações da página' })
+  await expect(toolbar.getByRole('link', { name: 'Voltar', exact: true })).toBeVisible()
+  await expect(toolbar.getByRole('button')).toHaveCount(0)
   await page.getByRole('button', { name: 'Comparar versões' }).click()
+  await expect(page.getByRole('dialog', { name: 'Comparar versões' })).toBeVisible()
+  await page.screenshot({ path: 'test-results/history-compare-modal.png' })
   await expect(page.locator('.revision-diff .added')).toContainText('Novo')
   await expect(page.locator('.revision-diff .removed')).toContainText('Antigo')
+  await page.getByRole('dialog', { name: 'Comparar versões' }).getByRole('button', { name: 'Fechar', exact: true }).last().click()
+  await page.locator('tbody tr').last().getByRole('button', { name: 'Visualizar', exact: true }).click()
+  await expect(page.getByRole('dialog', { name: 'Revisão 1' })).toContainText('Antigo')
+  await page.getByRole('dialog', { name: 'Revisão 1' }).press('Escape')
+  await expect(page.getByRole('dialog')).toHaveCount(0)
   page.on('dialog', dialog => dialog.accept())
   await page.locator('tbody tr').last().getByRole('button', { name: 'Restaurar' }).click()
   await expect(page.locator('tbody tr')).toHaveCount(3)
@@ -102,3 +112,56 @@ test('profile saves account fields through API and administration denies ordinar
   await expect(page.locator('tbody tr')).toHaveCount(0)
 })
 
+
+test('editor toolbar previews unsaved source in a modal without saving and fits mobile', async ({ page }) => {
+  let saved = false, previewed = ''
+  await mock(page, (path, method, data) => {
+    if (path.endsWith('/editor')) return { title: 'Teste', source: 'Original', base_version: 'v1' }
+    if (path.endsWith('/preview')) { previewed = data.source; return { html: '<p><strong>Minha edição</strong></p><script>window.bad = true</script>' } }
+    if (method === 'PUT') saved = true
+    return {}
+  }, true)
+  await page.goto('/Teste/editar')
+  const editor = page.getByLabel('Código wiki', { exact: true })
+  await editor.fill('Minha edição')
+  const toolbar = page.getByRole('navigation', { name: 'Ações da página' })
+  await expect(toolbar.getByRole('link', { name: 'Voltar', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Voltar', exact: true })).toHaveCount(1)
+  await expect(page.locator('.legacy-edit-actions').getByRole('button')).toHaveCount(1)
+  await toolbar.getByRole('button', { name: 'Visualizar página', exact: true }).click()
+  const modal = page.getByRole('dialog', { name: 'Visualizar página', exact: true })
+  await expect(modal.locator('.wiki-content strong')).toHaveText('Minha edição')
+  expect(previewed).toBe('Minha edição')
+  expect(saved).toBe(false)
+  expect(await page.evaluate(() => (window as any).bad)).toBeUndefined()
+  await page.screenshot({ path: 'test-results/editor-preview-desktop.png' })
+  await modal.press('Escape')
+  await expect(editor).toHaveValue('Minha edição')
+  await expect(toolbar.getByRole('button', { name: 'Visualizar página' })).toBeFocused()
+  await page.setViewportSize({ width: 390, height: 844 })
+  await toolbar.getByRole('button', { name: 'Visualizar página' }).click()
+  await expect(modal.locator('.wiki-content strong')).toBeVisible()
+  const box = (await modal.boundingBox())!
+  expect(box.x).toBeGreaterThanOrEqual(0)
+  expect(box.x + box.width).toBeLessThanOrEqual(390)
+  await page.screenshot({ path: 'test-results/editor-preview-mobile.png' })
+  await modal.getByRole('button', { name: 'Fechar', exact: true }).last().click()
+  await expect(editor).toHaveValue('Minha edição')
+  expect(saved).toBe(false)
+})
+
+test('preview failure stays in modal and retry preserves the unsaved editor', async ({ page }) => {
+  let fail = true
+  await mock(page, path => path.endsWith('/editor') ? { title: 'Teste', source: 'Original', base_version: 'v1' } : fail ? { status: 503, error: { message: 'Prévia indisponível.' } } : { html: '<p>Recuperada</p>' }, true)
+  await page.goto('/Teste/editar')
+  const editor = page.getByLabel('Código wiki', { exact: true })
+  await editor.fill('Não salvar')
+  await page.getByRole('button', { name: 'Visualizar página' }).click()
+  const modal = page.getByRole('dialog', { name: 'Visualizar página' })
+  await expect(modal.getByRole('alert')).toContainText('Prévia indisponível')
+  fail = false
+  await modal.getByRole('button', { name: 'Tentar novamente' }).click()
+  await expect(modal.locator('.wiki-content')).toContainText('Recuperada')
+  await modal.press('Escape')
+  await expect(editor).toHaveValue('Não salvar')
+})
