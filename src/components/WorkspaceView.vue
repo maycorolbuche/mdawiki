@@ -12,7 +12,7 @@ import { cleanArticle } from '../services/content'
 const route = useRoute(), router = useRouter(), api = inject<SessionClient>('session')!
 const slug = computed(() => String(route.params.slug)), historyMode = computed(() => route.meta.action === 'history')
 const title = ref(''), source = ref(''), original = ref(''), version = ref(''), media = ref(false), busy = ref(false), loading = ref(true), error = ref(''), loginRequired = ref(false), revisions = ref<any[]>([]), before = ref<number | null>(null), older = ref<number | null>(null), newer = ref<number | null>(null), compare = ref(false), selected = ref<any>(null)
-const originalTitle = ref(''), format = ref('wiki')
+const originalTitle = ref(''), format = ref('wiki'), saveNotice = ref('')
 const modal = ref<'preview' | 'revision' | 'compare' | null>(null)
 const previewHtml = ref(''), previewError = ref(''), previewBusy = ref(false)
 let previewGeneration = 0
@@ -44,7 +44,7 @@ const olderRevision = computed(() => revisions.value.find(r => Number(r.id) === 
 const newerRevision = computed(() => revisions.value.find(r => Number(r.id) === Number(newer.value)))
 const endpoint = computed(() => '/pages/' + encodeURIComponent(slug.value))
 async function load() {
-  closeModal()
+  closeModal(); saveNotice.value = ''
   loading.value = true; loginRequired.value = false; error.value = ''; compare.value = false; revisions.value = []; selected.value = null
   loaded.value = false
   document.title = `${historyMode.value ? 'Histórico' : 'Editar'} — ${slug.value.replaceAll('_', ' ')} — MDAWiki`
@@ -65,8 +65,8 @@ onBeforeRouteLeave(() => !dirty.value || historyMode.value || window.confirm('De
 function unload(e: BeforeUnloadEvent) { if (dirty.value && !historyMode.value) { e.preventDefault(); e.returnValue = '' } }
 onMounted(() => window.addEventListener('beforeunload', unload)); onBeforeUnmount(() => { closeModal(); window.removeEventListener('beforeunload', unload) })
 async function save() {
-  busy.value = true; error.value = ''
-  try { await api.request(endpoint.value, 'PUT', { title: title.value, source: source.value, base_version: version.value }); original.value = source.value; originalTitle.value = title.value; await router.push('/' + encodeURIComponent(slug.value) + '/') }
+  busy.value = true; error.value = ''; saveNotice.value = ''
+  try { const result = await api.request(endpoint.value, 'PUT', { title: title.value, source: source.value, base_version: version.value }); original.value = source.value; originalTitle.value = title.value; if (result.unchanged === true) { version.value = result.base_version; saveNotice.value = 'Não foram detectadas alterações na página. Nenhuma revisão foi criada.'; return }; await router.push('/' + encodeURIComponent(slug.value) + '/') }
   catch (e) { error.value = (e as Error).message } finally { busy.value = false }
 }
 async function more() { busy.value = true; try { const data = await api.request(endpoint.value + '/history?before=' + before.value); revisions.value.push(...data.revisions); before.value = data.next_cursor } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
@@ -103,6 +103,7 @@ async function removeImage() { source.value = ''; await save() }
     <div class="article-body">
     <h1 v-if="historyMode">Histórico de Edições <small>{{ title || slug.replaceAll('_', ' ') }}</small></h1>
     <h1 v-else class="legacy-edit-title">{{ media ? 'Imagem: ' : '' }}{{ title || slug.replaceAll('_', ' ') }} <span class="legacy-edit-badge">Editar {{ media ? 'Imagem' : 'Página' }}</span></h1>
+    <p v-if="saveNotice" class="alert alert-info" role="status">{{ saveNotice }}</p>
     <p v-if="loading" role="status">Carregando…</p><p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
     <RouterLink v-if="loginRequired" :to="{ path: '/page@Acesso', query: { redirect: route.fullPath } }">Fazer login para continuar</RouterLink>
     <template v-if="loaded && !loading && !loginRequired">

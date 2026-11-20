@@ -229,3 +229,13 @@ test('revision modals show the matching author, avatar and timestamp in both com
   await page.setViewportSize({ width: 390, height: 844 })
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
+
+test('unchanged save stays in editor and explains that no revision was created', async ({ page }) => {
+  await mock(page, (path, method) => path.endsWith('/editor') ? { title: 'Teste', source: 'Original', base_version: 'v1' } : { unchanged: true, slug: 'Teste', revision: 1, base_version: 'v1' }, true)
+  await page.goto('/Teste/editar')
+  await expect(page.getByLabel('Código wiki', { exact: true })).toHaveValue('Original')
+  await page.getByRole('button', { name: 'Salvar', exact: true }).click()
+  await expect(page.getByRole('status')).toContainText('Não foram detectadas alterações na página. Nenhuma revisão foi criada.')
+  await expect(page).toHaveURL(/\/Teste\/editar$/)
+  await expect(page.getByLabel('Código wiki', { exact: true })).toHaveValue('Original')
+})
