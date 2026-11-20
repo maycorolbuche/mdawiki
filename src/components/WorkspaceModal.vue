@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-defineProps<{ title: string }>()
+defineProps<{ title: string; busy?: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const dialog = ref<HTMLDialogElement>()
 let overflow = '', focus: HTMLElement | null = null
@@ -17,11 +17,11 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-  <dialog ref="dialog" class="workspace-modal" aria-labelledby="workspace-modal-title" @cancel.prevent="emit('close')">
+  <dialog ref="dialog" class="workspace-modal" aria-labelledby="workspace-modal-title" @cancel.prevent="!busy && emit('close')">
     <div class="modal-content">
-      <header class="modal-header"><h2 id="workspace-modal-title" class="modal-title fs-5">{{ title }}</h2><button type="button" class="btn-close" aria-label="Fechar" @click="emit('close')" /></header>
+      <header class="modal-header"><h2 id="workspace-modal-title" class="modal-title fs-5">{{ title }}</h2><button type="button" class="btn-close" aria-label="Fechar" :disabled="busy" @click="emit('close')" /></header>
       <div class="modal-body"><slot /></div>
-      <footer class="modal-footer"><button type="button" class="btn btn-secondary" @click="emit('close')">Fechar</button></footer>
+      <footer class="modal-footer"><slot name="footer"><button type="button" class="btn btn-secondary" @click="emit('close')">Fechar</button></slot></footer>
     </div>
   </dialog>
 </template>

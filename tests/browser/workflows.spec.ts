@@ -250,3 +250,43 @@ test('history shows source character counts between author and date including Un
   await expect(table.getByRole('columnheader')).toHaveText(['Comparar', 'Revisão', 'Autor', 'Caracteres', 'Data', 'Ações'])
   await expect(table.locator('.history-character-count')).toHaveText(['5', '0'])
 })
+
+test('delete confirmation saves blank source only after confirming and cancellation retains draft', async ({ page }) => {
+  const writes: any[] = []
+  await mock(page, (path, method, data) => {
+    if (path.endsWith('/editor')) return { title: 'Teste', source: 'Original', base_version: 'v1', exists: true }
+    if (method === 'PUT') { writes.push(data); return { slug: 'Teste', revision: 2 } }
+    return { id: 'teste', slug: 'Teste', title: 'Teste', html: '', description: '', canonical_url: '' }
+  }, true)
+  await page.goto('/Teste/editar')
+  const editor = page.getByLabel('Código wiki', { exact: true })
+  await editor.fill('Rascunho')
+  const remove = page.getByRole('navigation', { name: 'Ações da página' }).getByRole('button', { name: 'Excluir página' })
+  await remove.click()
+  const dialog = page.getByRole('dialog', { name: 'Excluir página' })
+  await expect(dialog).toContainText('O histórico será preservado')
+  await dialog.getByRole('button', { name: 'Cancelar' }).click()
+  await expect(editor).toHaveValue('Rascunho')
+  expect(writes).toHaveLength(0)
+  await remove.click()
+  await dialog.press('Escape')
+  await expect(editor).toHaveValue('Rascunho')
+  expect(writes).toHaveLength(0)
+  await remove.click()
+  await dialog.getByRole('button', { name: 'Excluir página', exact: true }).click()
+  await expect(page).toHaveURL(/\/Teste\/$/)
+  expect(writes).toEqual([{ title: 'Teste', source: '', base_version: 'v1' }])
+})
+
+test('delete conflict leaves the editor draft and confirmation available for cancellation', async ({ page }) => {
+  await mock(page, path => path.endsWith('/editor') ? { title: 'Teste', source: 'Original', base_version: 'v1', exists: true } : { status: 409, error: { code: 'edit_conflict', message: 'Outra edição foi salva.' } }, true)
+  await page.goto('/Teste/editar')
+  const editor = page.getByLabel('Código wiki', { exact: true })
+  await editor.fill('Preservar rascunho')
+  await page.getByRole('button', { name: 'Excluir página', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Excluir página' })
+  await dialog.getByRole('button', { name: 'Excluir página', exact: true }).click()
+  await expect(dialog.getByRole('alert')).toContainText('Outra edição')
+  await dialog.getByRole('button', { name: 'Cancelar' }).click()
+  await expect(editor).toHaveValue('Preservar rascunho')
+})
