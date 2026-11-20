@@ -4,6 +4,12 @@
   --wiki-blue: #4a89dc;
 }
 
+.btn {
+  border-radius: 3px;
+  font-weight: 100;
+  font-size: 14px;
+}
+
 .header-logout {
   background: transparent;
   color: white;
@@ -507,23 +513,6 @@ summary:focus-visible {
   vertical-align: -1px;
   margin-right: 3px;
 }
-
-/*
-.action-edit {
-  background: #f6bb42;
-}
-
-.action-history {
-  background: #37bc9b;
-}
-
-.action-refresh {
-  background: #3bafda;
-}
-
-.action-print {
-  background: #f15543;
-}*/
 
 .article-body {
   padding: 40px 50px !important;
