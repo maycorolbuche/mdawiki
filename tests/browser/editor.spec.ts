@@ -12,7 +12,7 @@ async function setup(page: Page, media = false, imageSource?: string) {
     else if (request.method() !== 'GET') {
       writes.push({ path, body: request.postDataJSON() })
       data = path.endsWith('/media') ? { url: 'https://api.mda.wiki.br/media/wiki/nova.png' } : { slug: media ? 'imagem@Teste.png' : 'Teste', revision: 2 }
-    } else data = { id: 'teste', slug: 'Teste', title: 'Teste', html: '<p>Artigo salvo.</p>', description: '', canonical_url: 'https://mda.wiki.br/Teste/' }
+    } else data = { id: 'teste', slug: decodeURIComponent(path.split('/').at(-1)!), title: 'Teste', html: '<p>Artigo salvo.</p>', description: '', canonical_url: 'https://mda.wiki.br/Teste/' }
     return route.fulfill({ headers, json: { data } })
   })
   return writes

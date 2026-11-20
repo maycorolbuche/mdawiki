@@ -48,3 +48,35 @@ test('404 evicts the cached article and a 503 preserves it', async ({ page }) =>
   await expect(page.getByRole('heading', { name: 'Página não encontrada' })).toBeVisible()
   expect(await page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('mdawiki:articles:')).map(key => sessionStorage.getItem(key)).join(''))).not.toContain('Conteúdo em cache')
 })
+
+test('API slug replaces case and accent variants without refetch, keeping query/hash and browser history', async ({ page }) => {
+  const canonical = 'Especialidade_de_Floricultura'
+  const variants = ['EspecialidadE_de_Floriculturá', 'especialidade_de_floricultura']
+  let reads = 0
+  const visits: string[] = []
+  await page.route('http://127.0.0.1:8080/**', async route => {
+    const request = route.request(), url = new URL(request.url())
+    if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { ...headers, 'access-control-allow-methods': 'GET, POST, OPTIONS', 'access-control-allow-headers': 'Accept, Content-Type, X-CSRF-Token' } })
+    if (url.pathname.startsWith('/v1/pages/')) {
+      reads++
+      return route.fulfill({ headers, json: { data: { id: 'flor', slug: canonical, title: 'Floricultura', html: '<p id="secao">Conteúdo canônico</p>', description: '', canonical_url: 'https://mda.wiki.br/' + canonical + '/' } } })
+    }
+    if (url.pathname === '/v1/visits') visits.push(request.postDataJSON().slug)
+    return route.fulfill({ headers, json: { data: url.pathname.endsWith('/auth/session') ? { user: null, csrf_token: 'test' } : {} } })
+  })
+  for (const variant of variants) {
+    const before = reads
+    await page.goto('/page%40Doa%C3%A7%C3%A3o/')
+    await page.goto('/' + encodeURIComponent(variant) + '/?origem=teste#secao')
+    await expect.poll(() => decodeURIComponent(new URL(page.url()).pathname)).toBe('/' + canonical + '/')
+    expect(new URL(page.url()).search).toBe('?origem=teste')
+    expect(new URL(page.url()).hash).toBe('#secao')
+    await expect(page.locator('.wiki-content')).toContainText('Conteúdo canônico')
+    await expect(page.getByRole('link', { name: 'Editar Página' })).toHaveAttribute('href', '/' + canonical + '/editar')
+    expect(reads - before).toBe(1)
+    await page.goBack()
+    await expect(page).toHaveURL(/page.*Doa/)
+  }
+  await expect.poll(() => visits.length).toBe(2)
+  expect(visits).toEqual([canonical, canonical])
+})

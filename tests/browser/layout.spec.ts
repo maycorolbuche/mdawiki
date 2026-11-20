@@ -57,7 +57,7 @@ test('API refresh updates relation panels and category members together with art
 
 test('mobile menu opens, expands groups and closes after SPA navigation without page overflow', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.route('http://127.0.0.1:8080/**', route => route.fulfill({ headers, json: { data: article } }))
+  await page.route('http://127.0.0.1:8080/**', route => route.fulfill({ headers, json: { data: { ...article, slug: route.request().url().includes('/v1/pages/') ? decodeURIComponent(new URL(route.request().url()).pathname.split('/').at(-1)!) : article.slug } } }))
   await page.goto(path)
   await expect(page.locator('.wiki-content table')).toBeVisible()
   await expect(page.locator('.wiki-content table td').nth(1)).toHaveCSS('white-space', 'nowrap')
