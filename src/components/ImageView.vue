@@ -10,7 +10,7 @@ interface ImageDetails {
   version: string
   meta: { extension?: string; width?: number; height?: number; size_bytes?: number }
   pages: { id: string; slug: string; title: string }[]
-  history: { id: string; url: string; created_at: string | null }[]
+  history: { id: string; url: string; created_at: string | null; author?: string | null }[]
 }
 
 const session = inject<SessionClient>('session')!
@@ -21,7 +21,8 @@ const endpoint = computed(() => '/images/' + encodeURIComponent(slug.value))
 const image = ref<ImageDetails | null>(null)
 const missing = ref(false)
 const busy = ref(true)
-const showHistory = ref(false)
+const historyMode = computed(() => route.meta.imageHistory === true)
+const imagePath = computed(() => '/i/' + encodeURIComponent(image.value?.slug ?? slug.value))
 const error = ref('')
 const picker = ref<HTMLInputElement | null>(null)
 let request = 0
@@ -31,13 +32,12 @@ async function load() {
   busy.value = true
   image.value = null
   missing.value = false
-  showHistory.value = false
   error.value = ''
   try {
     const result = await session.request(endpoint.value)
     if (current !== request) return
     image.value = result
-    if (result.slug !== slug.value) await router.replace('/i/' + encodeURIComponent(result.slug))
+    if (result.slug !== slug.value) await router.replace('/i/' + encodeURIComponent(result.slug) + (historyMode.value ? '/historico' : ''))
   } catch (cause) {
     if (current !== request) return
     if (cause instanceof RequestError && cause.status === 404) missing.value = true
@@ -94,38 +94,83 @@ async function upload(event: Event) {
     if (current === request) busy.value = false
   }
 }
+
+async function restore(revisionId: string) {
+  if (!image.value || busy.value) return
+  const current = request
+  const version = image.value.version
+  const target = endpoint.value
+  busy.value = true
+  error.value = ''
+  try {
+    await session.initialize()
+    if (current !== request) return
+    if (!session.state.user) {
+      await router.push({ path: '/page@Acesso', query: { redirect: route.fullPath } })
+      return
+    }
+    const result = await session.request(target, 'PUT', { revision_id: revisionId, base_version: version })
+    if (current !== request) return
+    image.value = result
+    await router.push('/i/' + encodeURIComponent(result.slug))
+  } catch (cause) {
+    if (current === request) error.value = (cause as Error).message
+  } finally {
+    if (current === request) busy.value = false
+  }
+}
 </script>
 
 <template>
-  <div class="article-layout" :class="{ 'has-relations': image }">
+  <div class="article-layout" :class="{ 'has-relations': image && !historyMode }">
     <article class="card article-card" :aria-busy="busy">
+      <nav v-if="image" class="article-toolbar" aria-label="Ações da imagem">
+        <RouterLink v-if="historyMode" class="article-action" :to="imagePath">
+          <i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar para a imagem
+        </RouterLink>
+        <template v-else>
+          <button class="article-action" type="button" :disabled="busy" @click="selectFile">
+            <i class="bi bi-pencil-fill" aria-hidden="true"></i> {{ image.url ? 'Substituir Página' : 'Enviar imagem' }}
+          </button>
+          <RouterLink class="article-action" :to="imagePath + '/historico'">
+            <i class="bi bi-clock-history" aria-hidden="true"></i> Histórico
+          </RouterLink>
+        </template>
+      </nav>
       <div class="article-body">
-        <h1>{{ missing ? 'Imagem não encontrada' : image?.title ?? slug }}</h1>
+        <h1 v-if="historyMode && image">Histórico de Edições <small>{{ image.title }}</small></h1>
+        <h1 v-else>{{ missing ? 'Imagem não encontrada' : image?.title ?? slug }}</h1>
         <p v-if="busy" role="status">Processando imagem…</p>
         <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
-        <img v-if="image?.url" :src="image.url" :alt="image.title" class="img-fluid d-block mb-3" />
-        <p v-if="missing">Ainda não há uma imagem neste endereço.</p>
-        <div v-if="image || missing" class="d-flex gap-2 flex-wrap mb-3">
-          <button class="btn btn-primary" type="button" :disabled="busy" @click="selectFile">
-            {{ image?.url ? 'Substituir imagem' : 'Enviar imagem' }}
-          </button>
-          <button v-if="image" class="btn btn-outline-secondary" type="button" :aria-expanded="showHistory"
-            @click="showHistory = !showHistory">Histórico</button>
-        </div>
+        <img v-if="image?.url && !historyMode" :src="image.url" :alt="image.title" class="img-fluid d-block mb-3" />
+        <template v-if="missing">
+          <p>Ainda não há uma imagem neste endereço.</p>
+          <button class="btn btn-primary" type="button" :disabled="busy" @click="selectFile">Enviar imagem</button>
+        </template>
         <input ref="picker" type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden @change="upload" />
-        <section v-if="image && showHistory">
-          <h2>Histórico</h2>
+        <template v-if="image && historyMode">
           <p v-if="!image.history.length">Nenhuma versão anterior.</p>
-          <div class="d-flex flex-wrap gap-3">
-            <figure v-for="version in image.history" :key="version.id">
-              <a :href="version.url"><img :src="version.url" :alt="'Versão ' + version.id" width="160" class="img-fluid" loading="lazy" /></a>
-              <figcaption>{{ version.created_at || 'Data indisponível' }}</figcaption>
-            </figure>
+          <div v-else class="table-responsive">
+            <table class="table align-middle">
+              <thead><tr><th>Revisão</th><th>Autor</th><th>Imagem</th><th>Data</th><th>Ações</th></tr></thead>
+              <tbody>
+                <tr v-for="version in image.history" :key="version.id">
+                  <td>{{ version.id }}</td>
+                  <td>{{ version.author || 'Autor desconhecido' }}</td>
+                  <td><img :src="version.url" :alt="'Versão ' + version.id" width="120" class="img-fluid" loading="lazy" /></td>
+                  <td>{{ version.created_at || 'Data indisponível' }}</td>
+                  <td>
+                    <a class="btn btn-sm btn-outline-primary me-2" :href="version.url" target="_blank" rel="noopener noreferrer">Visualizar</a>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" :disabled="busy" @click="restore(version.id)">Restaurar</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </section>
+        </template>
       </div>
     </article>
-    <aside v-if="image" class="page-relations" aria-label="Informações da imagem">
+    <aside v-if="image && !historyMode" class="page-relations" aria-label="Informações da imagem">
       <section class="relation-panel relation-blue">
         <h2>Propriedades</h2>
         <dl class="px-3 py-2 mb-0">
