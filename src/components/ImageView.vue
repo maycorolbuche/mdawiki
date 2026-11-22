@@ -20,6 +20,7 @@ interface ImageDetails {
     url: string;
     created_at: string | null;
     author?: string | null;
+    author_profile_id?: string | null;
   }[];
 }
 
@@ -228,7 +229,10 @@ async function restore(revisionId: string) {
               <tbody>
                 <tr v-for="version in image.history" :key="version.id">
                   <td>{{ version.id }}</td>
-                  <td>{{ version.author || "Autor desconhecido" }}</td>
+                  <td>
+                    <RouterLink v-if="version.author_profile_id" :to="'/u/' + version.author_profile_id">{{ version.author || "Usuário" }}</RouterLink>
+                    <span v-else>{{ version.author || "Autor desconhecido" }}</span>
+                  </td>
                   <td>
                     <img
                       :src="version.url"
