@@ -118,7 +118,7 @@ test('a tela de imagem substitui o arquivo e mostra a versão anterior', async (
   await page.locator('input[type=file]').setInputFiles({ name: 'nova.png', mimeType: 'image/png', buffer: Buffer.from('image') })
   await expect(page.getByRole('img', { name: 'Teste', exact: true })).toHaveAttribute('src', updated)
   expect(payloads).toEqual([{ base_version: '1', data: 'data:image/png;base64,' + Buffer.from('image').toString('base64') }])
-  await page.getByRole('button', { name: 'Histórico' }).click()
+  await page.getByRole('link', { name: 'Histórico' }).click()
   await expect(page).toHaveURL(/\/i\/Teste\/historico$/)
   await expect(page.getByRole('img', { name: 'Versão 1' })).toHaveAttribute('src', original)
   await expect(page.getByRole('link', { name: 'Visualizar' })).toHaveAttribute('target', '_blank')
