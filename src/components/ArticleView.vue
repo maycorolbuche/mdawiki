@@ -24,6 +24,8 @@ const page = ref<Page | null>(
   snapshot.page?.slug === slug.value ? snapshot.page : null,
 );
 const loading = ref(false);
+const rebuilding = ref(false);
+const rebuildError = ref("");
 const missing = ref(false);
 const failed = ref(false);
 const topicsExpanded = ref(false);
@@ -150,9 +152,31 @@ async function refresh() {
   }
 }
 
+async function updateArticle() {
+  rebuildError.value = "";
+  if (!page.value || page.value.read_only || Number(session.state.user?.NIVEL) < 5 || !session.state.user) {
+    await refresh();
+    return;
+  }
+  const target = slug.value;
+  rebuilding.value = true;
+  try {
+    await session.request("/pages/" + encodeURIComponent(target) + "/rebuild", "POST", {});
+    session.articles.remove(target);
+    if (slug.value === target) await refresh();
+  } catch (error) {
+    if (slug.value === target) {
+      rebuildError.value = error instanceof Error ? error.message : "Não foi possível reprocessar a página.";
+    }
+  } finally {
+    rebuilding.value = false;
+  }
+}
+
 watch(slug, () => {
   // Canonical replacement already has the response: keep it without a second fetch.
   if (page.value?.slug === slug.value) { updateMetadata(page.value); return; }
+  rebuildError.value = "";
   topicsExpanded.value = false;
   page.value = snapshot.page?.slug === slug.value ? snapshot.page : null;
   missing.value = false;
@@ -231,7 +255,7 @@ function followArticleLink(event: MouseEvent) {
 
 <template>
   <div class="article-layout" :class="{ 'has-relations': hasRelations }">
-    <article class="card article-card" :aria-busy="loading">
+    <article class="card article-card" :aria-busy="loading || rebuilding">
       <div class="article-toolbar">
         <RouterLink v-if="!page?.read_only" class="article-action" :to="articlePath + 'editar'"
           ><i class="bi bi-pencil-fill" aria-hidden="true"></i>
@@ -244,15 +268,16 @@ function followArticleLink(event: MouseEvent) {
           ><i class="bi bi-clock-history" aria-hidden="true"></i> Histórico de
           Edições</RouterLink
         >
-        <button class="article-action" :disabled="loading" @click="refresh">
+        <button class="article-action" :disabled="loading || rebuilding" @click="updateArticle">
           <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
-          {{ loading ? "Atualizando…" : "Atualizar" }}
+          {{ loading || rebuilding ? "Atualizando…" : "Atualizar" }}
         </button>
         <button v-if="page" class="article-action" @click="printArticle">
           <i class="bi bi-printer-fill" aria-hidden="true"></i> Imprimir
         </button>
       </div>
       <div class="article-body">
+        <div v-if="rebuildError" class="alert alert-warning" role="alert">{{ rebuildError }}</div>
         <div v-if="failed" class="alert alert-warning" role="alert">
           Não foi possível consultar a versão atual.<span v-if="page">
             Exibindo o conteúdo publicado.</span
