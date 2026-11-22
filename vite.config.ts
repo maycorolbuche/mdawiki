@@ -5,6 +5,9 @@ import googleConfig from './config/google.json'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  const configuredApiUrl = (process.env.VITE_API_BASE_URL || env.VITE_API_BASE_URL || '').trim()
+  const proxyTarget = process.env.API_PROXY_TARGET || env.API_PROXY_TARGET
+    || (/^https?:\/\//i.test(configuredApiUrl) ? configuredApiUrl : publicConfig.apiBaseUrl)
   const analyticsId = (process.env.VITE_GOOGLE_ANALYTICS_ID || env.VITE_GOOGLE_ANALYTICS_ID || googleConfig.analyticsId).trim()
   if (analyticsId && !/^G-[A-Z0-9]+$/.test(analyticsId)) throw new Error('VITE_GOOGLE_ANALYTICS_ID deve ser um ID GA4 no formato G-..., não UA-...')
   return {
@@ -14,7 +17,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: process.env.API_PROXY_TARGET || env.API_PROXY_TARGET || publicConfig.apiBaseUrl,
+          target: proxyTarget,
           changeOrigin: true,
           rewrite: path => path.replace(/^\/api(?=\/|$)/, ''),
         },

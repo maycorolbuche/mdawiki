@@ -13,7 +13,8 @@ import './styles/main.css'
 import './styles/article-legacy.css'
 
 const defaults: Snapshot = {
-  page: null, pages: [], apiBaseUrl: import.meta.env.VITE_API_BASE_URL || publicConfig.apiBaseUrl,
+  page: null, pages: [],
+  apiBaseUrl: import.meta.env.DEV ? '/api' : (import.meta.env.VITE_API_BASE_URL || publicConfig.apiBaseUrl),
   siteUrl: import.meta.env.VITE_SITE_URL || publicConfig.siteUrl, basePath: import.meta.env.BASE_URL,
 }
 let snapshot = defaults
