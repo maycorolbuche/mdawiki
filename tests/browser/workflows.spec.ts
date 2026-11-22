@@ -331,3 +331,12 @@ test('a página inexistente oferece dois botões de criação e abre o formulár
   await expect(page).toHaveURL(/\/Esd\/editar$/)
   await expect(page.getByRole('textbox', { name: 'Título da página' })).toHaveValue('Esd')
 })
+
+test('o endereço /i/ mostra upload para imagem que ainda não existe', async ({ page }) => {
+  await mock(page, path => path === '/images/Esd'
+    ? { status: 404, error: { code: 'image_not_found', message: 'Imagem não encontrada.' } }
+    : { status: 404, error: { code: 'not_found', message: 'Página não encontrada.' } }, true)
+  await page.goto('/i/Esd')
+  await expect(page.getByRole('heading', { name: 'Imagem não encontrada' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Enviar imagem' })).toBeVisible()
+})

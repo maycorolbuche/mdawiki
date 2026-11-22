@@ -57,6 +57,7 @@ const hasRelations = computed(
       page.value.image_usage,
     ].some((links) => links?.length),
 );
+const reserved = computed(() => Array.from(slug.value).length === 1);
 const articlePath = computed(() => `/${encodeURIComponent(page.value?.slug || slug.value)}/`);
 function printArticle() {
   window.print();
@@ -257,7 +258,7 @@ function followArticleLink(event: MouseEvent) {
   <div class="article-layout" :class="{ 'has-relations': hasRelations }">
     <article class="card article-card" :aria-busy="loading || rebuilding">
       <div class="article-toolbar">
-        <RouterLink v-if="!page?.read_only" class="article-action" :to="articlePath + 'editar'"
+        <RouterLink v-if="!reserved && !page?.read_only" class="article-action" :to="articlePath + 'editar'"
           ><i class="bi bi-pencil-fill" aria-hidden="true"></i>
           {{ page ? "Editar Página" : "Criar Página" }}</RouterLink
         >
@@ -322,7 +323,7 @@ function followArticleLink(event: MouseEvent) {
         <template v-else-if="missing">
           <h1>Página não encontrada</h1>
           <p>Este artigo não existe ou não está disponível.</p>
-          <div class="text-center mt-4">
+          <div v-if="!reserved" class="text-center mt-4">
             <RouterLink class="btn btn-primary" :to="articlePath + 'editar'">
               <i class="bi bi-pencil-fill" aria-hidden="true"></i> Criar Página
             </RouterLink>
