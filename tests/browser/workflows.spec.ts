@@ -340,3 +340,24 @@ test('o endereço /i/ mostra upload para imagem que ainda não existe', async ({
   await expect(page.getByRole('heading', { name: 'Imagem não encontrada' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Enviar imagem' })).toBeVisible()
 })
+
+test('o histórico abre o perfil público do autor', async ({ page }) => {
+  const id = 'f'.repeat(32)
+  await mock(page, path => {
+    if (path === '/pages/Teste/history') return {
+      title: 'Teste', base_version: 'v1', next_cursor: null,
+      revisions: [{ id: 1, source: 'Texto', author: 'Autora Wiki', author_profile_id: id }],
+    }
+    if (path === '/public-users/' + id) return {
+      name: 'Autora Wiki', city: 'Campinas', state_code: 'SP', birth_date: '1990-01-02',
+      club: 'Clube de teste', photo: '/assets/ico_classe_dbv.svg',
+    }
+    return {}
+  }, true)
+  await page.goto('/Teste/historico')
+  await page.getByRole('link', { name: 'Autora Wiki' }).click()
+  await expect(page).toHaveURL(new RegExp('/u/' + id + '$'))
+  await expect(page.getByRole('heading', { name: 'Autora Wiki' })).toBeVisible()
+  await expect(page.getByText('Campinas — SP')).toBeVisible()
+  await expect(page.getByText('02/01/1990')).toBeVisible()
+})

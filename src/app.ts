@@ -7,6 +7,7 @@ import type { Snapshot } from './types/page'
 import { encodedRoutes } from './config/routes'
 import { createSession } from './services/session'
 const AccountView = () => import('./components/AccountView.vue')
+const PublicProfileView = () => import('./components/PublicProfileView.vue')
 const ImageView = () => import('./components/ImageView.vue')
 const WorkspaceView = () => import('./components/WorkspaceView.vue')
 const DirectoryView = () => import('./components/DirectoryView.vue')
@@ -27,6 +28,7 @@ export function createApplication(snapshot: Snapshot, server = false, hydrate = 
       { path: '/page@Usuarios', alias: '/page@Usuários', component: DirectoryView, meta: { action: 'users' } },
       { path: '/page@Atualizar', component: DirectoryView, meta: { action: 'rebuild' } },
       { path: '/page@Doação', alias: '/page@Doacao', component: DirectoryView, meta: { action: 'donate' } },
+      { path: '/u/:publicId', component: PublicProfileView },
       { path: '/i/:slug', component: ImageView },
       { path: '/i/:slug/historico', component: ImageView, meta: { imageHistory: true } },
       { path: '/imagem@:slug/:action?', redirect: to => '/i/' + encodeURIComponent(String(to.params.slug)) + (to.params.action === 'historico' ? '/historico' : '') },

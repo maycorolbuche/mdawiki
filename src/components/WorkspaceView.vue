@@ -439,11 +439,11 @@ async function removeImage() {
                   </td>
                   <td>{{ r.id }}</td>
                   <td>
-                    <span class="history-author"
-                      ><AuthorAvatar :photo="r.author_photo" /><span>{{
-                        r.author || "Usuário"
-                      }}</span></span
-                    >
+                    <span class="history-author">
+                      <AuthorAvatar :photo="r.author_photo" />
+                      <RouterLink v-if="r.author_profile_id" :to="'/u/' + r.author_profile_id">{{ r.author || "Usuário" }}</RouterLink>
+                      <span v-else>{{ r.author || "Usuário" }}</span>
+                    </span>
                   </td>
                   <td class="history-character-count text-end">
                     {{
