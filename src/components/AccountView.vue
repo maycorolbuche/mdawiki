@@ -9,6 +9,7 @@ function closeCrop() { if (cropSource.value) URL.revokeObjectURL(cropSource.valu
 onBeforeUnmount(closeCrop)
 const route = useRoute(), router = useRouter(), api = inject<SessionClient>('session')!
 const action = computed(() => String(route.meta.action))
+const passwordMinimum = computed(() => action.value === 'register' ? 6 : action.value === 'login' ? 1 : 10)
 const titles: Record<string, string> = { login: 'Entrar na MDAWiki', register: 'Criar conta', forgot: 'Recuperar senha', reset: 'Redefinir senha', activate: 'Ativar conta', profile: 'Meu perfil', password: 'Alterar senha', email: 'Alterar e-mail' }
 const form = reactive<Record<string, any>>({}), busy = ref(false), loading = ref(false), error = ref(''), message = ref(''), loginRequired = ref(false)
 const personal = [['NOME','Nome'],['APELIDO','Apelido'],['DATA_NASC','Data de nascimento'],['CIDADE','Cidade'],['ESTADO','Estado'],['CLUBE','Clube'],['ASSOCIACAO','Associação / Missão']] as const
@@ -35,7 +36,11 @@ async function submit() {
     message.value = result.message || 'Dados salvos.'
     if (action.value === 'profile' && api.state.user) Object.assign(api.state.user, result)
     if (action.value === 'login') { const redirect = String(route.query.redirect || '/'); await router.push(redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/') }
-    if (action.value === 'register') await router.push('/page@AtivaConta')
+    if (action.value === 'register') {
+      const email = String(form.email)
+      await router.push('/page@AtivaConta')
+      form.email = email
+    }
     if (['reset','activate'].includes(action.value)) await router.push('/page@Acesso')
     form.password = ''; form.password_confirmation = ''; form.current_password = ''
   } catch (e) { error.value = (e as Error).message }
@@ -67,14 +72,17 @@ async function savePhoto(data: string) {
     <p v-if="loading" role="status">Carregando…</p>
     <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p><p v-if="message" class="alert alert-success" role="status">{{ message }}</p>
     <p v-if="loginRequired">Entre para acessar sua conta. <RouterLink :to="{ path: '/page@Acesso', query: { redirect: route.fullPath } }">Fazer login</RouterLink></p>
+    <p v-if="action === 'activate'">Confira seu e-mail e informe o código de 6 dígitos. Você também pode abrir esta tela pelo link enviado.</p>
     <form v-if="!loading && !loginRequired" @submit.prevent="submit">
       <fieldset :disabled="busy" class="account-fields">
         <label v-if="['register'].includes(action)">Nome<input v-model="form.name" class="form-control" required maxlength="150" autocomplete="name"></label>
         <label v-if="['login','register','forgot','reset','email'].includes(action)">{{ action === 'email' ? 'Novo e-mail' : 'E-mail' }}<input v-model="form.email" type="email" class="form-control" required :maxlength="action === 'email' ? 50 : 150" autocomplete="email"></label>
         <label v-if="action === 'password'">Senha atual<input v-model="form.current_password" type="password" class="form-control" required autocomplete="current-password"></label>
-        <label v-if="['login','register','reset','password'].includes(action)">{{ action === 'login' ? 'Senha' : 'Nova senha' }}<input v-model="form.password" type="password" class="form-control" required :minlength="action === 'login' ? 1 : 10" maxlength="1024" :autocomplete="action === 'login' ? 'current-password' : 'new-password'"></label>
-        <label v-if="['register','reset','password'].includes(action)">Confirme a senha<input v-model="form.password_confirmation" type="password" class="form-control" required minlength="10" maxlength="1024" autocomplete="new-password"></label>
-        <label v-if="['activate','email'].includes(action)">Código recebido por e-mail<input v-model="form.code" class="form-control" :required="action === 'activate'" maxlength="32" autocomplete="one-time-code"></label>
+        <label v-if="['login','register','reset','password'].includes(action)">{{ ['login','register'].includes(action) ? 'Senha' : 'Nova senha' }}<input v-model="form.password" type="password" class="form-control" required :minlength="passwordMinimum" maxlength="1024" :autocomplete="action === 'login' ? 'current-password' : 'new-password'"></label>
+        <label v-if="['register','reset','password'].includes(action)">Confirme a senha<input v-model="form.password_confirmation" type="password" class="form-control" required :minlength="passwordMinimum" maxlength="1024" autocomplete="new-password"></label>
+        <label v-if="action === 'activate'">E-mail do cadastro<input v-model="form.email" type="email" class="form-control" autocomplete="email"></label>
+        <label v-if="action === 'activate'">Código de ativação<input v-model.trim="form.code" class="form-control" required inputmode="numeric" maxlength="20" pattern="[0-9]{6}|[a-f0-9]{20}" autocomplete="one-time-code"></label>
+        <label v-if="action === 'email'">Código recebido por e-mail<input v-model="form.code" class="form-control" maxlength="32" autocomplete="one-time-code"></label>
         <template v-if="action === 'profile'">
           <img v-if="form.photo" :src="form.photo" class="profile-photo" alt="Sua foto">
           <label>Foto<input type="file" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" @change="photo"></label>
@@ -87,7 +95,7 @@ async function savePhoto(data: string) {
         <label v-if="action === 'login'" class="d-flex flex-row gap-2"><input v-model="form.remember" type="checkbox">Manter conectado por 30 dias</label>
       </fieldset>
     </form>
-    <form v-if="action === 'activate'" class="mt-4" @submit.prevent="resend"><label for="resend-email">Reenviar código de ativação</label><div class="input-group"><input id="resend-email" v-model="form.email" type="email" class="form-control" placeholder="Seu e-mail" required><button class="btn btn-outline-primary" :disabled="busy">Reenviar</button></div></form>
+    <button v-if="action === 'activate'" type="button" class="btn btn-outline-primary mt-4" :disabled="busy || !form.email" @click="resend">Reenviar código de ativação</button>
     <nav class="account-navigation"><RouterLink to="/page@Acesso">Login</RouterLink><RouterLink to="/page@Cadastre-se">Criar conta</RouterLink><RouterLink to="/page@EsqueciMinhaSenha">Esqueci minha senha</RouterLink><template v-if="api.state.user"><RouterLink to="/page@Perfil">Perfil</RouterLink><RouterLink to="/page@AlterarSenha">Alterar senha</RouterLink><RouterLink to="/page@AlterarEmail">Alterar e-mail</RouterLink></template></nav>
   </div></section>
   <AvatarCropModal v-if="cropSource" :source="cropSource" :busy="busy" :error="error" @close="closeCrop" @confirm="savePhoto" />
