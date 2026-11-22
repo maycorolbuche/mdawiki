@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 const headers = { 'access-control-allow-origin': 'http://127.0.0.1:4173', 'access-control-allow-credentials': 'true' }
 const user = { ID: 1, NOME: 'Editor', APELIDO: 'Editor', EMAIL: 'editor@example.test', NIVEL: 1 }
 test('static login has noindex and never embeds a session or private source', async ({ request }) => {
-  const response = await request.get('/page%40Acesso/')
+  const response = await request.get('/p/login/')
   expect(response.status()).toBe(200)
   const html = await response.text()
   expect(html).toContain('Entrar na MDAWiki')
