@@ -19,6 +19,11 @@ async function load() {
   closeCrop()
   Object.keys(form).forEach(k => delete form[k]); error.value = ''; message.value = ''; loginRequired.value = false
   form.email = String(route.query.email || ''); form.token = String(route.query.token || ''); form.code = String(route.query.code || '')
+  if (action.value === 'login' && window.history.state?.accountActivated === true) {
+    message.value = 'Usuário registrado com sucesso! Faça login para continuar.'
+    const { accountActivated, ...state } = window.history.state
+    window.history.replaceState(state, '')
+  }
   document.title = `${titles[action.value]} — MDAWiki`
   document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex,follow')
   if (!protectedAction.value) return
@@ -41,8 +46,14 @@ async function submit() {
     }
     message.value = result.message || 'Dados salvos.'
     if (action.value === 'profile' && api.state.user) Object.assign(api.state.user, result)
-    if (action.value === 'login') { const redirect = String(route.query.redirect || '/'); await router.push(redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/') }
-    if (['reset','activate'].includes(action.value)) await router.push('/p/login')
+    if (action.value === 'login') {
+      const redirect = String(route.query.redirect || '/')
+      await router.push(result.first_login === true ? '/p/perfil' : redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/')
+    }
+    if (action.value === 'activate') {
+      await router.replace({ path: '/p/login', state: { accountActivated: true } })
+    }
+    if (action.value === 'reset') await router.push('/p/login')
     form.password = ''; form.password_confirmation = ''; form.current_password = ''
   } catch (e) { error.value = (e as Error).message }
   finally { busy.value = false }

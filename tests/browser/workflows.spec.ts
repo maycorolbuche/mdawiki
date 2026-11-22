@@ -44,6 +44,23 @@ test('registration opens activation with the signup email and an empty code', as
   await expect(code).toBeFocused()
 })
 
+test('activation shows success on login and the first login opens the profile', async ({ page }) => {
+  await mock(page, path => {
+    if (path === '/auth/login') return { user, csrf_token: 'csrf-rotated', first_login: true }
+    if (path === '/profile') return user
+    return {}
+  })
+  await page.goto('/p/ativar-conta/?email=editor%40example.test&code=001234')
+  await page.getByRole('button', { name: 'Ativar conta', exact: true }).click()
+  await expect(page).toHaveURL(/\/p\/login$/)
+  await expect(page.getByRole('status')).toHaveText('Usuário registrado com sucesso! Faça login para continuar.')
+  await page.getByLabel('E-mail', { exact: true }).fill(user.EMAIL)
+  await page.getByLabel('Senha', { exact: true }).fill('abc123')
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+  await expect(page).toHaveURL(/\/p\/perfil$/)
+  await expect(page.getByLabel('Nome', { exact: true })).toHaveValue(user.NOME)
+})
+
 test('login opens the new editor and saves through API with rotated CSRF', async ({ page }) => {
   let saved: any
   await mock(page, (path, method, data) => {
