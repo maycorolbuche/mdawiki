@@ -3,7 +3,7 @@ async function wiki(page: Page) {
   await page.route('http://127.0.0.1:4174/api/**', route => {
     const path = new URL(route.request().url()).pathname
     const data = path.endsWith('/auth/session') ? { user: null, csrf_token: 'test' }
-      : path.endsWith('/home') ? { random: [], top_today: [], top_week: [], top_month: [], recent: [], missing: [] }
+      : path.endsWith('/home') ? { random: [], top_24h: [], top_week: [], top_month: [], recent: [], missing: [] }
       : path.endsWith('/editor') ? { title: 'Segundo', source: 'Texto', base_version: 'v1', media: false }
       : { id: 'segundo', slug: 'Segundo', title: 'Segundo', html: '<p>Artigo.</p><h2 id="requisitos">Requisitos</h2>', description: '', canonical_url: 'https://mda.wiki.br/Segundo/' }
     return route.fulfill({ json: { data } })

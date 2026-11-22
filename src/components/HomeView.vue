@@ -9,7 +9,7 @@ const snapshot = inject<Snapshot>('snapshot')!
 const api = inject<SessionClient>('session')!
 const base = import.meta.env.BASE_URL
 const home = ref<HomeData>({
-  random: [], top_today: [], top_week: [], top_month: [], missing: [], recent: [],
+  random: [], top_24h: [], top_week: [], top_month: [], missing: [], recent: [],
 })
 const hasData = ref(false)
 let disposed = false
@@ -62,7 +62,7 @@ onMounted(() => {
     </section>
 
     <div class="row g-4 home-rankings">
-      <div class="col-md-4"><HomeList title="Top 10 de Hoje" :pending="loading || failed" :items="home.top_today" /></div>
+      <div class="col-md-4"><HomeList title="Top 10 das últimas 24 horas" :pending="loading || failed" :items="home.top_24h ?? []" /></div>
       <div class="col-md-4"><HomeList title="Top 10 dos últimos 7 dias" :pending="loading || failed" :items="home.top_week" /></div>
       <div class="col-md-4"><HomeList title="Top 10 dos últimos 30 dias" :pending="loading || failed" :items="home.top_month" /></div>
     </div>

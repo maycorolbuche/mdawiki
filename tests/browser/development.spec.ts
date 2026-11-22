@@ -21,7 +21,7 @@ test("fresh Vite development loads the current entry and renders without PWA fil
       json: {
         data: {
           random: [{ id: "a", slug: "Floricultura", title: "Floricultura" }],
-          top_today: [],
+          top_24h: [],
           top_week: [],
           top_month: [],
           missing: [],
