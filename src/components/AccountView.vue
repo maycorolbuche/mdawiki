@@ -38,10 +38,10 @@ async function submit() {
     if (action.value === 'login') { const redirect = String(route.query.redirect || '/'); await router.push(redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/') }
     if (action.value === 'register') {
       const email = String(form.email)
-      await router.push('/page@AtivaConta')
+      await router.push('/p/ativar-conta')
       form.email = email
     }
-    if (['reset','activate'].includes(action.value)) await router.push('/page@Acesso')
+    if (['reset','activate'].includes(action.value)) await router.push('/p/login')
     form.password = ''; form.password_confirmation = ''; form.current_password = ''
   } catch (e) { error.value = (e as Error).message }
   finally { busy.value = false }
@@ -71,7 +71,7 @@ async function savePhoto(data: string) {
     <h1>{{ titles[action] }}</h1>
     <p v-if="loading" role="status">Carregando…</p>
     <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p><p v-if="message" class="alert alert-success" role="status">{{ message }}</p>
-    <p v-if="loginRequired">Entre para acessar sua conta. <RouterLink :to="{ path: '/page@Acesso', query: { redirect: route.fullPath } }">Fazer login</RouterLink></p>
+    <p v-if="loginRequired">Entre para acessar sua conta. <RouterLink :to="{ path: '/p/login', query: { redirect: route.fullPath } }">Fazer login</RouterLink></p>
     <p v-if="action === 'activate'">Confira seu e-mail e informe o código de 6 dígitos. Você também pode abrir esta tela pelo link enviado.</p>
     <form v-if="!loading && !loginRequired" @submit.prevent="submit">
       <fieldset :disabled="busy" class="account-fields">
@@ -96,7 +96,7 @@ async function savePhoto(data: string) {
       </fieldset>
     </form>
     <button v-if="action === 'activate'" type="button" class="btn btn-outline-primary mt-4" :disabled="busy || !form.email" @click="resend">Reenviar código de ativação</button>
-    <nav class="account-navigation"><RouterLink to="/page@Acesso">Login</RouterLink><RouterLink to="/page@Cadastre-se">Criar conta</RouterLink><RouterLink to="/page@EsqueciMinhaSenha">Esqueci minha senha</RouterLink><template v-if="api.state.user"><RouterLink to="/page@Perfil">Perfil</RouterLink><RouterLink to="/page@AlterarSenha">Alterar senha</RouterLink><RouterLink to="/page@AlterarEmail">Alterar e-mail</RouterLink></template></nav>
+    <nav class="account-navigation"><RouterLink to="/p/login">Login</RouterLink><RouterLink to="/p/cadastro">Criar conta</RouterLink><RouterLink to="/p/esqueci-minha-senha">Esqueci minha senha</RouterLink><template v-if="api.state.user"><RouterLink to="/p/perfil">Perfil</RouterLink><RouterLink to="/p/alterar-senha">Alterar senha</RouterLink><RouterLink to="/p/alterar-email">Alterar e-mail</RouterLink></template></nav>
   </div></section>
   <AvatarCropModal v-if="cropSource" :source="cropSource" :busy="busy" :error="error" @close="closeCrop" @confirm="savePhoto" />
 </template>

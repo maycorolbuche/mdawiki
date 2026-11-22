@@ -33,11 +33,20 @@ async function document(path, page, fallback = false) {
 }
 await writeFile('dist/index.html', await document('/', null))
 await writeFile('dist/404.html', await document('/__fallback__', null, true))
-const systemPages = ['page@Criar','page@Acesso','page@Cadastre-se','page@EsqueciMinhaSenha','page@RedefinirSenha','page@AtivaConta','page@Perfil','page@AlterarSenha','page@AlterarEmail','page@Busca','page@Listas','page@Estatisticas','page@Usuarios','page@Atualizar','page@Doação']
-for (const slug of systemPages) {
-  const directory = join('dist', slug)
+const systemPages = JSON.parse(await readFile('config/system-pages.json', 'utf8'))
+for (const slug of new Set(Object.values(systemPages))) {
+  const directory = join('dist', 'p', slug)
   await mkdir(directory, { recursive: true })
-  await writeFile(join(directory, 'index.html'), await document('/' + encodeURIComponent(slug) + '/', null, true))
+  await writeFile(join(directory, 'index.html'), await document('/p/' + slug + '/', null, true))
+}
+// Keep previously sent links working on static hosts, including their query parameters.
+for (const [legacy, slug] of Object.entries(systemPages)) {
+  const directory = join('dist', 'page@' + legacy)
+  await mkdir(directory, { recursive: true })
+  const target = basePath + 'p/' + slug + '/'
+  await writeFile(join(directory, 'index.html'), '<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="robots" content="noindex"><title>MDAWiki</title>'
+    + '<script>location.replace(' + JSON.stringify(target) + ' + location.search + location.hash)</script>'
+    + '<a href="' + escapeHtml(target) + '">Abrir página</a></html>')
 }
 for (const page of pages) {
   const directory = join('dist', safeSlug(page.slug))

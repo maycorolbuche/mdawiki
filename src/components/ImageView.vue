@@ -78,7 +78,7 @@ async function selectFile() {
     await session.initialize();
     if (!session.state.user) {
       await router.push({
-        path: "/page@Acesso",
+        path: "/p/login",
         query: { redirect: route.fullPath },
       });
       return;
@@ -139,7 +139,7 @@ async function restore(revisionId: string) {
     if (current !== request) return;
     if (!session.state.user) {
       await router.push({
-        path: "/page@Acesso",
+        path: "/p/login",
         query: { redirect: route.fullPath },
       });
       return;
@@ -170,7 +170,7 @@ async function deleteImage() {
     if (current !== request) return;
     if (!session.state.user) {
       confirmingDelete.value = false;
-      await router.push({ path: "/page@Acesso", query: { redirect: route.fullPath } });
+      await router.push({ path: "/p/login", query: { redirect: route.fullPath } });
       return;
     }
     const result = await session.request(target, "PUT", { clear: true, base_version: version });

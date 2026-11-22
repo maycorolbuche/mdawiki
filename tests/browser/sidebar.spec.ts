@@ -11,7 +11,7 @@ test('desktop sidebar keeps icons, persists both states and expands groups', asy
   await page.setViewportSize({ width: 1535, height: 900 })
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
-  await page.goto('/page@Busca/')
+  await page.goto('/p/busca/')
   const menu = page.locator('#site-menu')
   const toggle = page.getByRole('button', { name: 'Menu do site', exact: true })
   const width = () => menu.evaluate(el => Math.round(el.getBoundingClientRect().width))
@@ -61,7 +61,7 @@ test('desktop sidebar keeps icons, persists both states and expands groups', asy
 test('mobile drawer remains full width with a saved desktop preference', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('mdawiki.sidebar.collapsed', 'true'))
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/page@Busca/')
+  await page.goto('/p/busca/')
   const menu = page.locator('#site-menu')
   await expect(menu).toBeHidden()
   await page.getByRole('button', { name: 'Menu do site', exact: true }).click()
@@ -83,7 +83,7 @@ test('menu works without browser storage and respects reduced motion', async ({ 
   })
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
-  await page.goto('/page@Busca/')
+  await page.goto('/p/busca/')
   await page.getByRole('button', { name: 'Menu do site', exact: true }).click()
   await expect(page.locator('#site-menu')).toHaveCSS('width', '64px')
   await expect(page.locator('#site-menu')).toHaveCSS('transition-duration', '0s')

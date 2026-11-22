@@ -43,7 +43,7 @@ watch(() => route.path, () => { menuOpen.value = false })
     <div class="desktop-menu-backdrop" aria-hidden="true" />
     <aside id="site-menu" class="site-menu" :class="{ 'is-open': menuOpen }" aria-label="Menu do site">
       <nav>
-        <RouterLink class="donation-link" to="/page@Doação" aria-label="Faça uma Doação" title="Faça uma Doação"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-cash-stack"></i></span><span class="menu-text">Faça uma Doação</span><span class="donation-badge">Doar</span></RouterLink>
+        <RouterLink class="donation-link" to="/p/doacao" aria-label="Faça uma Doação" title="Faça uma Doação"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-cash-stack"></i></span><span class="menu-text">Faça uma Doação</span><span class="donation-badge">Doar</span></RouterLink>
         <section v-for="section in menuSections" :key="section.title" class="menu-section">
           <h2>{{ section.title }}</h2>
           <template v-for="item in section.items" :key="item.title">
@@ -51,19 +51,19 @@ watch(() => route.path, () => { menuOpen.value = false })
               <summary :aria-label="`${section.title} — ${item.title}`" :title="`${section.title} — ${item.title}`"><img :src="`${base}assets/ico_${item.icon}.svg`" alt="" width="20" height="20"><span class="menu-text">{{ item.title }}</span><span class="menu-caret" aria-hidden="true">▾</span></summary>
               <ul><li v-for="child in item.children" :key="child.slug"><RouterLink :to="`/${encodeURIComponent(child.slug)}/`">{{ child.title }}</RouterLink></li></ul>
             </details>
-            <RouterLink v-else-if="item.legacy" class="menu-link" to="/page@Listas?type=categorias" :aria-label="item.title" :title="item.title"><span class="menu-grid-icon" aria-hidden="true"><i class="bi bi-grid-3x3-gap-fill"></i></span><span class="menu-text">{{ item.title }}</span></RouterLink>
+            <RouterLink v-else-if="item.legacy" class="menu-link" to="/p/listas?type=categorias" :aria-label="item.title" :title="item.title"><span class="menu-grid-icon" aria-hidden="true"><i class="bi bi-grid-3x3-gap-fill"></i></span><span class="menu-text">{{ item.title }}</span></RouterLink>
             <RouterLink v-else class="menu-link" :to="`/${encodeURIComponent(item.slug!)}/`" :aria-label="item.title" :title="item.title"><img :src="`${base}assets/ico_${item.icon}.svg`" alt="" width="20" height="20"><span class="menu-text">{{ item.title }}</span></RouterLink>
           </template>
         </section>
         <section class="menu-section"><h2>Sistema</h2>
-          <RouterLink v-if="session.state.user" class="menu-link" to="/page@Criar" aria-label="Nova página" title="Nova página"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-file-earmark-plus"></i></span><span class="menu-text">Nova página</span></RouterLink>
-          <RouterLink class="menu-link" to="/page@Listas" aria-label="Todas as páginas" title="Todas as páginas"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-files"></i></span><span class="menu-text">Todas as páginas</span></RouterLink>
-          <RouterLink class="menu-link" to="/page@Estatisticas" aria-label="Estatísticas" title="Estatísticas"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-bar-chart-fill"></i></span><span class="menu-text">Estatísticas</span></RouterLink>
-          <RouterLink v-if="session.state.user" class="menu-link" to="/page@Perfil" aria-label="Meu perfil" title="Meu perfil"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-person-fill"></i></span><span class="menu-text">Meu perfil</span></RouterLink>
-          <RouterLink v-if="Number(session.state.user?.NIVEL) === 5" class="menu-link" to="/page@Usuarios" aria-label="Usuários" title="Usuários"><img :src="`${base}assets/ico_pessoas.svg`" alt="" width="20" height="20"><span class="menu-text">Usuários</span></RouterLink>
-          <RouterLink v-if="Number(session.state.user?.NIVEL) === 5" class="menu-link" to="/page@Atualizar" aria-label="Atualizar páginas" title="Atualizar páginas"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-arrow-clockwise"></i></span><span class="menu-text">Atualizar páginas</span></RouterLink>
+          <RouterLink v-if="session.state.user" class="menu-link" to="/p/criar" aria-label="Nova página" title="Nova página"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-file-earmark-plus"></i></span><span class="menu-text">Nova página</span></RouterLink>
+          <RouterLink class="menu-link" to="/p/listas" aria-label="Todas as páginas" title="Todas as páginas"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-files"></i></span><span class="menu-text">Todas as páginas</span></RouterLink>
+          <RouterLink class="menu-link" to="/p/estatisticas" aria-label="Estatísticas" title="Estatísticas"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-bar-chart-fill"></i></span><span class="menu-text">Estatísticas</span></RouterLink>
+          <RouterLink v-if="session.state.user" class="menu-link" to="/p/perfil" aria-label="Meu perfil" title="Meu perfil"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-person-fill"></i></span><span class="menu-text">Meu perfil</span></RouterLink>
+          <RouterLink v-if="Number(session.state.user?.NIVEL) === 5" class="menu-link" to="/p/usuarios" aria-label="Usuários" title="Usuários"><img :src="`${base}assets/ico_pessoas.svg`" alt="" width="20" height="20"><span class="menu-text">Usuários</span></RouterLink>
+          <RouterLink v-if="Number(session.state.user?.NIVEL) === 5" class="menu-link" to="/p/atualizar" aria-label="Atualizar páginas" title="Atualizar páginas"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-arrow-clockwise"></i></span><span class="menu-text">Atualizar páginas</span></RouterLink>
         </section>
-        <div class="mobile-account-links"><template v-if="session.state.user"><RouterLink to="/page@Perfil">Meu perfil</RouterLink><RouterLink to="/page@AlterarEmail">Alterar e-mail</RouterLink><RouterLink to="/page@AlterarSenha">Alterar senha</RouterLink><button @click="logout">Sair</button></template><template v-else><RouterLink to="/page@Acesso">Login</RouterLink><RouterLink to="/page@Cadastre-se">Cadastre-se</RouterLink></template></div>
+        <div class="mobile-account-links"><template v-if="session.state.user"><RouterLink to="/p/perfil">Meu perfil</RouterLink><RouterLink to="/p/alterar-email">Alterar e-mail</RouterLink><RouterLink to="/p/alterar-senha">Alterar senha</RouterLink><button @click="logout">Sair</button></template><template v-else><RouterLink to="/p/login">Login</RouterLink><RouterLink to="/p/cadastro">Cadastre-se</RouterLink></template></div>
       </nav>
     </aside>
     <main id="conteudo" class="main-content" tabindex="-1"><RouterView /></main>

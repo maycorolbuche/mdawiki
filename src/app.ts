@@ -4,7 +4,7 @@ import App from './App.vue'
 import ArticleView from './components/ArticleView.vue'
 import HomeView from './components/HomeView.vue'
 import type { Snapshot } from './types/page'
-import { encodedRoutes } from './config/routes'
+import { encodedRoutes, legacySystemRoutes } from './config/routes'
 import { createSession } from './services/session'
 const AccountView = () => import('./components/AccountView.vue')
 const PublicProfileView = () => import('./components/PublicProfileView.vue')
@@ -16,18 +16,19 @@ export function createApplication(snapshot: Snapshot, server = false, hydrate = 
   const router = createRouter({
     history: server ? createMemoryHistory(snapshot.basePath) : createWebHistory(snapshot.basePath),
     routes: encodedRoutes([
-      { path: '/', alias: '/page@Inicio', component: HomeView },
+      { path: '/', alias: '/p/inicio', component: HomeView },
       ...[
-        ['Acesso','login'],['Cadastre-se','register'],['EsqueciMinhaSenha','forgot'],['RedefinirSenha','reset'],['AtivaConta','activate'],['Perfil','profile'],['AlterarSenha','password'],['AlterarEmail','email'],
-      ].map(([path, action]) => ({ path: `/page@${path}/:extra?`, component: AccountView, meta: { action } })),
-      { path: '/page@Busca/:term?', component: DirectoryView, meta: { action: 'search' } },
-      { path: '/page@Listas', component: DirectoryView, meta: { action: 'catalog' } },
-      { path: '/page@Criar', component: DirectoryView, meta: { action: 'create' } },
+        ['login','login'],['cadastro','register'],['esqueci-minha-senha','forgot'],['redefinir-senha','reset'],['ativar-conta','activate'],['perfil','profile'],['alterar-senha','password'],['alterar-email','email'],
+      ].map(([path, action]) => ({ path: `/p/${path}/:extra?`, component: AccountView, meta: { action } })),
+      { path: '/p/busca/:term?', component: DirectoryView, meta: { action: 'search' } },
+      { path: '/p/listas', component: DirectoryView, meta: { action: 'catalog' } },
+      { path: '/p/criar', component: DirectoryView, meta: { action: 'create' } },
       ...[['Categorias','categorias'],['Páginas','paginas'],['Imagens','imagens'],['Vídeos','videos'],['Documentação','documentacao'],['Listas','listas'],['Links_Inexistentes','links_inexistentes'],['Páginas_Sem_Categoria','paginas_sem_categoria'],['Redirecionamentos','redirecionamentos'],['Imagens_sem_Página','imagens_sem_pagina'],['Imagens_Inexistentes','imagens_inexistentes']].map(([path, catalogType]) => ({ path: `/@${path}`, component: DirectoryView, meta: { action: 'catalog', catalogType } })),
-      { path: '/page@Estatisticas', alias: '/page@Estatísticas', component: DirectoryView, meta: { action: 'statistics' } },
-      { path: '/page@Usuarios', alias: '/page@Usuários', component: DirectoryView, meta: { action: 'users' } },
-      { path: '/page@Atualizar', component: DirectoryView, meta: { action: 'rebuild' } },
-      { path: '/page@Doação', alias: '/page@Doacao', component: DirectoryView, meta: { action: 'donate' } },
+      { path: '/p/estatisticas', component: DirectoryView, meta: { action: 'statistics' } },
+      { path: '/p/usuarios', component: DirectoryView, meta: { action: 'users' } },
+      { path: '/p/atualizar', component: DirectoryView, meta: { action: 'rebuild' } },
+      { path: '/p/doacao', component: DirectoryView, meta: { action: 'donate' } },
+      ...legacySystemRoutes(),
       { path: '/u/:publicId', component: PublicProfileView },
       { path: '/i/:slug', component: ImageView },
       { path: '/i/:slug/historico', component: ImageView, meta: { imageHistory: true } },

@@ -325,7 +325,7 @@ async function removeImage() {
       <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
       <RouterLink
         v-if="loginRequired"
-        :to="{ path: '/page@Acesso', query: { redirect: route.fullPath } }"
+        :to="{ path: '/p/login', query: { redirect: route.fullPath } }"
         >Fazer login para continuar</RouterLink
       >
       <template v-if="loaded && !loading && !loginRequired">
