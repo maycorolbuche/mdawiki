@@ -32,16 +32,16 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
     </button>
     <Transition name="account-dropdown">
       <ul v-if="open" id="account-dropdown" class="dropdown-menu show account-dropdown">
-        <li><RouterLink class="dropdown-item" to="/page@Perfil"><i class="bi bi-person-fill" aria-hidden="true" /> Meu Perfil</RouterLink></li>
-        <li><RouterLink class="dropdown-item" to="/page@AlterarEmail"><i class="bi bi-envelope-fill" aria-hidden="true" /> Alterar E-mail</RouterLink></li>
-        <li><RouterLink class="dropdown-item" to="/page@AlterarSenha"><i class="bi bi-lock-fill" aria-hidden="true" /> Alterar Senha</RouterLink></li>
+        <li><RouterLink class="dropdown-item" to="/p/perfil"><i class="bi bi-person-fill" aria-hidden="true" /> Meu Perfil</RouterLink></li>
+        <li><RouterLink class="dropdown-item" to="/p/alterar-email"><i class="bi bi-envelope-fill" aria-hidden="true" /> Alterar E-mail</RouterLink></li>
+        <li><RouterLink class="dropdown-item" to="/p/alterar-senha"><i class="bi bi-lock-fill" aria-hidden="true" /> Alterar Senha</RouterLink></li>
         <li><hr class="dropdown-divider"></li>
         <li><button type="button" class="dropdown-item" :disabled="busy" @click="logout"><i class="bi bi-power" aria-hidden="true" /> {{ busy ? 'Saindo…' : 'Sair' }}</button></li>
         <li v-if="error" class="px-3 py-2 text-danger" role="alert">{{ error }}</li>
       </ul>
     </Transition>
   </nav>
-  <nav v-else class="account-links" aria-label="Conta"><RouterLink to="/page@Acesso"><i class="bi bi-person-fill" aria-hidden="true" /> Login</RouterLink><RouterLink to="/page@Cadastre-se"><i class="bi bi-person-plus-fill" aria-hidden="true" /> Cadastre-se</RouterLink></nav>
+  <nav v-else class="account-links" aria-label="Conta"><RouterLink to="/p/login"><i class="bi bi-person-fill" aria-hidden="true" /> Login</RouterLink><RouterLink to="/p/cadastro"><i class="bi bi-person-plus-fill" aria-hidden="true" /> Cadastre-se</RouterLink></nav>
 </template>
 
 <style scoped>
