@@ -3,6 +3,8 @@ import { computed, inject, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { RequestError, type SessionClient } from "../services/session";
 
+import WorkspaceModal from "./WorkspaceModal.vue";
+
 interface ImageDetails {
   slug: string;
   title: string;
@@ -37,6 +39,8 @@ const imagePath = computed(
   () => "/i/" + encodeURIComponent(image.value?.slug ?? slug.value),
 );
 const error = ref("");
+const confirmingDelete = ref(false);
+const deleteError = ref("");
 const picker = ref<HTMLInputElement | null>(null);
 let request = 0;
 
@@ -44,6 +48,7 @@ async function load() {
   const current = ++request;
   busy.value = true;
   image.value = null;
+  confirmingDelete.value = false;
   missing.value = false;
   error.value = "";
   try {
@@ -152,6 +157,32 @@ async function restore(revisionId: string) {
     if (current === request) busy.value = false;
   }
 }
+
+async function deleteImage() {
+  if (!image.value?.url || busy.value) return;
+  const current = request;
+  const target = endpoint.value;
+  const version = image.value.version;
+  busy.value = true;
+  deleteError.value = "";
+  try {
+    await session.initialize();
+    if (current !== request) return;
+    if (!session.state.user) {
+      confirmingDelete.value = false;
+      await router.push({ path: "/page@Acesso", query: { redirect: route.fullPath } });
+      return;
+    }
+    const result = await session.request(target, "PUT", { clear: true, base_version: version });
+    if (current !== request) return;
+    image.value = result;
+    confirmingDelete.value = false;
+  } catch (cause) {
+    if (current === request) deleteError.value = (cause as Error).message;
+  } finally {
+    if (current === request) busy.value = false;
+  }
+}
 </script>
 
 <template>
@@ -178,6 +209,15 @@ async function restore(revisionId: string) {
           <RouterLink class="article-action" :to="imagePath + '/historico'">
             <i class="bi bi-clock-history" aria-hidden="true"></i> Histórico
           </RouterLink>
+          <button
+            v-if="image.url"
+            type="button"
+            class="article-action text-danger"
+            :disabled="busy"
+            @click="deleteError = ''; confirmingDelete = true"
+          >
+            <i class="bi bi-trash" aria-hidden="true"></i> Excluir imagem
+          </button>
         </template>
       </nav>
       <div class="article-body">
@@ -311,4 +351,19 @@ async function restore(revisionId: string) {
       </section>
     </aside>
   </div>
+  <WorkspaceModal
+    v-if="confirmingDelete"
+    title="Excluir imagem"
+    :busy="busy"
+    @close="confirmingDelete = false"
+  >
+    <p>Deseja excluir o conteúdo de <strong>{{ image?.title }}</strong>?</p>
+    <p v-if="deleteError" class="alert alert-danger" role="alert">{{ deleteError }}</p>
+    <template #footer>
+      <button type="button" class="btn btn-secondary" :disabled="busy" @click="confirmingDelete = false">Cancelar</button>
+      <button type="button" class="btn btn-danger" :disabled="busy" @click="deleteImage">
+        {{ busy ? "Excluindo…" : "Excluir imagem" }}
+      </button>
+    </template>
+  </WorkspaceModal>
 </template>

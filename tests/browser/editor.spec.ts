@@ -200,7 +200,7 @@ test("a tela de imagem substitui o arquivo e mostra a versão anterior", async (
     const data = {
       slug: "Teste",
       title: "Teste",
-      url: payloads.length ? updated : original,
+      url: payloads.length === 2 ? null : payloads.length ? updated : original,
       version: payloads.length ? "2" : "1",
       meta: { extension: "svg", width: 80, height: 40, size_bytes: 170 },
       pages: [{ id: "10", slug: "Artigo", title: "Artigo" }],
@@ -252,4 +252,14 @@ test("a tela de imagem substitui o arquivo e mostra a versão anterior", async (
     "_blank",
   );
   await expect(page.getByRole("button", { name: "Restaurar" })).toBeVisible();
+  await page.getByRole("link", { name: "Voltar para a imagem" }).click();
+  const toolbar = page.getByRole("navigation", { name: "Ações da imagem" });
+  await toolbar.getByRole("button", { name: "Excluir imagem" }).click();
+  const confirmation = page.getByRole("dialog", { name: "Excluir imagem" });
+  await confirmation.getByRole("button", { name: "Cancelar" }).click();
+  expect(payloads).toHaveLength(1);
+  await toolbar.getByRole("button", { name: "Excluir imagem" }).click();
+  await confirmation.getByRole("button", { name: "Excluir imagem" }).click();
+  await expect(toolbar.getByRole("button", { name: "Enviar imagem" })).toBeVisible();
+  expect(payloads[1]).toEqual({ clear: true, base_version: "2" });
 });
