@@ -316,3 +316,18 @@ test('Atualizar reprocessa o artigo e recarrega seus vínculos', async ({ page }
   await expect(page.getByRole('link', { name: 'Categoria regenerada' })).toBeVisible()
   expect(rebuilds).toBe(1)
 })
+
+test('a página inexistente oferece dois botões de criação e abre o formulário vazio', async ({ page }) => {
+  await mock(page, (path) => {
+    if (path === '/pages/Esd/editor') {
+      return { slug: 'Esd', title: 'Esd', source: '', base_version: '', exists: false, format: 'wiki', media: false }
+    }
+    return { status: 404, error: { code: 'not_found', message: 'Página não encontrada.' } }
+  }, true)
+  await page.goto('/Esd/')
+  await expect(page.getByRole('heading', { name: 'Página não encontrada' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Criar Página', exact: true })).toHaveCount(2)
+  await page.locator('.article-body').getByRole('link', { name: 'Criar Página' }).click()
+  await expect(page).toHaveURL(/\/Esd\/editar$/)
+  await expect(page.getByRole('textbox', { name: 'Título da página' })).toHaveValue('Esd')
+})

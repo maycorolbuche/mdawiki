@@ -319,10 +319,15 @@ function followArticleLink(event: MouseEvent) {
             </ul>
           </section>
         </template>
-        <template v-else-if="missing"
-          ><h1>Página não encontrada</h1>
-          <p>Este artigo não existe ou não está disponível.</p></template
-        >
+        <template v-else-if="missing">
+          <h1>Página não encontrada</h1>
+          <p>Este artigo não existe ou não está disponível.</p>
+          <div class="text-center mt-4">
+            <RouterLink class="btn btn-primary" :to="articlePath + 'editar'">
+              <i class="bi bi-pencil-fill" aria-hidden="true"></i> Criar Página
+            </RouterLink>
+          </div>
+        </template>
         <p v-else-if="!failed" role="status">Carregando artigo…</p>
       </div>
     </article>
