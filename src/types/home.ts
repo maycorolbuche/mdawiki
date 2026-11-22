@@ -7,7 +7,7 @@ export interface HomeItem {
 }
 export interface HomeData {
   random: HomeItem[]
-  top_today: HomeItem[]
+  top_24h?: HomeItem[]
   top_week: HomeItem[]
   top_month: HomeItem[]
   missing: HomeItem[]
@@ -15,7 +15,7 @@ export interface HomeData {
 }
 export function isHomeData(value: unknown): value is HomeData {
   if (!value || typeof value !== 'object') return false
-  return ['random', 'top_today', 'top_week', 'top_month', 'missing', 'recent'].every(key => {
+  return ['random', 'top_week', 'top_month', 'missing', 'recent'].concat('top_24h' in value ? ['top_24h'] : []).every(key => {
     const items = (value as Record<string, unknown>)[key]
     return Array.isArray(items) && items.every(item => item && typeof item.id === 'string' && typeof item.slug === 'string' && typeof item.title === 'string' && (item.image == null || typeof item.image === 'string') && (item.description == null || typeof item.description === 'string'))
   })
