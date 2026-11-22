@@ -10,11 +10,11 @@ test('static login has noindex and never embeds a session or private source', as
   expect(html).not.toContain('csrf_token')
   expect(html).not.toContain('SENHA')
 })
-async function mock(page: Page, handle: (path: string, method: string, data: any) => any, authenticated = false) {
+async function mock(page: Page, handle: (path: string, method: string, data: any) => any, authenticated = false, account = user) {
   await page.route('http://127.0.0.1:8080/**', async route => {
     const request = route.request(), path = new URL(request.url()).pathname.replace('/v1', ''), method = request.method()
     if (method === 'OPTIONS') return route.fulfill({ headers: { ...headers, 'access-control-allow-methods': 'GET, POST, PUT, OPTIONS', 'access-control-allow-headers': 'Accept, Content-Type, X-CSRF-Token' }, status: 204 })
-    if (path === '/auth/session') return route.fulfill({ headers, json: { data: { user: authenticated ? user : null, csrf_token: 'csrf-original' } } })
+    if (path === '/auth/session') return route.fulfill({ headers, json: { data: { user: authenticated ? account : null, csrf_token: 'csrf-original' } } })
     if (method !== 'GET') expect(request.headers()['x-csrf-token']).toMatch(/^csrf-/)
     const result = await handle(path, method, request.postDataJSON())
     return route.fulfill({ headers, status: result?.status || 200, json: result?.error ? { error: result.error } : { data: result } })
@@ -291,4 +291,28 @@ test('delete conflict leaves the editor draft and confirmation available for can
   await expect(dialog.getByRole('alert')).toContainText('Outra edição')
   await dialog.getByRole('button', { name: 'Cancelar' }).click()
   await expect(editor).toHaveValue('Preservar rascunho')
+})
+
+
+test('Atualizar reprocessa o artigo e recarrega seus vínculos', async ({ page }) => {
+  let rebuilds = 0
+  await mock(page, (path, method) => {
+    if (path === '/pages/Teste/rebuild' && method === 'POST') {
+      rebuilds++
+      return { revision: 2 }
+    }
+    return {
+      id: '12', slug: 'Teste', title: 'Teste',
+      html: rebuilds ? '<p>Conteúdo reprocessado.</p>' : '<p>Conteúdo original.</p>',
+      categories: rebuilds ? [{ id: '16', slug: 'Categoria', title: 'Categoria regenerada' }] : [],
+      canonical_url: 'https://mda.wiki.br/Teste/',
+    }
+  }, true, { ...user, NIVEL: 5 })
+  await page.goto('/Teste/')
+  await expect(page.getByText('Editor', { exact: true })).toBeVisible()
+  await expect(page.getByText('Conteúdo original.')).toBeVisible()
+  await page.getByRole('button', { name: 'Atualizar', exact: true }).click()
+  await expect(page.getByText('Conteúdo reprocessado.')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Categoria regenerada' })).toBeVisible()
+  expect(rebuilds).toBe(1)
 })
