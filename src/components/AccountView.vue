@@ -11,6 +11,7 @@ const route = useRoute(), router = useRouter(), api = inject<SessionClient>('ses
 const action = computed(() => String(route.meta.action))
 const passwordMinimum = computed(() => action.value === 'register' ? 6 : action.value === 'login' ? 1 : 10)
 const titles: Record<string, string> = { login: 'Entrar na MDAWiki', register: 'Criar conta', forgot: 'Recuperar senha', reset: 'Redefinir senha', activate: 'Ativar conta', profile: 'Meu perfil', password: 'Alterar senha', email: 'Alterar e-mail' }
+const activationCode = ref<HTMLInputElement | null>(null)
 const form = reactive<Record<string, any>>({}), busy = ref(false), loading = ref(false), error = ref(''), message = ref(''), loginRequired = ref(false)
 const personal = [['NOME','Nome'],['APELIDO','Apelido'],['DATA_NASC','Data de nascimento'],['CIDADE','Cidade'],['ESTADO','Estado'],['CLUBE','Clube'],['ASSOCIACAO','Associação / Missão']] as const
 const protectedAction = computed(() => ['profile','password','email'].includes(action.value))
@@ -27,20 +28,20 @@ async function load() {
   finally { loading.value = false }
 }
 onMounted(load); watch(() => route.fullPath, load)
+watch([activationCode, busy], ([input, pending]) => { if (!pending) input?.focus() }, { flush: 'post' })
 async function submit() {
   busy.value = true; error.value = ''; message.value = ''
   try {
     const endpoint = { login: '/auth/login', register: '/auth/register', forgot: '/auth/forgot', reset: '/auth/reset', activate: '/auth/activate', profile: '/profile', password: '/profile/password', email: '/profile/email' }[action.value]
     if (!endpoint) return
     const result = await api.request(endpoint, action.value === 'profile' ? 'PUT' : 'POST', form)
+    if (action.value === 'register') {
+      await router.replace({ path: '/p/ativar-conta', query: { email: String(form.email).trim() } })
+      return
+    }
     message.value = result.message || 'Dados salvos.'
     if (action.value === 'profile' && api.state.user) Object.assign(api.state.user, result)
     if (action.value === 'login') { const redirect = String(route.query.redirect || '/'); await router.push(redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/') }
-    if (action.value === 'register') {
-      const email = String(form.email)
-      await router.push('/p/ativar-conta')
-      form.email = email
-    }
     if (['reset','activate'].includes(action.value)) await router.push('/p/login')
     form.password = ''; form.password_confirmation = ''; form.current_password = ''
   } catch (e) { error.value = (e as Error).message }
@@ -81,7 +82,7 @@ async function savePhoto(data: string) {
         <label v-if="['login','register','reset','password'].includes(action)">{{ ['login','register'].includes(action) ? 'Senha' : 'Nova senha' }}<input v-model="form.password" type="password" class="form-control" required :minlength="passwordMinimum" maxlength="1024" :autocomplete="action === 'login' ? 'current-password' : 'new-password'"></label>
         <label v-if="['register','reset','password'].includes(action)">Confirme a senha<input v-model="form.password_confirmation" type="password" class="form-control" required :minlength="passwordMinimum" maxlength="1024" autocomplete="new-password"></label>
         <label v-if="action === 'activate'">E-mail do cadastro<input v-model="form.email" type="email" class="form-control" autocomplete="email"></label>
-        <label v-if="action === 'activate'">Código de ativação<input v-model.trim="form.code" class="form-control" required inputmode="numeric" maxlength="20" pattern="[0-9]{6}|[a-f0-9]{20}" autocomplete="one-time-code"></label>
+        <label v-if="action === 'activate'">Código de ativação<input ref="activationCode" v-model.trim="form.code" class="form-control" required inputmode="numeric" maxlength="20" pattern="[0-9]{6}|[a-f0-9]{20}" autocomplete="one-time-code"></label>
         <label v-if="action === 'email'">Código recebido por e-mail<input v-model="form.code" class="form-control" maxlength="32" autocomplete="one-time-code"></label>
         <template v-if="action === 'profile'">
           <img v-if="form.photo" :src="form.photo" class="profile-photo" alt="Sua foto">

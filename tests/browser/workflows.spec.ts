@@ -21,6 +21,29 @@ async function mock(page: Page, handle: (path: string, method: string, data: any
   })
 }
 
+test('registration opens activation with the signup email and an empty code', async ({ page }) => {
+  const email = 'cadastro@example.test'
+  await mock(page, (path, method, data) => {
+    if (path === '/auth/register') {
+      expect(method).toBe('POST')
+      expect(data.email).toBe(email)
+      return { message: 'Confira seu e-mail.' }
+    }
+    return {}
+  })
+  await page.goto('/p/cadastro/')
+  await page.getByLabel('Nome', { exact: true }).fill('Pessoa Teste')
+  await page.getByLabel('E-mail', { exact: true }).fill(email)
+  await page.getByLabel('Senha', { exact: true }).fill('abc123')
+  await page.getByLabel('Confirme a senha').fill('abc123')
+  await page.getByRole('button', { name: 'Criar conta', exact: true }).click()
+  await expect(page).toHaveURL(/\/p\/ativar-conta\?email=/)
+  await expect(page.getByLabel('E-mail do cadastro')).toHaveValue(email)
+  const code = page.getByLabel('Código de ativação')
+  await expect(code).toHaveValue('')
+  await expect(code).toBeFocused()
+})
+
 test('login opens the new editor and saves through API with rotated CSRF', async ({ page }) => {
   let saved: any
   await mock(page, (path, method, data) => {
