@@ -11,7 +11,7 @@ npm ci
 npm run dev -- --port 5174
 ```
 
-O Vite encaminha `/api` à API configurada em `API_PROXY_TARGET` (padrão de produção em `config/public.json`). Para API PHP local, use `API_PROXY_TARGET=http://127.0.0.1:8080`. Configure essa origem/porta em ALLOWED_ORIGINS da API e SESSION_SECURE=false para HTTP local. O ambiente de produção usa `VITE_API_BASE_URL`, `VITE_SITE_URL` e `VITE_BASE_PATH`; valores públicos padrão estão em `config/public.json`.
+No servidor de desenvolvimento, o navegador usa `/api` na mesma origem do front para manter o cookie e o token CSRF na mesma sessão. O Vite encaminha as chamadas para `API_PROXY_TARGET`, quando definido, ou para `VITE_API_BASE_URL`. O padrão fica em `config/public.json`. Para uma API PHP local, use `VITE_API_BASE_URL=http://127.0.0.1:8080` no front e `APP_ENV=local` e `SESSION_SECURE=false` na API para testes em HTTP. Em produção, o build usa `VITE_API_BASE_URL`, `VITE_SITE_URL` e `VITE_BASE_PATH`.
 
 ## Publicação
 

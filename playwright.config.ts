@@ -12,7 +12,7 @@ export default defineConfig({
       command: 'npm run dev -- --host 127.0.0.1 --port 4174 --strictPort',
       port: 4174,
       reuseExistingServer: false,
-      env: { VITE_API_BASE_URL: '/api', VITE_BASE_PATH: '/' },
+      env: { VITE_API_BASE_URL: 'http://127.0.0.1:8080', VITE_BASE_PATH: '/' },
     },
   ],
 })
