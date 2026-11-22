@@ -28,7 +28,7 @@ export function createApplication(snapshot: Snapshot, server = false, hydrate = 
       { path: '/page@Atualizar', component: DirectoryView, meta: { action: 'rebuild' } },
       { path: '/page@Doação', alias: '/page@Doacao', component: DirectoryView, meta: { action: 'donate' } },
       { path: '/i/:slug', component: ImageView },
-      { path: '/imagem@:slug', redirect: to => '/i/' + encodeURIComponent(String(to.params.slug)) },
+      { path: '/imagem@:slug/:action?', redirect: to => '/i/' + encodeURIComponent(String(to.params.slug)) },
       { path: '/:slug/editar', component: WorkspaceView, meta: { action: 'editor' } },
       { path: '/:slug/historico', component: WorkspaceView, meta: { action: 'history' } },
       { path: '/:slug(.*)', component: ArticleView },
