@@ -44,3 +44,7 @@ A navegação é acompanhada manualmente por `page_view`, incluindo a abertura i
 A inicialização automática só ocorre em build de produção e no domínio configurado em `SITE_URL`. Servidor Vite, localhost e prévias em outro domínio não enviam métricas nem carregam anúncios reais. Bloqueio dos scripts por extensões não interrompe a wiki.
 
 Referências oficiais: [migração do Universal Analytics](https://support.google.com/analytics/answer/11583528?hl=pt-BR), [pageviews manuais e eventos de histórico](https://developers.google.com/analytics/devguides/collection/ga4/views), [ads.txt](https://support.google.com/adsense/answer/12171612?hl=pt-BR).
+
+### Prévia da base migrada
+
+No `.env` local do frontend, use `VITE_API_BASE_URL` com o endereço da API de testes em `dev`. O Vite encaminha as chamadas pelo proxy local. Ao receber um artigo com `read_only`, a interface exibe a URL canônica retornada pela API e oculta edição e histórico. Essa prévia é para validar a leitura e exportação antes da migração dos demais fluxos.

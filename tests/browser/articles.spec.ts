@@ -56,3 +56,21 @@ test('every client-side article navigation fetches fresh API content', async ({ 
   await expect(page).toHaveURL(/\/Novo\/$/)
   await expect.poll(() => calls).toBe(2)
 })
+
+test('migrated preview uses the API canonical slug and hides editing actions', async ({ page }) => {
+  let visits = 0
+  await page.route('http://127.0.0.1:8080/**', route => {
+    const path = new URL(route.request().url()).pathname
+    if (path === '/v1/visits') visits++
+    return route.fulfill({
+      headers: { 'access-control-allow-origin': 'http://127.0.0.1:4173' },
+      json: { data: { ...article, id: '42', slug: 'Especialidade-de-Cães', read_only: true } },
+    })
+  })
+  await page.goto('/Especialidade_de_C%C3%A3es/')
+  await expect(page).toHaveURL(/\/Especialidade-de-C%C3%A3es\/$/)
+  await expect(page.locator('.wiki-content')).toContainText('Conteúdo atualizado pela API.')
+  await expect(page.getByRole('link', { name: 'Editar Página' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Histórico de Edições' })).toHaveCount(0)
+  expect(visits).toBe(0)
+})

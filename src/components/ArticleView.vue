@@ -122,7 +122,7 @@ async function refresh() {
       await router.replace({ path: "/" + encodeURIComponent(value.slug) + "/", query: route.query, hash: route.hash });
       if (controller !== request || requestedUser !== session.state.user?.ID || slug.value !== value.slug) return;
     }
-    if (value.is_public !== false && lastVisited !== slug.value) {
+    if (!value.read_only && value.is_public !== false && lastVisited !== slug.value) {
       lastVisited = slug.value;
       const visitedSlug = slug.value;
       void session
@@ -233,12 +233,12 @@ function followArticleLink(event: MouseEvent) {
   <div class="article-layout" :class="{ 'has-relations': hasRelations }">
     <article class="card article-card" :aria-busy="loading">
       <div class="article-toolbar">
-        <RouterLink class="article-action" :to="articlePath + 'editar'"
+        <RouterLink v-if="!page?.read_only" class="article-action" :to="articlePath + 'editar'"
           ><i class="bi bi-pencil-fill" aria-hidden="true"></i>
           {{ page ? "Editar Página" : "Criar Página" }}</RouterLink
         >
         <RouterLink
-          v-if="page"
+          v-if="page && !page.read_only"
           class="article-action"
           :to="articlePath + 'historico'"
           ><i class="bi bi-clock-history" aria-hidden="true"></i> Histórico de
