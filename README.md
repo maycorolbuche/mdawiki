@@ -17,7 +17,7 @@ O Vite encaminha `/api` à API configurada em `API_PROXY_TARGET` (padrão de pro
 
 **Publique/configure primeiro a nova API e importe as imagens**, seguindo o [guia do backend](https://github.com/maycorolbuche/mdawiki-api/blob/main/docs/deployment.md). Contas precisam de APP_KEY estável, e-mail configurado, banco com permissão de escrita e armazenamento persistente. O frontend não armazena senhas nem tokens de sessão em localStorage; usa cookie HttpOnly e CSRF da API.
 
-Use domínio próprio do mesmo site da API, por exemplo `site.mda.wiki.br` com `api.mda.wiki.br`. Autenticação a partir de `github.io` pode ser bloqueada pelas políticas de cookies de terceiros.
+Use domínio próprio do mesmo site da API, por exemplo `mda.wiki.br` com `api.mda.wiki.br`. Autenticação a partir de `github.io` pode ser bloqueada pelas políticas de cookies de terceiros.
 
 O workflow publica somente após merge em main. A build consulta a API pública e gera HTML/metatags por artigo, páginas estáticas do sistema e um `404.html` que mantém a URL e consulta a API para conteúdo novo. A atualização da tela independe da próxima build; metatags do código-fonte publicado aguardam o deploy. O HTTP inicial de rotas ainda não geradas permanece 404 no GitHub Pages. As páginas de conta têm noindex e não recebem dados pessoais na build; edição e histórico carregam informações somente após autenticação.
 
@@ -26,8 +26,6 @@ O conteúdo é sanitizado tanto no build quanto no navegador, com CSS restrito, 
 ## Validação
 
 `npm run typecheck`, `npm test` e `npm run test:browser`. Para build de testes: `BUILD_FIXTURE=tests/fixtures/pages.json npm run build`. O deploy nunca usa fixtures. Os testes de navegador cobrem também login, edição/conflito, restauração, busca e perfil; as capturas desktop/mobile ficam no artefato `browser-layout` do Actions.
-
-
 
 ## Google Analytics e AdSense
 
