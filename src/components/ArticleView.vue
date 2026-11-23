@@ -12,7 +12,7 @@ import {
 import { useRoute, useRouter } from "vue-router";
 import { ApiError, getPage } from "../services/api";
 import { cleanArticle } from "../services/content";
-import { RequestError, type SessionClient } from "../services/session";
+import { RequestError, userRole, type SessionClient } from "../services/session";
 import PageRelations from "./PageRelations.vue";
 import type { Page, Snapshot } from "../types/page";
 
@@ -173,7 +173,7 @@ async function refresh() {
 
 async function updateArticle() {
   rebuildError.value = "";
-  if (!page.value || page.value.read_only || Number(session.state.user?.NIVEL) < 5 || !session.state.user) {
+  if (!page.value || page.value.read_only || userRole(session.state.user) !== "admin") {
     await refresh();
     return;
   }
@@ -278,7 +278,7 @@ function followArticleLink(event: MouseEvent) {
   <div class="article-layout" :class="{ 'has-relations': hasRelations }">
     <article class="card article-card" :aria-busy="loading || rebuilding">
       <div class="article-toolbar">
-        <RouterLink v-if="!reserved && !page?.read_only" class="article-action" :to="articlePath + 'editar'"
+        <RouterLink v-if="!reserved && !page?.read_only && userRole(session.state.user) !== 'reader'" class="article-action" :to="articlePath + 'editar'"
           ><i class="bi bi-pencil-fill" aria-hidden="true"></i>
           {{ page ? "Editar Página" : "Criar Página" }}</RouterLink
         >
@@ -343,7 +343,7 @@ function followArticleLink(event: MouseEvent) {
         <template v-else-if="missing">
           <h1>Página não encontrada</h1>
           <p>Este artigo não existe ou não está disponível.</p>
-          <div v-if="!reserved" class="text-center mt-4">
+          <div v-if="!reserved && userRole(session.state.user) !== 'reader'" class="text-center mt-4">
             <RouterLink class="btn btn-primary" :to="articlePath + 'editar'">
               <i class="bi bi-pencil-fill" aria-hidden="true"></i> Criar Página
             </RouterLink>

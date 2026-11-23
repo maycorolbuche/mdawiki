@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { inject, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { SessionClient } from './services/session'
+import { userRole, type SessionClient } from './services/session'
 import { menuSections } from './config/navigation'
 import HeaderAccount from './components/HeaderAccount.vue'
 import HeaderSearch from './components/HeaderSearch.vue'
@@ -60,8 +60,8 @@ watch(() => route.path, () => { menuOpen.value = false })
           <RouterLink class="menu-link" to="/p/listas" aria-label="Todas as páginas" title="Todas as páginas"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-files"></i></span><span class="menu-text">Todas as páginas</span></RouterLink>
           <RouterLink class="menu-link" to="/p/estatisticas" aria-label="Estatísticas" title="Estatísticas"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-bar-chart-fill"></i></span><span class="menu-text">Estatísticas</span></RouterLink>
           <RouterLink v-if="session.state.user" class="menu-link" to="/p/perfil" aria-label="Meu perfil" title="Meu perfil"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-person-fill"></i></span><span class="menu-text">Meu perfil</span></RouterLink>
-          <RouterLink v-if="Number(session.state.user?.NIVEL) === 5" class="menu-link" to="/p/usuarios" aria-label="Usuários" title="Usuários"><img :src="`${base}assets/ico_pessoas.svg`" alt="" width="20" height="20"><span class="menu-text">Usuários</span></RouterLink>
-          <RouterLink v-if="Number(session.state.user?.NIVEL) === 5" class="menu-link" to="/p/atualizar" aria-label="Atualizar páginas" title="Atualizar páginas"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-arrow-clockwise"></i></span><span class="menu-text">Atualizar páginas</span></RouterLink>
+          <RouterLink v-if="userRole(session.state.user) === 'admin'" class="menu-link" to="/p/usuarios" aria-label="Usuários" title="Usuários"><img :src="`${base}assets/ico_pessoas.svg`" alt="" width="20" height="20"><span class="menu-text">Usuários</span></RouterLink>
+          <RouterLink v-if="userRole(session.state.user) === 'admin'" class="menu-link" to="/p/atualizar" aria-label="Atualizar páginas" title="Atualizar páginas"><span class="menu-symbol" aria-hidden="true"><i class="bi bi-arrow-clockwise"></i></span><span class="menu-text">Atualizar páginas</span></RouterLink>
         </section>
         <div class="mobile-account-links"><template v-if="session.state.user"><RouterLink to="/p/perfil">Meu perfil</RouterLink><RouterLink to="/p/alterar-email">Alterar e-mail</RouterLink><RouterLink to="/p/alterar-senha">Alterar senha</RouterLink><button @click="logout">Sair</button></template><template v-else><RouterLink to="/p/login">Login</RouterLink><RouterLink to="/p/cadastro">Cadastre-se</RouterLink></template></div>
       </nav>

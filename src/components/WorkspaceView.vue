@@ -13,7 +13,7 @@ import { diffLines } from "diff";
 const LegacyWikiEditor = defineAsyncComponent(
   () => import("./LegacyWikiEditor.vue"),
 );
-import { RequestError, type SessionClient } from "../services/session";
+import { RequestError, userRole, type SessionClient } from "../services/session";
 import AuthorAvatar from "./AuthorAvatar.vue";
 import RevisionComparison from "./RevisionComparison.vue";
 import RevisionMetadata from "./RevisionMetadata.vue";
@@ -460,6 +460,7 @@ async function removeImage() {
                     ><button
                       class="btn btn-sm btn-outline-secondary"
                       :disabled="busy"
+                      v-if="userRole(api.state.user) !== 'reader'"
                       @click="restore(r.id)"
                     >
                       Restaurar

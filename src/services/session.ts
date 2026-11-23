@@ -2,7 +2,12 @@ import { reactive, watch } from 'vue'
 import { createPageCache } from './page-cache'
 import { createHomeCache } from './home-cache'
 import type { Snapshot } from '../types/page'
-export interface User { ID: number; NOME: string; APELIDO: string; EMAIL: string; NIVEL: number; photo?: string; [key: string]: unknown }
+export type UserRole = 'reader' | 'user' | 'admin'
+export interface User { ID: number; NOME: string; APELIDO: string; EMAIL: string; NIVEL: number; role?: UserRole; photo?: string; [key: string]: unknown }
+export function userRole(user: User | null): UserRole | null {
+  if (!user) return null
+  return user.role ?? (Number(user.NIVEL) === 5 ? 'admin' : Number(user.NIVEL) === 0 ? 'reader' : 'user')
+}
 export class RequestError extends Error { constructor(public status: number, public code: string, message: string) { super(message) } }
 export function createSession(snapshot: Snapshot) {
   const state = reactive({ user: null as User | null, csrf: '', ready: false })
