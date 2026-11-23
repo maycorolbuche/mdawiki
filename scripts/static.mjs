@@ -1,3 +1,5 @@
+import { shareImageTags } from '../src/services/share-image.ts'
+
 export function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]))
 }
@@ -13,13 +15,20 @@ export function head(page, siteUrl, fallback = false) {
   const title = page ? `${page.title} — MDAWiki` : 'MDAWiki — Tudo sobre Desbravadores e Aventureiros'
   const description = page?.description || 'A Wikipedia dos Desbravadores e Aventureiros'
   const canonical = page ? `${siteUrl}/${encodeURIComponent(safeSlug(page.slug))}/` : `${siteUrl}/`
+  const images = fallback ? {} : shareImageTags(page?.image, page?.title || '')
+  const imageTags = Object.entries(images).map(([name, content]) =>
+    `<meta ${name.startsWith('og:') ? 'property' : 'name'}="${name}" content="${escapeHtml(content)}" data-share-image>`).join('\n')
   return `<title>${escapeHtml(title)}</title>
 <meta name="description" content="${escapeHtml(description)}">
 <meta name="robots" content="${fallback ? 'noindex,follow' : 'index,follow'}">
 <meta property="og:title" content="${escapeHtml(page?.title || 'MDAWiki')}">
-<meta property="og:type" content="article">
+<meta property="og:type" content="${page ? 'article' : 'website'}">
+<meta property="og:site_name" content="MDAWiki">
+<meta property="og:locale" content="pt_BR">
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:url" content="${fallback ? '' : escapeHtml(canonical)}">
+<meta name="twitter:card" content="${images['og:image'] ? 'summary_large_image' : 'summary'}">
+${imageTags}
 <link rel="canonical" href="${fallback ? '' : escapeHtml(canonical)}">`
 }
 

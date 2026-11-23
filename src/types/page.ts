@@ -5,6 +5,7 @@ export interface Page {
   title: string
   html: string
   study_material_url?: string | null
+  image?: string | null
   description: string
   updated_at: string | null
   canonical_url: string

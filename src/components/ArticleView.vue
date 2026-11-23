@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { shareImageTags } from "../services/share-image";
 import {
   computed,
   inject,
@@ -74,7 +75,24 @@ function restoreCachedPage() {
   if (page.value) updateMetadata(page.value);
 }
 
+function updateShareImage(value: Page | null) {
+  document.head.querySelectorAll("[data-share-image]").forEach(tag => tag.remove());
+  const image = value?.is_public === false ? null : value?.image;
+  const tags = shareImageTags(image, value?.title || "");
+  document.querySelector('meta[name="twitter:card"]')
+    ?.setAttribute("content", tags["og:image"] ? "summary_large_image" : "summary");
+  for (const [name, content] of Object.entries(tags)) {
+    const tag = document.createElement("meta");
+    tag.setAttribute(name.startsWith("og:") ? "property" : "name", name);
+    tag.content = content;
+    tag.dataset.shareImage = "";
+    document.head.append(tag);
+  }
+}
+
 function updateMetadata(value: Page | null) {
+  updateShareImage(value);
+  document.querySelector('meta[property="og:type"]')?.setAttribute("content", value ? "article" : "website");
   document.title = value
     ? `${value.title} — MDAWiki`
     : "Página não encontrada — MDAWiki";
@@ -205,6 +223,8 @@ watch(
   },
 );
 onBeforeUnmount(() => {
+  updateShareImage(null);
+  document.querySelector('meta[property="og:type"]')?.setAttribute("content", "website");
   controller?.abort();
   controller = undefined;
 });

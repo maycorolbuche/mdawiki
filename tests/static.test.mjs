@@ -16,6 +16,16 @@ test('metadata and payload cannot inject script or attributes', () => {
   assert.ok(!payload.includes('<'))
   assert.equal(JSON.parse(payload).html, '</script><script>alert(1)</script>')
 })
+test('article metadata shares the selected image only when available', () => {
+  const site = 'https://mda.wiki.br'
+  const page = { slug: 'Artigo', title: 'Artigo', description: 'Resumo' }
+  const image = 'https://api.mda.wiki.br/media/articles/teste.png'
+  assert.ok(head({ ...page, image }, site).includes(`property="og:image" content="${image}"`))
+  assert.ok(head({ ...page, image }, site).includes('content="summary_large_image"'))
+  assert.ok(!head(page, site).includes('property="og:image"'))
+  assert.ok(!head({ ...page, image: 'javascript:alert(1)' }, site).includes('property="og:image"'))
+  assert.ok(head(null, site).includes('content="website"'))
+})
 test('export follows opaque cursors and fails instead of publishing on API errors', async () => {
   let calls = 0
   const server = createServer((req, res) => {
