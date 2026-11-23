@@ -101,7 +101,6 @@ async function savePhoto(data: string) {
           <label v-for="[key, label] in personal" :key="key">{{ label }}<input v-model="form[key]" :type="key === 'DATA_NASC' ? 'date' : 'text'" :required="key === 'NOME'" class="form-control" :maxlength="key === 'ESTADO' ? 2 : key === 'APELIDO' || key === 'CLUBE' || key === 'ASSOCIACAO' ? 50 : 150"></label>
           <label>Tipo de clube<select v-model="form.TIPO_CLUBE" class="form-select"><option value=""></option><option>Desbravadores</option><option>Aventureiros</option></select></label>
           <label>Biografia<textarea v-model="form.BIOGRAFIA" class="form-control" rows="5" maxlength="10000" /></label>
-          <label>Receber e-mails<select v-model="form.ENVIA_EMAIL" class="form-select"><option value="S">Sim</option><option value="N">Não</option></select></label>
         </template>
         <button class="btn btn-primary" type="submit">{{ busy ? 'Aguarde…' : action === 'login' ? 'Entrar' : action === 'register' ? 'Criar conta' : action === 'forgot' ? 'Enviar instruções' : action === 'activate' ? 'Ativar conta' : action === 'email' && !form.code ? 'Enviar código' : 'Salvar' }}</button>
         <label v-if="action === 'login'" class="d-flex flex-row gap-2"><input v-model="form.remember" type="checkbox">Manter conectado por 30 dias</label>
