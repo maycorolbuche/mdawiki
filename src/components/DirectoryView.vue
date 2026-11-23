@@ -31,9 +31,9 @@ async function load(append = false) {
   finally { if (current === generation) busy.value = false }
 }
 onMounted(() => load()); watch(() => route.fullPath, () => load())
-function search() { void router.push({ path: '/page@Busca', query: { q: term.value } }) }
+function search() { void router.push({ path: '/p/busca', query: { q: term.value } }) }
 function createPage() { const slug = term.value.trim().replaceAll(' ', '_'); if (!slug || /[/\\?#\x00-\x1f]/.test(slug) || slug.length > 250) { error.value = 'Informe um título válido, sem barras, ? ou #.'; return }; void router.push('/' + encodeURIComponent(slug) + '/editar') }
-function changeType(e: Event) { void router.push({ path: '/page@Listas', query: { type: (e.target as HTMLSelectElement).value } }) }
+function changeType(e: Event) { void router.push({ path: '/p/listas', query: { type: (e.target as HTMLSelectElement).value } }) }
 async function details(user: any) { busy.value = true; try { selected.value = await api.request('/users/' + user.ID) } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
 async function rebuild(row: any) { busy.value = true; error.value = ''; try { await api.request('/pages/' + encodeURIComponent(row.slug) + '/rebuild', 'POST', {}); rows.value = rows.value.filter(item => item.id !== row.id) } catch (e) { error.value = (e as Error).message } finally { busy.value = false } }
 const labels: Record<string, string> = { pages: 'Páginas', images: 'Imagens', categories: 'Categorias', redirects: 'Redirecionamentos', uncategorized: 'Sem categoria', unused_images: 'Imagens sem uso', missing_images: 'Imagens inexistentes', videos: 'Vídeos', documentation: 'Documentação', missing_links: 'Links inexistentes', views: 'Acessos' }
@@ -41,7 +41,7 @@ const labels: Record<string, string> = { pages: 'Páginas', images: 'Imagens', c
 <template>
   <section class="card article-card"><div class="article-body">
     <h1>{{ title }}</h1><p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p><p v-if="busy" role="status">Carregando…</p>
-    <RouterLink v-if="loginRequired" :to="{ path: '/page@Acesso', query: { redirect: route.fullPath } }">Fazer login para continuar</RouterLink>
+    <RouterLink v-if="loginRequired" :to="{ path: '/p/login', query: { redirect: route.fullPath } }">Fazer login para continuar</RouterLink>
     <form v-if="mode === 'search'" class="input-group mb-4" @submit.prevent="search"><input v-model="term" class="form-control" type="search" aria-label="Termo da busca" maxlength="100" required><button class="btn btn-primary">Pesquisar</button></form>
     <form v-if="mode === 'create'" class="account-fields" @submit.prevent="createPage"><label>Título da nova página<input v-model="term" class="form-control" maxlength="250" required></label><button class="btn btn-primary">Abrir editor</button></form>
     <select v-if="mode === 'catalog'" class="form-select mb-4" :value="type" aria-label="Lista de páginas" @change="changeType"><option v-for="[key, label] in types" :key="key" :value="key">{{ label }}</option></select>

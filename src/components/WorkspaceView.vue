@@ -199,7 +199,7 @@ async function persist(nextSource: string): Promise<boolean> {
         "Não foram detectadas alterações na página. Nenhuma revisão foi criada.";
       return true;
     }
-    await router.push("/" + encodeURIComponent(slug.value) + "/");
+    await router.push("/" + encodeURIComponent(result.slug || slug.value) + "/");
     return true;
   } catch (e) {
     error.value = (e as Error).message;
@@ -315,7 +315,7 @@ async function removeImage() {
       <h1 v-else class="legacy-edit-title">
         {{ media ? "Imagem: " : "" }}{{ title || slug.replaceAll("_", " ") }}
         <span class="legacy-edit-badge"
-          >Editar {{ media ? "Imagem" : "Página" }}</span
+          >{{ loaded && !pageExists ? "Criar" : "Editar" }} {{ media ? "Imagem" : "Página" }}</span
         >
       </h1>
       <p v-if="saveNotice" class="alert alert-info" role="status">
@@ -325,12 +325,16 @@ async function removeImage() {
       <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
       <RouterLink
         v-if="loginRequired"
-        :to="{ path: '/page@Acesso', query: { redirect: route.fullPath } }"
+        :to="{ path: '/p/login', query: { redirect: route.fullPath } }"
         >Fazer login para continuar</RouterLink
       >
       <template v-if="loaded && !loading && !loginRequired">
         <form v-if="!historyMode" id="frm_edit" @submit.prevent="save">
-          <input type="hidden" name="nome" :value="title" /><input
+          <label v-if="!pageExists && !media" class="form-label d-block mb-3">
+            Título da página
+            <input v-model="title" name="nome" class="form-control" maxlength="250" required />
+          </label>
+          <input v-else type="hidden" name="nome" :value="title" /><input
             type="hidden"
             name="nome_url"
             :value="slug"
@@ -435,11 +439,11 @@ async function removeImage() {
                   </td>
                   <td>{{ r.id }}</td>
                   <td>
-                    <span class="history-author"
-                      ><AuthorAvatar :photo="r.author_photo" /><span>{{
-                        r.author || "Usuário"
-                      }}</span></span
-                    >
+                    <span class="history-author">
+                      <AuthorAvatar :photo="r.author_photo" />
+                      <RouterLink v-if="r.author_profile_id" :to="'/u/' + r.author_profile_id">{{ r.author || "Usuário" }}</RouterLink>
+                      <span v-else>{{ r.author || "Usuário" }}</span>
+                    </span>
                   </td>
                   <td class="history-character-count text-end">
                     {{

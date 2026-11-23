@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createHomeCache } from '../src/services/home-cache.ts'
-const home = { random: [{ id: 'A', slug: 'A', title: 'Article' }], top_today: [], top_week: [], top_month: [], missing: [], recent: [] }
+const home = { random: [{ id: 'A', slug: 'A', title: 'Article' }], top_24h: [], top_week: [], top_month: [], missing: [], recent: [] }
 function storage() {
   const values = new Map()
   return { values, getItem: key => values.get(key) || null, setItem: (key, value) => values.set(key, value) }

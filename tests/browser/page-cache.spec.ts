@@ -66,7 +66,7 @@ test('API slug replaces case and accent variants without refetch, keeping query/
   })
   for (const variant of variants) {
     const before = reads
-    await page.goto('/page%40Doa%C3%A7%C3%A3o/')
+    await page.goto('/p/doacao/')
     await page.goto('/' + encodeURIComponent(variant) + '/?origem=teste#secao')
     await expect.poll(() => decodeURIComponent(new URL(page.url()).pathname)).toBe('/' + canonical + '/')
     expect(new URL(page.url()).search).toBe('?origem=teste')
@@ -75,7 +75,7 @@ test('API slug replaces case and accent variants without refetch, keeping query/
     await expect(page.getByRole('link', { name: 'Editar Página' })).toHaveAttribute('href', '/' + canonical + '/editar')
     expect(reads - before).toBe(1)
     await page.goBack()
-    await expect(page).toHaveURL(/page.*Doa/)
+    await expect(page).toHaveURL(/\/p\/doacao\/$/)
   }
   await expect.poll(() => visits.length).toBe(2)
   expect(visits).toEqual([canonical, canonical])

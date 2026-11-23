@@ -33,7 +33,7 @@ function lookup(value: string) {
 }
 watch(term, lookup)
 function show() { if (term.value.trim().length >= 2) { expanded.value = true; if (!items.value.length) lookup(term.value) } }
-function submit() { const query = term.value.trim(); close(); if (query) void router.push({ path: '/page@Busca', query: { q: query } }) }
+function submit() { const query = term.value.trim(); close(); if (query) void router.push({ path: '/p/busca', query: { q: query } }) }
 async function focusOption(offset: number, event?: KeyboardEvent) {
   if (!expanded.value || !items.value.length) return
   await nextTick()

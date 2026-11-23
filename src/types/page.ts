@@ -9,6 +9,7 @@ export interface Page {
   updated_at: string | null
   canonical_url: string
   is_public?: boolean
+  read_only?: boolean
   redirect_slug?: string | null
   image_usage?: PageLink[]
   categories?: PageLink[]

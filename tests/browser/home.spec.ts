@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test'
 
-const headings = ['Páginas Aleatórias', 'Top 10 de Hoje', 'Top 10 dos últimos 7 dias', 'Top 10 dos últimos 30 dias', 'Nos ajude com esses conteúdos', 'Últimas alterações']
+const headings = ['Páginas Aleatórias', 'Top 10 das últimas 24 horas', 'Top 10 dos últimos 7 dias', 'Top 10 dos últimos 30 dias', 'Nos ajude com esses conteúdos', 'Últimas alterações']
 const article = (id: string, title: string) => ({ id, slug: id, title, description: 'Resumo do conteúdo da wiki.', image: 'http://127.0.0.1:4173/assets/ico_classe_dbv.svg' })
 const home = {
   random: [article('Aleatória_1', 'Primeira página'), article('Aleatória_2', 'Segunda página'), article('Aleatória_3', 'Terceira página')],
-  top_today: [article('Hoje', 'Artigo de hoje')], top_week: [article('Semana', 'Artigo da semana')], top_month: [article('Mês', 'Artigo do mês')],
+  top_24h: [article('Hoje', 'Artigo de hoje')], top_week: [article('Semana', 'Artigo da semana')], top_month: [article('Mês', 'Artigo do mês')],
   missing: [article('Conteúdo_novo', 'Conteúdo a criar')], recent: [article('Recente', 'Artigo atualizado')],
 }
 const headers = { 'access-control-allow-origin': 'http://127.0.0.1:4173', 'access-control-allow-credentials': 'true' }

@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 const headers = { 'access-control-allow-origin': 'http://127.0.0.1:4173', 'access-control-allow-credentials': 'true' }
 const user = { ID: 1, NOME: 'Editor', APELIDO: 'Editor', EMAIL: 'editor@example.test', NIVEL: 1 }
 test('static login has noindex and never embeds a session or private source', async ({ request }) => {
-  const response = await request.get('/page%40Acesso/')
+  const response = await request.get('/p/login/')
   expect(response.status()).toBe(200)
   const html = await response.text()
   expect(html).toContain('Entrar na MDAWiki')
@@ -10,16 +10,56 @@ test('static login has noindex and never embeds a session or private source', as
   expect(html).not.toContain('csrf_token')
   expect(html).not.toContain('SENHA')
 })
-async function mock(page: Page, handle: (path: string, method: string, data: any) => any, authenticated = false) {
+async function mock(page: Page, handle: (path: string, method: string, data: any) => any, authenticated = false, account = user) {
   await page.route('http://127.0.0.1:8080/**', async route => {
     const request = route.request(), path = new URL(request.url()).pathname.replace('/v1', ''), method = request.method()
     if (method === 'OPTIONS') return route.fulfill({ headers: { ...headers, 'access-control-allow-methods': 'GET, POST, PUT, OPTIONS', 'access-control-allow-headers': 'Accept, Content-Type, X-CSRF-Token' }, status: 204 })
-    if (path === '/auth/session') return route.fulfill({ headers, json: { data: { user: authenticated ? user : null, csrf_token: 'csrf-original' } } })
+    if (path === '/auth/session') return route.fulfill({ headers, json: { data: { user: authenticated ? account : null, csrf_token: 'csrf-original' } } })
     if (method !== 'GET') expect(request.headers()['x-csrf-token']).toMatch(/^csrf-/)
     const result = await handle(path, method, request.postDataJSON())
     return route.fulfill({ headers, status: result?.status || 200, json: result?.error ? { error: result.error } : { data: result } })
   })
 }
+
+test('registration opens activation with the signup email and an empty code', async ({ page }) => {
+  const email = 'cadastro@example.test'
+  await mock(page, (path, method, data) => {
+    if (path === '/auth/register') {
+      expect(method).toBe('POST')
+      expect(data.email).toBe(email)
+      return { message: 'Confira seu e-mail.' }
+    }
+    return {}
+  })
+  await page.goto('/p/cadastro/')
+  await page.getByLabel('Nome', { exact: true }).fill('Pessoa Teste')
+  await page.getByLabel('E-mail', { exact: true }).fill(email)
+  await page.getByLabel('Senha', { exact: true }).fill('abc123')
+  await page.getByLabel('Confirme a senha').fill('abc123')
+  await page.getByRole('button', { name: 'Criar conta', exact: true }).click()
+  await expect(page).toHaveURL(/\/p\/ativar-conta\?email=/)
+  await expect(page.getByLabel('E-mail do cadastro')).toHaveValue(email)
+  const code = page.getByLabel('Código de ativação')
+  await expect(code).toHaveValue('')
+  await expect(code).toBeFocused()
+})
+
+test('activation shows success on login and the first login opens the profile', async ({ page }) => {
+  await mock(page, path => {
+    if (path === '/auth/login') return { user, csrf_token: 'csrf-rotated', first_login: true }
+    if (path === '/profile') return user
+    return {}
+  })
+  await page.goto('/p/ativar-conta/?email=editor%40example.test&code=001234')
+  await page.getByRole('button', { name: 'Ativar conta', exact: true }).click()
+  await expect(page).toHaveURL(/\/p\/login$/)
+  await expect(page.getByRole('status')).toHaveText('Usuário registrado com sucesso! Faça login para continuar.')
+  await page.getByLabel('E-mail', { exact: true }).fill(user.EMAIL)
+  await page.getByLabel('Senha', { exact: true }).fill('abc123')
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+  await expect(page).toHaveURL(/\/p\/perfil$/)
+  await expect(page.getByLabel('Nome', { exact: true })).toHaveValue(user.NOME)
+})
 
 test('login opens the new editor and saves through API with rotated CSRF', async ({ page }) => {
   let saved: any
@@ -291,4 +331,73 @@ test('delete conflict leaves the editor draft and confirmation available for can
   await expect(dialog.getByRole('alert')).toContainText('Outra edição')
   await dialog.getByRole('button', { name: 'Cancelar' }).click()
   await expect(editor).toHaveValue('Preservar rascunho')
+})
+
+
+test('Atualizar reprocessa o artigo e recarrega seus vínculos', async ({ page }) => {
+  let rebuilds = 0
+  await mock(page, (path, method) => {
+    if (path === '/pages/Teste/rebuild' && method === 'POST') {
+      rebuilds++
+      return { revision: 2 }
+    }
+    return {
+      id: '12', slug: 'Teste', title: 'Teste',
+      html: rebuilds ? '<p>Conteúdo reprocessado.</p>' : '<p>Conteúdo original.</p>',
+      categories: rebuilds ? [{ id: '16', slug: 'Categoria', title: 'Categoria regenerada' }] : [],
+      canonical_url: 'https://mda.wiki.br/Teste/',
+    }
+  }, true, { ...user, NIVEL: 5 })
+  await page.goto('/Teste/')
+  await expect(page.getByText('Editor', { exact: true })).toBeVisible()
+  await expect(page.getByText('Conteúdo original.')).toBeVisible()
+  await page.getByRole('button', { name: 'Atualizar', exact: true }).click()
+  await expect(page.getByText('Conteúdo reprocessado.')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Categoria regenerada' })).toBeVisible()
+  expect(rebuilds).toBe(1)
+})
+
+test('a página inexistente oferece dois botões de criação e abre o formulário vazio', async ({ page }) => {
+  await mock(page, (path) => {
+    if (path === '/pages/Esd/editor') {
+      return { slug: 'Esd', title: 'Esd', source: '', base_version: '', exists: false, format: 'wiki', media: false }
+    }
+    return { status: 404, error: { code: 'not_found', message: 'Página não encontrada.' } }
+  }, true)
+  await page.goto('/Esd/')
+  await expect(page.getByRole('heading', { name: 'Página não encontrada' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Criar Página', exact: true })).toHaveCount(2)
+  await page.locator('.article-body').getByRole('link', { name: 'Criar Página' }).click()
+  await expect(page).toHaveURL(/\/Esd\/editar$/)
+  await expect(page.getByRole('textbox', { name: 'Título da página' })).toHaveValue('Esd')
+})
+
+test('o endereço /i/ mostra upload para imagem que ainda não existe', async ({ page }) => {
+  await mock(page, path => path === '/images/Esd'
+    ? { status: 404, error: { code: 'image_not_found', message: 'Imagem não encontrada.' } }
+    : { status: 404, error: { code: 'not_found', message: 'Página não encontrada.' } }, true)
+  await page.goto('/i/Esd')
+  await expect(page.getByRole('heading', { name: 'Imagem não encontrada' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Enviar imagem' })).toBeVisible()
+})
+
+test('o histórico abre o perfil público do autor', async ({ page }) => {
+  const id = 'f'.repeat(32)
+  await mock(page, path => {
+    if (path === '/pages/Teste/history') return {
+      title: 'Teste', base_version: 'v1', next_cursor: null,
+      revisions: [{ id: 1, source: 'Texto', author: 'Autora Wiki', author_profile_id: id }],
+    }
+    if (path === '/public-users/' + id) return {
+      name: 'Autora Wiki', city: 'Campinas', state_code: 'SP', birth_date: '1990-01-02',
+      club: 'Clube de teste', photo: '/assets/ico_classe_dbv.svg',
+    }
+    return {}
+  }, true)
+  await page.goto('/Teste/historico')
+  await page.getByRole('link', { name: 'Autora Wiki' }).click()
+  await expect(page).toHaveURL(new RegExp('/u/' + id + '$'))
+  await expect(page.getByRole('heading', { name: 'Autora Wiki' })).toBeVisible()
+  await expect(page.getByText('Campinas — SP')).toBeVisible()
+  await expect(page.getByText('02/01/1990')).toBeVisible()
 })
