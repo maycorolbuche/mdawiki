@@ -2,12 +2,14 @@
 import { computed, inject, onMounted, ref } from 'vue'
 import type { SessionClient, UserRole } from '../services/session'
 
-type Account = { id: number | string; name: string | null; display_name: string | null; email: string; public_id: string; created_at: string | null; is_active: number | string | null; role: UserRole }
+type Account = { id: number | string; name: string | null; display_name: string | null; email: string; public_id: string; created_at: string | null; is_active: number | string | null; role: UserRole; photo?: string | null }
 type Result = { items: Account[]; total: number; page: number; page_size: number }
 
 const api = inject<SessionClient>('session')!
 const result = ref<Result>()
 const search = ref(''), appliedSearch = ref('')
+const photo = ref(''), roleFilter = ref('')
+const failedPhotos = ref(new Set<string>())
 const sort = ref<'name' | 'created_at'>('name'), direction = ref<'asc' | 'desc'>('asc')
 const busy = ref(false), error = ref(''), success = ref('')
 const selected = ref<{ account: Account; action: 'delete' | 'role'; role?: UserRole }>()
@@ -25,7 +27,7 @@ function date(value: string | null) {
 async function load(page = 1) {
   busy.value = true; error.value = ''
   try {
-    const query = new URLSearchParams({ q: appliedSearch.value, sort: sort.value, direction: direction.value, page: String(page) })
+    const query = new URLSearchParams({ q: appliedSearch.value, photo: photo.value, role: roleFilter.value, sort: sort.value, direction: direction.value, page: String(page) })
     result.value = await api.request('/admin/users?' + query)
   } catch (failure) {
     error.value = (failure as Error).message
@@ -75,6 +77,21 @@ onMounted(() => { void load() })
       <input id="admin-user-search" v-model="search" class="form-control" type="search" maxlength="150">
       <button type="submit" class="btn btn-outline-primary" :disabled="busy || !!selected">Buscar</button>
     </div>
+    <div class="row g-2 mt-1">
+      <div class="col-sm-6">
+        <label for="admin-photo-filter" class="form-label">Foto</label>
+        <select id="admin-photo-filter" v-model="photo" class="form-select" :disabled="busy || !!selected" @change="applySearch">
+          <option value="">Todos</option><option value="yes">Com foto</option><option value="no">Sem foto</option>
+        </select>
+      </div>
+      <div class="col-sm-6">
+        <label for="admin-role-filter" class="form-label">Papel</label>
+        <select id="admin-role-filter" v-model="roleFilter" class="form-select" :disabled="busy || !!selected" @change="applySearch">
+          <option value="">Todos</option>
+          <option v-for="(label, role) in roles" :key="role" :value="role">{{ label }}</option>
+        </select>
+      </div>
+    </div>
   </form>
   <p v-if="busy" role="status">Processando…</p>
   <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
@@ -90,6 +107,7 @@ onMounted(() => { void load() })
     <div v-else class="table-responsive">
       <table class="table align-middle">
         <thead><tr>
+          <th scope="col">Foto</th>
           <th :aria-sort="sort === 'name' ? (direction === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="btn btn-link p-0" :disabled="busy || !!selected" @click="order('name')">Nome {{ sort === 'name' ? (direction === 'asc' ? '↑' : '↓') : '' }}</button></th>
           <th>E-mail</th>
           <th :aria-sort="sort === 'created_at' ? (direction === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="btn btn-link p-0" :disabled="busy || !!selected" @click="order('created_at')">Cadastro {{ sort === 'created_at' ? (direction === 'asc' ? '↑' : '↓') : '' }}</button></th>
@@ -97,6 +115,10 @@ onMounted(() => { void load() })
         </tr></thead>
         <tbody>
           <tr v-for="account in result.items" :key="account.id">
+            <td>
+              <img v-if="account.photo && !failedPhotos.has(account.photo)" :src="account.photo" alt="" width="40" height="40" loading="lazy" class="rounded-circle object-fit-cover" @error="failedPhotos.add(account.photo!)">
+              <i v-else class="bi bi-person-circle fs-4 text-secondary" aria-label="Sem foto" role="img" />
+            </td>
             <td>
               <RouterLink v-if="Number(account.is_active) === 1" :to="'/u/' + encodeURIComponent(account.public_id)" target="_blank" rel="noopener">{{ title(account) }} <i class="bi bi-box-arrow-up-right" aria-hidden="true" /></RouterLink>
               <span v-else>{{ title(account) }} <small class="text-muted d-block">Inativo</small></span>
