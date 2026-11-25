@@ -6,6 +6,7 @@ import HomeView from './components/HomeView.vue'
 import type { Snapshot } from './types/page'
 import { encodedRoutes, legacySystemRoutes } from './config/routes'
 import { createSession } from './services/session'
+const AdminView = () => import('./components/AdminView.vue')
 const AccountView = () => import('./components/AccountView.vue')
 const PublicProfileView = () => import('./components/PublicProfileView.vue')
 const ImageView = () => import('./components/ImageView.vue')
@@ -29,6 +30,8 @@ export function createApplication(snapshot: Snapshot, server = false, hydrate = 
       { path: '/p/atualizar', component: DirectoryView, meta: { action: 'rebuild' } },
       { path: '/p/doacao', component: DirectoryView, meta: { action: 'donate' } },
       ...legacySystemRoutes(),
+      { path: '/a', component: AdminView },
+      { path: '/a/files', component: AdminView, meta: { adminFiles: true } },
       { path: '/u/:publicId', component: PublicProfileView },
       { path: '/i/:slug', component: ImageView },
       { path: '/i/:slug/historico', component: ImageView, meta: { imageHistory: true } },
