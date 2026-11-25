@@ -8,7 +8,7 @@ type Result = { items: Account[]; total: number; page: number; page_size: number
 const api = inject<SessionClient>('session')!
 const result = ref<Result>()
 const search = ref(''), appliedSearch = ref('')
-const photo = ref(''), roleFilter = ref('')
+const photo = ref(''), roleFilter = ref(''), statusFilter = ref('')
 const failedPhotos = ref(new Set<string>())
 const sort = ref<'name' | 'created_at'>('name'), direction = ref<'asc' | 'desc'>('asc')
 const busy = ref(false), error = ref(''), success = ref('')
@@ -27,7 +27,7 @@ function date(value: string | null) {
 async function load(page = 1) {
   busy.value = true; error.value = ''
   try {
-    const query = new URLSearchParams({ q: appliedSearch.value, photo: photo.value, role: roleFilter.value, sort: sort.value, direction: direction.value, page: String(page) })
+    const query = new URLSearchParams({ q: appliedSearch.value, photo: photo.value, role: roleFilter.value, status: statusFilter.value, sort: sort.value, direction: direction.value, page: String(page) })
     result.value = await api.request('/admin/users?' + query)
   } catch (failure) {
     error.value = (failure as Error).message
@@ -78,17 +78,23 @@ onMounted(() => { void load() })
       <button type="submit" class="btn btn-outline-primary" :disabled="busy || !!selected">Buscar</button>
     </div>
     <div class="row g-2 mt-1">
-      <div class="col-sm-6">
+      <div class="col-sm-4">
         <label for="admin-photo-filter" class="form-label">Foto</label>
         <select id="admin-photo-filter" v-model="photo" class="form-select" :disabled="busy || !!selected" @change="applySearch">
           <option value="">Todos</option><option value="yes">Com foto</option><option value="no">Sem foto</option>
         </select>
       </div>
-      <div class="col-sm-6">
+      <div class="col-sm-4">
         <label for="admin-role-filter" class="form-label">Papel</label>
         <select id="admin-role-filter" v-model="roleFilter" class="form-select" :disabled="busy || !!selected" @change="applySearch">
           <option value="">Todos</option>
           <option v-for="(label, role) in roles" :key="role" :value="role">{{ label }}</option>
+        </select>
+      </div>
+      <div class="col-sm-4">
+        <label for="admin-status-filter" class="form-label">Status</label>
+        <select id="admin-status-filter" v-model="statusFilter" class="form-select" :disabled="busy || !!selected" @change="applySearch">
+          <option value="">Todos</option><option value="active">Ativos</option><option value="inactive">Inativos</option>
         </select>
       </div>
     </div>
@@ -111,7 +117,7 @@ onMounted(() => { void load() })
           <th :aria-sort="sort === 'name' ? (direction === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="btn btn-link p-0" :disabled="busy || !!selected" @click="order('name')">Nome {{ sort === 'name' ? (direction === 'asc' ? '↑' : '↓') : '' }}</button></th>
           <th>E-mail</th>
           <th :aria-sort="sort === 'created_at' ? (direction === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="btn btn-link p-0" :disabled="busy || !!selected" @click="order('created_at')">Cadastro {{ sort === 'created_at' ? (direction === 'asc' ? '↑' : '↓') : '' }}</button></th>
-          <th>Papel</th><th>Ação</th>
+          <th>Status</th><th>Papel</th><th>Ação</th>
         </tr></thead>
         <tbody>
           <tr v-for="account in result.items" :key="account.id">
@@ -121,11 +127,14 @@ onMounted(() => { void load() })
             </td>
             <td>
               <RouterLink v-if="Number(account.is_active) === 1" :to="'/u/' + encodeURIComponent(account.public_id)" target="_blank" rel="noopener">{{ title(account) }} <i class="bi bi-box-arrow-up-right" aria-hidden="true" /></RouterLink>
-              <span v-else>{{ title(account) }} <small class="text-muted d-block">Inativo</small></span>
+              <span v-else>{{ title(account) }}</span>
               <small v-if="isSelf(account)" class="text-muted d-block">Sua conta</small>
             </td>
             <td class="text-break">{{ account.email }}</td>
             <td>{{ date(account.created_at) }}</td>
+            <td><span class="badge" :class="Number(account.is_active) === 1 ? 'text-bg-success' : 'text-bg-secondary'">
+              {{ Number(account.is_active) === 1 ? 'Ativo' : 'Inativo' }}
+            </span></td>
             <td><select class="form-select form-select-sm" :aria-label="'Papel de ' + title(account)" :value="account.role" :disabled="busy || !!selected || isSelf(account)" @change="chooseRole(account, $event)">
               <option v-for="(label, role) in roles" :key="role" :value="role">{{ label }}</option>
             </select></td>
