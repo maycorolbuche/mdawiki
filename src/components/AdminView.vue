@@ -5,7 +5,7 @@ import AdminMediaThumbnail from './AdminMediaThumbnail.vue'
 import type { SessionClient } from '../services/session'
 
 type Group = 'unlinked' | 'orphan' | 'missing'
-type Item = { kind: 'file' | 'avatar' | 'object'; id?: number | string; media_key: string; size_bytes?: number | string; revisions?: number | string; images?: number | string; pages?: number | string; location?: string; locations?: string[]; avatar_in_use?: boolean }
+type Item = { kind: 'file' | 'avatar' | 'object'; id?: number | string; media_key: string; size_bytes?: number | string; revisions?: number | string; images?: number | string; pages?: number | string; location?: string; locations?: string[]; avatar_in_use?: boolean; public_images?: { slug: string; title: string }[] }
 type Audit = Record<Group, Item[]> & { locations: string[] }
 
 const api = inject<SessionClient>('session')!
@@ -128,7 +128,13 @@ watch(files, enabled => {
               <tbody>
                 <tr v-for="item in visible" :key="`${item.kind}:${item.id ?? item.location}:${item.media_key}`">
                   <td><AdminMediaThumbnail v-if="tab !== 'missing'" :media-key="item.media_key" :location="item.location" /><span v-else>—</span></td>
-                  <td class="text-break">{{ item.media_key }}<small v-if="item.kind === 'avatar'" class="d-block">Usuário {{ item.id }}</small></td>
+                  <td class="text-break">
+                    <div v-for="image in item.public_images" :key="image.slug">
+                      <RouterLink :to="'/i/' + encodeURIComponent(image.slug)" target="_blank" rel="noopener">{{ image.title || image.slug }} <i class="bi bi-box-arrow-up-right" aria-hidden="true" /></RouterLink>
+                    </div>
+                    {{ item.media_key }}
+                    <small v-if="item.kind === 'avatar'" class="d-block">Usuário {{ item.id }}</small>
+                  </td>
                   <td>{{ (item.locations ?? (item.location ? [item.location] : [])).map(location => labels[location]).join(', ') || '—' }}</td>
                   <td>{{ size(item.size_bytes) }}</td>
                   <td>{{ item.avatar_in_use ? 'Avatar em uso • ' : '' }}{{ item.kind === 'file' ? `${item.pages} página(s), ${item.images} imagem(ns), ${item.revisions} revisão(ões)` : '—' }}</td>
