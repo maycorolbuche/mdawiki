@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import AdminUsersView from './AdminUsersView.vue'
 import AdminMediaThumbnail from './AdminMediaThumbnail.vue'
 import type { SessionClient } from '../services/session'
 
@@ -20,6 +21,7 @@ const sections: { id: Group; label: string; help: string }[] = [
   { id: 'orphan', label: 'Arquivos órfãos', help: 'Objetos sem cadastro em arquivos ou avatares. Cada linha identifica o local da cópia.' },
   { id: 'missing', label: 'Arquivos ausentes', help: 'Referências sem arquivo nos armazenamentos verificados.' },
 ]
+const users = computed(() => route.meta.adminUsers === true)
 const files = computed(() => route.meta.adminFiles === true)
 const matched = computed(() => (audit.value?.[tab.value] ?? []).filter(item => item.media_key.toLowerCase().includes(search.value.trim().toLowerCase())))
 const visible = computed(() => matched.value.slice((page.value - 1) * 25, page.value * 25))
@@ -83,12 +85,16 @@ watch(files, enabled => {
 
 <template>
   <section class="card p-3 p-md-4">
-    <h1>{{ files ? 'Arquivos de mídia' : 'Administração' }}</h1>
+    <h1>{{ files ? 'Arquivos de mídia' : users ? 'Usuários' : 'Administração' }}</h1>
     <p v-if="access === 'loading'" role="status">Verificando acesso…</p>
     <p v-else-if="access === 'denied'" class="alert alert-danger" role="alert">Acesso negado.</p>
     <p v-else-if="access === 'error'" class="alert alert-danger" role="alert">Não foi possível verificar sua sessão. Recarregue a página.</p>
     <template v-else-if="api.state.user?.role === 'admin'">
-      <RouterLink v-if="!files" class="list-group-item list-group-item-action list-group" to="/a/files">Arquivos de mídia</RouterLink>
+      <AdminUsersView v-if="users" />
+      <div v-else-if="!files" class="list-group">
+        <RouterLink class="list-group-item list-group-item-action" to="/a/users">Usuários</RouterLink>
+        <RouterLink class="list-group-item list-group-item-action" to="/a/files">Arquivos de mídia</RouterLink>
+      </div>
       <template v-else>
         <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center mb-3">
           <RouterLink to="/a">Voltar à administração</RouterLink>
