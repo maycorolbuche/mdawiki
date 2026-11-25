@@ -14,6 +14,8 @@ interface PublicProfile {
   association: string | null
   club_type: string | null
   biography: string | null
+  edited_pages?: { slug: string; title: string; edited_at: string | null }[]
+  next_edits_offset?: number | null
 }
 
 const route = useRoute()
@@ -21,6 +23,8 @@ const session = inject<SessionClient>('session')!
 const profile = ref<PublicProfile>()
 const loading = ref(true)
 const error = ref('')
+const loadingEdits = ref(false)
+const editsError = ref('')
 const name = computed(() => profile.value?.name || profile.value?.display_name || 'Usuário')
 const details = computed(() => {
   const user = profile.value
@@ -29,16 +33,37 @@ const details = computed(() => {
     { label: 'Nascimento', value: user.birth_date?.split('-').reverse().join('/') },
     { label: 'Localidade', value: [user.city, user.state_code].filter(Boolean).join(' — ') },
     { label: 'Clube', value: user.club },
-    { label: 'Tipo de clube', value: user.club_type },
+    { label: 'Tipo de clube', value: user.club_type === 'D' ? 'Desbravadores' : user.club_type === 'A' ? 'Aventureiros' : user.club_type },
     { label: 'Associação', value: user.association },
   ].filter(item => item.value)
 })
+
+async function loadMoreEdits() {
+  const current = profile.value
+  const offset = current?.next_edits_offset
+  if (!current || offset == null || loadingEdits.value) return
+  loadingEdits.value = true
+  editsError.value = ''
+  try {
+    const data: PublicProfile = await session.request('/public-users/' + route.params.publicId + '?edits_offset=' + offset)
+    if (profile.value === current) {
+      current.edited_pages = [...(current.edited_pages ?? []), ...(data.edited_pages ?? [])]
+      current.next_edits_offset = data.next_edits_offset
+    }
+  } catch {
+    if (profile.value === current) editsError.value = 'Não foi possível carregar mais páginas.'
+  } finally {
+    if (profile.value === current) loadingEdits.value = false
+  }
+}
 
 if (!import.meta.env.SSR) {
   watch(() => route.params.publicId, async (id, _, onCleanup) => {
     let current = true
     onCleanup(() => { current = false })
     profile.value = undefined
+    loadingEdits.value = false
+    editsError.value = ''
     loading.value = true
     error.value = ''
     document.title = 'Perfil — MDAWiki'
@@ -80,7 +105,7 @@ if (!import.meta.env.SSR) {
           <p v-if="profile.display_name && profile.display_name !== name" class="mb-0 opacity-75">{{ profile.display_name }}</p>
         </div>
       </header>
-      <div v-if="details.length || profile.biography" class="article-body">
+      <div v-if="details.length || profile.biography || profile.edited_pages?.length" class="article-body">
         <dl v-if="details.length" class="profile-details mb-0">
           <div v-for="item in details" :key="item.label">
             <dt>{{ item.label }}</dt><dd class="mb-0">{{ item.value }}</dd>
@@ -89,6 +114,18 @@ if (!import.meta.env.SSR) {
         <section v-if="profile.biography" :class="{ 'mt-4': details.length }">
           <h2>Biografia</h2>
           <p class="profile-bio mb-0">{{ profile.biography }}</p>
+        </section>
+        <section v-if="profile.edited_pages?.length" :class="{ 'mt-4': details.length || profile.biography }">
+          <h2>Páginas editadas</h2>
+          <ul class="list-group list-group-flush mb-3">
+            <li v-for="page in profile.edited_pages" :key="page.slug" class="list-group-item px-0">
+              <RouterLink :to="'/' + encodeURIComponent(page.slug) + '/'">{{ page.title }}</RouterLink>
+            </li>
+          </ul>
+          <p v-if="editsError" role="alert">{{ editsError }}</p>
+          <button v-if="profile.next_edits_offset != null" type="button" class="btn btn-outline-primary" :disabled="loadingEdits" @click="loadMoreEdits">
+            {{ loadingEdits ? 'Carregando…' : 'Ver mais páginas' }}
+          </button>
         </section>
       </div>
     </template>
