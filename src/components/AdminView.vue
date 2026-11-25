@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import AdminMediaThumbnail from './AdminMediaThumbnail.vue'
 import type { SessionClient } from '../services/session'
 
 type Group = 'unlinked' | 'orphan' | 'missing'
-type Item = { kind: 'file' | 'avatar' | 'object'; id?: number | string; media_key: string; size_bytes?: number | string; revisions?: number | string; images?: number | string; pages?: number | string; location?: string; locations?: string[] }
+type Item = { kind: 'file' | 'avatar' | 'object'; id?: number | string; media_key: string; size_bytes?: number | string; revisions?: number | string; images?: number | string; pages?: number | string; location?: string; locations?: string[]; avatar_in_use?: boolean }
 type Audit = Record<Group, Item[]> & { locations: string[] }
 
 const api = inject<SessionClient>('session')!
@@ -54,7 +55,7 @@ async function remove() {
   if (!item) return
   busy.value = true; error.value = ''; success.value = ''; selected.value = undefined
   try {
-    const action = tab.value === 'missing' ? `missing_${item.kind}` : tab.value
+    const action = tab.value === 'missing' ? `missing_${item.kind}` : item.avatar_in_use ? 'avatar_record' : tab.value
     await api.request('/admin/files', 'POST', { action, id: item.id, media_key: item.media_key, location: item.location })
     success.value = 'Remoção concluída.'
     await refresh()
@@ -112,9 +113,10 @@ watch(files, enabled => {
             <button type="button" class="btn btn-sm btn-outline-secondary d-block mt-2" @click="preview = undefined">Fechar prévia</button>
           </figure>
           <div v-if="selected" class="alert alert-warning" role="region" aria-label="Confirmar remoção">
-            <p class="text-break"><strong>{{ tab === 'missing' ? 'Remover referência' : 'Excluir definitivamente' }}</strong> {{ selected.media_key }} ({{ size(selected.size_bytes) }})</p>
+            <p class="text-break"><strong>{{ tab === 'missing' ? 'Remover referência' : selected.avatar_in_use ? 'Remover cadastro em files' : 'Excluir definitivamente' }}</strong> {{ selected.media_key }} ({{ size(selected.size_bytes) }})</p>
             <p v-if="selected.location">Local: {{ labels[selected.location] }}</p>
-            <p v-if="selected.kind === 'file'">{{ selected.revisions }} revisão(ões) serão removidas e {{ selected.images }} imagem(ns) perderão o arquivo atual.</p>
+            <p v-if="selected.avatar_in_use && tab !== 'missing'">O arquivo e o avatar do usuário serão preservados.</p>
+            <p v-else-if="selected.kind === 'file'">{{ selected.revisions }} revisão(ões) serão removidas e {{ selected.images }} imagem(ns) perderão o arquivo atual.</p>
             <p v-else-if="selected.kind === 'avatar'">A conta será mantida. Apenas a referência ao avatar será removida.</p>
             <button type="button" class="btn btn-danger me-2" :disabled="busy" @click="remove">Confirmar</button>
             <button type="button" class="btn btn-outline-secondary" @click="selected = undefined">Cancelar</button>
@@ -122,14 +124,15 @@ watch(files, enabled => {
           <p v-if="!matched.length">Nenhum arquivo nesta lista.</p>
           <div v-else class="table-responsive">
             <table class="table align-middle">
-              <thead><tr><th>Arquivo</th><th>Local</th><th>Tamanho</th><th>Referências</th><th>Ação</th></tr></thead>
+              <thead><tr><th>Miniatura</th><th>Arquivo</th><th>Local</th><th>Tamanho</th><th>Referências</th><th>Ação</th></tr></thead>
               <tbody>
                 <tr v-for="item in visible" :key="`${item.kind}:${item.id ?? item.location}:${item.media_key}`">
+                  <td><AdminMediaThumbnail v-if="tab !== 'missing'" :media-key="item.media_key" :location="item.location" /><span v-else>—</span></td>
                   <td class="text-break">{{ item.media_key }}<small v-if="item.kind === 'avatar'" class="d-block">Usuário {{ item.id }}</small></td>
                   <td>{{ (item.locations ?? (item.location ? [item.location] : [])).map(location => labels[location]).join(', ') || '—' }}</td>
                   <td>{{ size(item.size_bytes) }}</td>
-                  <td>{{ item.kind === 'file' ? `${item.pages} página(s), ${item.images} imagem(ns), ${item.revisions} revisão(ões)` : '—' }}</td>
-                  <td><button v-if="tab !== 'missing'" type="button" class="btn btn-sm btn-outline-secondary me-2" :disabled="busy" @click="showPreview(item)">Ver imagem</button><button type="button" class="btn btn-sm btn-outline-danger" :disabled="busy" @click="selected = item">{{ tab === 'missing' ? 'Remover referência' : 'Excluir' }}</button></td>
+                  <td>{{ item.avatar_in_use ? 'Avatar em uso • ' : '' }}{{ item.kind === 'file' ? `${item.pages} página(s), ${item.images} imagem(ns), ${item.revisions} revisão(ões)` : '—' }}</td>
+                  <td><button v-if="tab !== 'missing'" type="button" class="btn btn-sm btn-outline-secondary me-2" :disabled="busy" @click="showPreview(item)">Ver imagem</button><button type="button" class="btn btn-sm btn-outline-danger" :disabled="busy" @click="selected = item">{{ tab === 'missing' ? 'Remover referência' : item.avatar_in_use ? 'Remover cadastro' : 'Excluir' }}</button></td>
                 </tr>
               </tbody>
             </table>
