@@ -31,6 +31,7 @@ export function createApplication(snapshot: Snapshot, server = false, hydrate = 
       { path: '/p/doacao', component: DirectoryView, meta: { action: 'donate' } },
       ...legacySystemRoutes(),
       { path: '/a', component: AdminView },
+      { path: '/a/images', component: AdminView, meta: { adminImages: true } },
       { path: '/a/pages', component: AdminView, meta: { adminPages: true } },
       { path: '/a/users', component: AdminView, meta: { adminUsers: true } },
       { path: '/a/files', component: AdminView, meta: { adminFiles: true } },

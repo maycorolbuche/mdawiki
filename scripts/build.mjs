@@ -39,7 +39,7 @@ for (const slug of new Set(Object.values(systemPages))) {
   await mkdir(directory, { recursive: true })
   await writeFile(join(directory, 'index.html'), await document('/p/' + slug + '/', null, true))
 }
-for (const path of ['a', 'a/files', 'a/users', 'a/pages']) {
+for (const path of ['a', 'a/files', 'a/users', 'a/pages', 'a/images']) {
   const directory = join('dist', path)
   await mkdir(directory, { recursive: true })
   await writeFile(join(directory, 'index.html'), await document('/' + path + '/', null, true))
