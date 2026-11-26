@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import AdminImagesView from './AdminImagesView.vue'
 import AdminPagesView from './AdminPagesView.vue'
 import AdminUsersView from './AdminUsersView.vue'
 import AdminMediaThumbnail from './AdminMediaThumbnail.vue'
@@ -22,6 +23,7 @@ const sections: { id: Group; label: string; help: string }[] = [
   { id: 'orphan', label: 'Arquivos órfãos', help: 'Objetos sem cadastro em arquivos ou avatares. Cada linha identifica o local da cópia.' },
   { id: 'missing', label: 'Arquivos ausentes', help: 'Referências sem arquivo nos armazenamentos verificados.' },
 ]
+const images = computed(() => route.meta.adminImages === true)
 const pages = computed(() => route.meta.adminPages === true)
 const users = computed(() => route.meta.adminUsers === true)
 const files = computed(() => route.meta.adminFiles === true)
@@ -87,14 +89,16 @@ watch(files, enabled => {
 
 <template>
   <section class="card p-3 p-md-4">
-    <h1>{{ files ? 'Arquivos de mídia' : users ? 'Usuários' : pages ? 'Páginas' : 'Administração' }}</h1>
+    <h1>{{ files ? 'Arquivos de mídia' : users ? 'Usuários' : pages ? 'Páginas' : images ? 'Imagens' : 'Administração' }}</h1>
     <p v-if="access === 'loading'" role="status">Verificando acesso…</p>
     <p v-else-if="access === 'denied'" class="alert alert-danger" role="alert">Acesso negado.</p>
     <p v-else-if="access === 'error'" class="alert alert-danger" role="alert">Não foi possível verificar sua sessão. Recarregue a página.</p>
     <template v-else-if="api.state.user?.role === 'admin'">
-      <AdminPagesView v-if="pages" />
+      <AdminImagesView v-if="images" />
+      <AdminPagesView v-else-if="pages" />
       <AdminUsersView v-else-if="users" />
       <div v-else-if="!files" class="list-group">
+        <RouterLink class="list-group-item list-group-item-action" to="/a/images">Imagens</RouterLink>
         <RouterLink class="list-group-item list-group-item-action" to="/a/pages">Páginas</RouterLink>
         <RouterLink class="list-group-item list-group-item-action" to="/a/users">Usuários</RouterLink>
         <RouterLink class="list-group-item list-group-item-action" to="/a/files">Arquivos de mídia</RouterLink>
