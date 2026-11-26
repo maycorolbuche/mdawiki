@@ -26,11 +26,22 @@ const error = ref('')
 const loadingEdits = ref(false)
 const editsError = ref('')
 const name = computed(() => profile.value?.name || profile.value?.display_name || 'Usuário')
+function formatBirthDate(value: string | null): string | undefined {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined
+  const [year, month, day] = value.split('-').map(Number)
+  const birth = new Date(year, month - 1, day)
+  const today = new Date()
+  if (birth.getFullYear() !== year || birth.getMonth() !== month - 1 || birth.getDate() !== day || birth > today) return undefined
+  const birthdayPassed = today.getMonth() + 1 > month || (today.getMonth() + 1 === month && today.getDate() >= day)
+  const age = today.getFullYear() - year - Number(!birthdayPassed)
+  return `${value.split('-').reverse().join('/')} (${age} ${age === 1 ? 'ano' : 'anos'})`
+}
+
 const details = computed(() => {
   const user = profile.value
   if (!user) return []
   return [
-    { label: 'Nascimento', value: user.birth_date?.split('-').reverse().join('/') },
+    { label: 'Nascimento', value: formatBirthDate(user.birth_date) },
     { label: 'Localidade', value: [user.city, user.state_code].filter(Boolean).join(' — ') },
     { label: 'Clube', value: user.club },
     { label: 'Tipo de clube', value: user.club_type === 'D' ? 'Desbravadores' : user.club_type === 'A' ? 'Aventureiros' : user.club_type },
