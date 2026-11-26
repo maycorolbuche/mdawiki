@@ -4,7 +4,7 @@ import RevisionMetadata from './RevisionMetadata.vue'
 type RevisionInfo = { author?: string | null; author_photo?: string | null; created_at?: string | null }
 import { splitRevisionDiff, type DiffPart } from '../services/revision-diff'
 const props = defineProps<{ changes: DiffPart[]; older: number | null; newer: number | null; olderRevision?: RevisionInfo; newerRevision?: RevisionInfo }>()
-const mode = ref('merged')
+const mode = ref('split')
 const rows = computed(() => splitRevisionDiff(props.changes))
 </script>
 <template>
