@@ -53,6 +53,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
 .account-chevron { font-size: 10px; opacity: .7; }
 .account-dropdown { left: auto; right: 0; top: 100%; min-width: 250px; padding: 0; box-shadow: 0 6px 15px #0003; }
 .account-dropdown .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; font-size: 13px; }
+.account-dropdown a.dropdown-item:hover { text-decoration: none; }
 .account-dropdown li + li { border-top: 1px solid #eee; }
 .account-dropdown .dropdown-divider { margin: 0; }
 .account-dropdown-enter-active, .account-dropdown-leave-active { transition: opacity .15s ease, transform .15s ease; }
