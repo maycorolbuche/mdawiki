@@ -35,6 +35,7 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', outside))
         <li><RouterLink class="dropdown-item" to="/p/perfil"><i class="bi bi-person-fill" aria-hidden="true" /> Meu Perfil</RouterLink></li>
         <li><RouterLink class="dropdown-item" to="/p/alterar-email"><i class="bi bi-envelope-fill" aria-hidden="true" /> Alterar E-mail</RouterLink></li>
         <li><RouterLink class="dropdown-item" to="/p/alterar-senha"><i class="bi bi-lock-fill" aria-hidden="true" /> Alterar Senha</RouterLink></li>
+        <li v-if="session.state.user.role === 'admin'"><RouterLink class="dropdown-item text-danger fw-semibold" to="/a"><i class="bi bi-gear-fill" aria-hidden="true" /> Administração</RouterLink></li>
         <li><hr class="dropdown-divider"></li>
         <li><button type="button" class="dropdown-item" :disabled="busy" @click="logout"><i class="bi bi-power" aria-hidden="true" /> {{ busy ? 'Saindo…' : 'Sair' }}</button></li>
         <li v-if="error" class="px-3 py-2 text-danger" role="alert">{{ error }}</li>
