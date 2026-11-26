@@ -8,7 +8,7 @@ import AdminMediaThumbnail from './AdminMediaThumbnail.vue'
 import type { SessionClient } from '../services/session'
 
 type Group = 'unlinked' | 'orphan' | 'missing'
-type Item = { kind: 'file' | 'avatar' | 'object'; id?: number | string; media_key: string; size_bytes?: number | string; revisions?: number | string; images?: number | string; pages?: number | string; location?: string; locations?: string[]; avatar_in_use?: boolean; public_images?: { slug: string; title: string }[] }
+type Item = { kind: 'file' | 'avatar' | 'object' | 'image'; title?: string; id?: number | string; media_key: string; size_bytes?: number | string; revisions?: number | string; images?: number | string; pages?: number | string; location?: string; locations?: string[]; avatar_in_use?: boolean; public_images?: { slug: string; title: string }[] }
 type Audit = Record<Group, Item[]> & { locations: string[] }
 
 const api = inject<SessionClient>('session')!
@@ -19,7 +19,7 @@ const preview = ref<{ key: string; image: string }>()
 const tab = ref<Group>('unlinked'), search = ref(''), page = ref(1)
 const busy = ref(false), error = ref(''), success = ref(''), selected = ref<Item>()
 const sections: { id: Group; label: string; help: string }[] = [
-  { id: 'unlinked', label: 'Imagens sem artigo', help: 'Arquivos cadastrados sem vínculo atual com artigos. A API confere também referências diretas e do histórico antes de excluir.' },
+  { id: 'unlinked', label: 'Imagens sem artigo', help: 'Imagens sem vínculo com artigos, exibidas pela versão atual.' },
   { id: 'orphan', label: 'Arquivos órfãos', help: 'Objetos sem cadastro em arquivos ou avatares. Cada linha identifica o local da cópia.' },
   { id: 'missing', label: 'Arquivos ausentes', help: 'Referências sem arquivo nos armazenamentos verificados.' },
 ]
@@ -27,7 +27,7 @@ const images = computed(() => route.meta.adminImages === true)
 const pages = computed(() => route.meta.adminPages === true)
 const users = computed(() => route.meta.adminUsers === true)
 const files = computed(() => route.meta.adminFiles === true)
-const matched = computed(() => (audit.value?.[tab.value] ?? []).filter(item => item.media_key.toLowerCase().includes(search.value.trim().toLowerCase())))
+const matched = computed(() => (audit.value?.[tab.value] ?? []).filter(item => [item.title, item.media_key].some(value => value?.toLowerCase().includes(search.value.trim().toLowerCase()))))
 const visible = computed(() => matched.value.slice((page.value - 1) * 25, page.value * 25))
 const labels: Record<string, string> = { local: 'Disco local', r2: 'R2' }
 const size = (bytes: Item['size_bytes']) => bytes == null ? '—' : new Intl.NumberFormat('pt-BR', { style: 'unit', unit: 'kilobyte', maximumFractionDigits: 1 }).format(Number(bytes) / 1024)
@@ -61,9 +61,9 @@ async function remove() {
   if (!item) return
   busy.value = true; error.value = ''; success.value = ''; selected.value = undefined
   try {
-    const action = tab.value === 'missing' ? `missing_${item.kind}` : item.avatar_in_use ? 'avatar_record' : tab.value
-    await api.request('/admin/files', 'POST', { action, id: item.id, media_key: item.media_key, location: item.location })
-    success.value = 'Remoção concluída.'
+    const action = tab.value === 'missing' ? `missing_${item.kind}` : tab.value === 'unlinked' ? 'unlinked_image' : tab.value
+    const result = await api.request('/admin/files', 'POST', { action, id: item.id, media_key: item.media_key, location: item.location })
+    success.value = result.pending_cleanup ? 'Imagem removida. Há arquivos pendentes de limpeza na aba Arquivos órfãos.' : 'Remoção concluída.'
     await refresh()
   } catch (failure) {
     error.value = String((failure as Error).message || 'Não foi possível remover o arquivo.')
@@ -127,9 +127,9 @@ watch(files, enabled => {
             <button type="button" class="btn btn-sm btn-outline-secondary d-block mt-2" @click="preview = undefined">Fechar prévia</button>
           </figure>
           <div v-if="selected" class="alert alert-warning" role="region" aria-label="Confirmar remoção">
-            <p class="text-break"><strong>{{ tab === 'missing' ? 'Remover referência' : selected.avatar_in_use ? 'Remover cadastro em files' : 'Excluir definitivamente' }}</strong> {{ selected.media_key }} ({{ size(selected.size_bytes) }})</p>
+            <p class="text-break"><strong>{{ tab === 'missing' ? 'Remover referência' : 'Excluir definitivamente' }}</strong> {{ selected.title || selected.media_key }} ({{ size(selected.size_bytes) }})</p>
             <p v-if="selected.location">Local: {{ labels[selected.location] }}</p>
-            <p v-if="selected.avatar_in_use && tab !== 'missing'">O arquivo e o avatar do usuário serão preservados.</p>
+            <p v-if="selected.kind === 'image'">A imagem e {{ selected.revisions }} revisão(ões) serão removidas. Arquivos compartilhados serão preservados.</p>
             <p v-else-if="selected.kind === 'file'">{{ selected.revisions }} revisão(ões) serão removidas e {{ selected.images }} imagem(ns) perderão o arquivo atual.</p>
             <p v-else-if="selected.kind === 'avatar'">A conta será mantida. Apenas a referência ao avatar será removida.</p>
             <button type="button" class="btn btn-danger me-2" :disabled="busy" @click="remove">Confirmar</button>
@@ -146,13 +146,14 @@ watch(files, enabled => {
                     <div v-for="image in item.public_images" :key="image.slug">
                       <RouterLink :to="'/i/' + encodeURIComponent(image.slug)" target="_blank" rel="noopener">{{ image.title || image.slug }} <i class="bi bi-box-arrow-up-right" aria-hidden="true" /></RouterLink>
                     </div>
+                    <span v-if="item.kind === 'image' && !item.public_images?.length" class="d-block">{{ item.title }}</span>
                     {{ item.media_key }}
                     <small v-if="item.kind === 'avatar'" class="d-block">Usuário {{ item.id }}</small>
                   </td>
                   <td>{{ (item.locations ?? (item.location ? [item.location] : [])).map(location => labels[location]).join(', ') || '—' }}</td>
                   <td>{{ size(item.size_bytes) }}</td>
-                  <td>{{ item.avatar_in_use ? 'Avatar em uso • ' : '' }}{{ item.kind === 'file' ? `${item.pages} página(s), ${item.images} imagem(ns), ${item.revisions} revisão(ões)` : '—' }}</td>
-                  <td><button v-if="tab !== 'missing'" type="button" class="btn btn-sm btn-outline-secondary me-2" :disabled="busy" @click="showPreview(item)">Ver imagem</button><button type="button" class="btn btn-sm btn-outline-danger" :disabled="busy" @click="selected = item">{{ tab === 'missing' ? 'Remover referência' : item.avatar_in_use ? 'Remover cadastro' : 'Excluir' }}</button></td>
+                  <td>{{ item.avatar_in_use ? 'Avatar em uso • ' : '' }}{{ item.kind === 'image' ? `${item.revisions} revisão(ões)` : item.kind === 'file' ? `${item.pages} página(s), ${item.images} imagem(ns), ${item.revisions} revisão(ões)` : '—' }}</td>
+                  <td><button v-if="tab !== 'missing'" type="button" class="btn btn-sm btn-outline-secondary me-2" :disabled="busy" @click="showPreview(item)">Ver imagem</button><button type="button" class="btn btn-sm btn-outline-danger" :disabled="busy" @click="selected = item">{{ tab === 'missing' ? 'Remover referência' : 'Excluir' }}</button></td>
                 </tr>
               </tbody>
             </table>
