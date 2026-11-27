@@ -211,14 +211,18 @@ test('preview failure stays in modal and retry preserves the unsaved editor', as
 
 test('history modal switches between merged and side-by-side differences without losing revisions', async ({ page }) => {
   await mock(page, () => ({ title: 'Teste', base_version: 'v2', next_cursor: null, revisions: [
-    { id: 2, source: 'Comum\nNovo\nExtra\nFinal\n', author: 'Editor', created_at: '2026-11-19' },
-    { id: 1, source: 'Comum\nAntigo\nFinal\n', author: 'Editor', created_at: '2026-11-18' },
+    { id: 2, source: 'Comum\r\nNovo\r\nExtra\r\nFinal\r\n', categories: [{ key: 'igual', title: 'Igual' }, { key: 'nova', title: 'Nova categoria' }], author: 'Editor', created_at: '2026-11-19' },
+    { id: 1, source: 'Comum\nAntigo\nFinal\n', categories: [{ key: 'igual', title: 'Igual' }, { key: 'antiga', title: 'Categoria antiga' }], author: 'Editor', created_at: '2026-11-18' },
   ] }), true)
   await page.goto('/Teste/historico')
   await page.getByRole('button', { name: 'Comparar versões' }).click()
   const modal = page.getByRole('dialog', { name: 'Comparar versões' })
   const mode = modal.getByLabel('Modo de visualização')
   await expect(mode).toHaveValue('split')
+  const categories = modal.getByRole('region', { name: 'Categorias' })
+  await expect(categories.locator('.removed')).toHaveText('Categoria antiga · Removida')
+  await expect(categories.locator('.added')).toHaveText('Nova categoria · Adicionada')
+  await expect(categories.getByText('Igual', { exact: true })).toHaveCount(2)
   const table = modal.getByRole('table')
   await expect(table.getByRole('columnheader').first()).toContainText('Anterior — Revisão 1')
   await expect(table.getByRole('columnheader').last()).toContainText('Nova — Revisão 2')
@@ -232,6 +236,7 @@ test('history modal switches between merged and side-by-side differences without
   await expect(table).toBeVisible()
   await page.screenshot({ path: 'test-results/history-split-mobile.png' })
   await mode.selectOption('merged')
+  await expect(categories).toBeVisible()
   await expect(modal.locator('.revision-diff .removed')).toHaveText('Antigo\n')
   await expect(modal.locator('.revision-diff .added')).toHaveText('Novo\nExtra\n')
   await modal.press('Escape')
@@ -283,14 +288,17 @@ test('unchanged save stays in editor and explains that no revision was created',
   await expect(page.getByLabel('Código wiki', { exact: true })).toHaveValue('Original')
 })
 
-test('history shows source character counts between author and date including Unicode and empty revisions', async ({ page }) => {
+test('history shows category changes and counts Unicode source characters', async ({ page }) => {
   await mock(page, () => ({ title: 'Teste', base_version: 'v2', next_cursor: null, revisions: [
-    { id: 2, source: 'Ação🙂', author: 'Editor', created_at: '2026-11-19 12:00:00' },
-    { id: 1, source: '', author: 'Editor', created_at: '2026-11-18 12:00:00' },
+    { id: 2, source: 'Ação🙂', categories: [{ key: 'nova', title: 'Nova categoria' }], author: 'Editor', created_at: '2026-11-19 12:00:00' },
+    { id: 1, source: '', categories: [{ key: 'antiga', title: 'Categoria antiga' }], author: 'Editor', created_at: '2026-11-18 12:00:00' },
   ] }), true)
   await page.goto('/Teste/historico')
   const table = page.locator('.article-body table')
-  await expect(table.getByRole('columnheader')).toHaveText(['Comparar', 'Revisão', 'Autor', 'Caracteres', 'Data', 'Ações'])
+  await expect(table.getByRole('columnheader')).toHaveText(['Comparar', 'Revisão', 'Autor', 'Categorias', 'Caracteres', 'Data', 'Ações'])
+  await expect(table.locator('tbody tr').first().locator('.history-category-added')).toContainText('Nova categoria')
+  await expect(table.locator('tbody tr').first().locator('.history-category-removed')).toContainText('Categoria antiga')
+  await expect(table.locator('tbody tr').last().locator('.history-category-added, .history-category-removed')).toHaveCount(0)
   await expect(table.locator('.history-character-count')).toHaveText(['5', '0'])
 })
 

@@ -14,6 +14,7 @@ const LegacyWikiEditor = defineAsyncComponent(
   () => import("./LegacyWikiEditor.vue"),
 );
 import { RequestError, userRole, type SessionClient } from "../services/session";
+import CategoryEditor from "./CategoryEditor.vue";
 import AuthorAvatar from "./AuthorAvatar.vue";
 import RevisionComparison from "./RevisionComparison.vue";
 import RevisionMetadata from "./RevisionMetadata.vue";
@@ -24,6 +25,8 @@ const route = useRoute(),
   api = inject<SessionClient>("session")!;
 const slug = computed(() => String(route.params.slug)),
   historyMode = computed(() => route.meta.action === "history");
+type RevisionCategory = { key: string; title: string };
+
 const title = ref(""),
   source = ref(""),
   original = ref(""),
@@ -96,10 +99,34 @@ const mediaPreview = computed(() =>
     ? source.value
     : "",
 );
+type Category = { slug?: string; title: string };
+const categories = ref<Category[]>([]);
+const categoryOptions = ref<Category[] | null>(null);
+const originalCategories = ref<Category[]>(categories.value);
+const categoryEditor = ref<InstanceType<typeof CategoryEditor>>();
 const dirty = computed(
-  () => source.value !== original.value || title.value !== originalTitle.value,
+  () => source.value !== original.value || title.value !== originalTitle.value || categories.value !== originalCategories.value,
 );
+const historyCategories = computed(() => revisions.value.map((revision, index) => {
+  const current: RevisionCategory[] | undefined = revision.categories;
+  const previous: RevisionCategory[] | undefined = revisions.value[index + 1]?.categories;
+  const previousKeys = new Set(previous?.map(category => category.key));
+  const currentKeys = new Set(current?.map(category => category.key));
+
+  return {
+    revision,
+    current: current?.map(category => ({
+      ...category,
+      added: previous !== undefined && !previousKeys.has(category.key),
+    })),
+    removed: current === undefined ? [] : (previous ?? []).filter(category => !currentKeys.has(category.key)),
+  };
+}));
 const loaded = ref(false);
+const showCategories = computed(() =>
+  loaded.value && !loading.value && !loginRequired.value && !historyMode.value
+  && !media.value && categoryOptions.value !== null
+);
 const changes = computed(() => {
   const a =
       revisions.value.find((r) => Number(r.id) === Number(older.value))
@@ -107,7 +134,7 @@ const changes = computed(() => {
     b =
       revisions.value.find((r) => Number(r.id) === Number(newer.value))
         ?.source || "";
-  return compare.value ? diffLines(a, b, { timeout: 1000 }) || [] : [];
+  return compare.value ? diffLines(a.replace(/\r\n?/g, "\n"), b.replace(/\r\n?/g, "\n"), { timeout: 1000 }) || [] : [];
 });
 const olderRevision = computed(() =>
   revisions.value.find((r) => Number(r.id) === Number(older.value)),
@@ -145,6 +172,8 @@ async function load() {
       older.value = data.revisions[1]?.id;
       newer.value = data.revisions[0]?.id;
     } else {
+      categories.value = originalCategories.value = data.categories ?? [];
+      categoryOptions.value = data.category_options ?? null;
       source.value = data.source;
       original.value = data.source;
       media.value = data.media;
@@ -178,6 +207,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("beforeunload", unload);
 });
 async function save() {
+  categoryEditor.value?.commit();
   await persist(source.value);
 }
 async function persist(nextSource: string): Promise<boolean> {
@@ -188,11 +218,15 @@ async function persist(nextSource: string): Promise<boolean> {
     const result = await api.request(endpoint.value, "PUT", {
       title: title.value,
       source: nextSource,
+      ...(!media.value && categoryOptions.value !== null
+        ? { categories: categories.value.map((category) => category.slug || category.title) }
+        : {}),
       base_version: version.value,
     });
     source.value = nextSource;
     original.value = nextSource;
     originalTitle.value = title.value;
+    originalCategories.value = categories.value;
     if (result.unchanged === true) {
       version.value = result.base_version;
       saveNotice.value =
@@ -280,229 +314,253 @@ async function removeImage() {
 }
 </script>
 <template>
-  <section
-    class="card article-card"
-    :class="{ 'legacy-edit-page': !historyMode }"
-  >
-    <nav class="article-toolbar" aria-label="Ações da página">
-      <RouterLink class="article-action" :to="`/${encodeURIComponent(slug)}/`"
-        ><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar</RouterLink
-      >
-      <button
-        v-if="!historyMode"
-        type="button"
-        class="article-action"
-        :disabled="!loaded || loading || busy"
-        @click="preview"
-      >
-        <i class="bi bi-eye" aria-hidden="true"></i> Visualizar página
-      </button>
-      <button
-        v-if="!historyMode && loaded && pageExists"
-        type="button"
-        class="article-action text-danger"
-        :disabled="loading || busy"
-        @click="confirmDelete"
-      >
-        <i class="bi bi-trash" aria-hidden="true"></i> Excluir página
-      </button>
-    </nav>
-    <div class="article-body">
-      <h1 v-if="historyMode">
-        Histórico de Edições
-        <small>{{ title || slug.replaceAll("_", " ") }}</small>
-      </h1>
-      <h1 v-else class="legacy-edit-title">
-        {{ media ? "Imagem: " : "" }}{{ title || slug.replaceAll("_", " ") }}
-        <span class="legacy-edit-badge"
-          >{{ loaded && !pageExists ? "Criar" : "Editar" }} {{ media ? "Imagem" : "Página" }}</span
+  <div class="article-layout" :class="{ 'has-relations': showCategories }">
+    <section
+      class="card article-card"
+      :class="{ 'legacy-edit-page': !historyMode }"
+    >
+      <nav class="article-toolbar" aria-label="Ações da página">
+        <RouterLink class="article-action" :to="`/${encodeURIComponent(slug)}/`"
+          ><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar</RouterLink
         >
-      </h1>
-      <p v-if="saveNotice" class="alert alert-info" role="status">
-        {{ saveNotice }}
-      </p>
-      <p v-if="loading" role="status">Carregando…</p>
-      <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
-      <RouterLink
-        v-if="loginRequired"
-        :to="{ path: '/p/login', query: { redirect: route.fullPath } }"
-        >Fazer login para continuar</RouterLink
-      >
-      <template v-if="loaded && !loading && !loginRequired">
-        <form v-if="!historyMode" id="frm_edit" @submit.prevent="save">
-          <label v-if="!pageExists && !media" class="form-label d-block mb-3">
-            Título da página
-            <input v-model="title" name="nome" class="form-control" maxlength="250" required />
-          </label>
-          <input v-else type="hidden" name="nome" :value="title" /><input
-            type="hidden"
-            name="nome_url"
-            :value="slug"
-          />
-          <p class="legacy-edit-warning">
-            <span aria-hidden="true">×</span> Obs.: Não colocar respostas nas
-            especialidades. O foco desta página é somente as perguntas conforme
-            o manual.
-          </p>
-          <template v-if="media">
-            <div class="legacy-image-editor">
-              <button
-                type="button"
-                class="legacy-image-picker"
-                :aria-label="
-                  mediaPreview ? 'Trocar Imagem' : 'Adicionar imagem'
-                "
-                :disabled="busy"
-                @click="imageInput?.click()"
-              >
-                <img v-if="mediaPreview" :src="mediaPreview" :alt="title" />
-                <span v-else class="legacy-image-placeholder"
-                  >adicionar imagem</span
-                >
-              </button>
-              <input
-                ref="imageInput"
-                type="file"
-                class="visually-hidden"
-                aria-label="Enviar imagem"
-                accept=".jpg,.jpeg,.png,.svg"
-                :disabled="busy"
-                @change="upload"
-              />
-            </div>
-            <div v-if="mediaPreview" class="legacy-edit-actions">
-              <button
-                type="button"
-                class="btn legacy-edit-remove"
-                :disabled="busy"
-                @click="removeImage"
-              >
-                Remover Imagem
-              </button>
-              <button
-                type="button"
-                class="btn legacy-edit-save"
-                :disabled="busy"
-                @click="imageInput?.click()"
-              >
-                Trocar Imagem
-              </button>
-            </div>
-            <p v-if="busy" role="status">Aguarde…</p>
-          </template>
-          <template v-else>
-            <LegacyWikiEditor
-              v-model="source"
-              :key="slug"
-              :disabled="busy"
-              :label="format === 'html' ? 'Código HTML' : 'Código wiki'"
-              @error="error = $event"
-            />
-            <div class="legacy-edit-actions">
-              <button class="btn legacy-edit-save" :disabled="busy">
-                {{ busy ? "Aguarde…" : "Salvar" }}
-              </button>
-            </div>
-          </template>
-        </form>
-        <template v-else>
-          <p v-if="!revisions.length">Ainda não há revisões registradas.</p>
-          <div class="table-responsive">
-            <table v-if="revisions.length" class="table align-middle">
-              <thead>
-                <tr>
-                  <th>Comparar</th>
-                  <th>Revisão</th>
-                  <th>Autor</th>
-                  <th class="text-end">Caracteres</th>
-                  <th>Data</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="r in revisions" :key="r.id">
-                  <td>
-                    <input
-                      v-model="older"
-                      type="radio"
-                      :value="r.id"
-                      name="older"
-                      :aria-label="`Versão anterior ${r.id}`"
-                    />
-                    <input
-                      v-model="newer"
-                      type="radio"
-                      :value="r.id"
-                      name="newer"
-                      :aria-label="`Versão nova ${r.id}`"
-                    />
-                  </td>
-                  <td>{{ r.id }}</td>
-                  <td>
-                    <span class="history-author">
-                      <AuthorAvatar :photo="r.author_photo" />
-                      <RouterLink v-if="r.author_profile_id" :to="'/u/' + r.author_profile_id">{{ r.author || "Usuário" }}</RouterLink>
-                      <span v-else>{{ r.author || "Usuário" }}</span>
-                    </span>
-                  </td>
-                  <td class="history-character-count text-end">
-                    {{
-                      Array.from(r.source || "").length.toLocaleString("pt-BR")
-                    }}
-                  </td>
-                  <td>{{ r.created_at }}</td>
-                  <td>
-                    <button
-                      class="btn btn-sm btn-outline-primary me-2"
-                      @click="showRevision(r)"
-                    >
-                      Visualizar</button
-                    ><button
-                      class="btn btn-sm btn-outline-secondary"
-                      :disabled="busy"
-                      v-if="userRole(api.state.user) !== 'reader'"
-                      @click="restore(r.id)"
-                    >
-                      Restaurar
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <button
-            v-if="before"
-            class="btn btn-outline-primary me-2"
-            :disabled="busy"
-            @click="more"
-          >
-            Mais revisões</button
-          ><button
-            v-if="revisions.length > 1"
-            class="btn btn-primary"
-            @click="showComparison"
-          >
-            Comparar versões
-          </button>
-        </template>
-      </template>
-      <div v-if="error && !loginRequired" class="mt-3">
         <button
-          v-if="media && dirty"
-          class="btn btn-info me-2"
-          :disabled="busy"
-          @click="save"
+          v-if="!historyMode"
+          type="button"
+          class="article-action"
+          :disabled="!loaded || loading || busy"
+          @click="preview"
         >
-          Salvar novamente</button
-        ><button class="btn btn-outline-secondary" @click="load">
-          Recarregar
+          <i class="bi bi-eye" aria-hidden="true"></i> Visualizar página
         </button>
-        <p v-if="dirty">
-          Copie o conteúdo antes de recarregar para preservar suas alterações.
+        <button
+          v-if="!historyMode && loaded && pageExists"
+          type="button"
+          class="article-action text-danger"
+          :disabled="loading || busy"
+          @click="confirmDelete"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i> Excluir página
+        </button>
+      </nav>
+      <div class="article-body">
+        <h1 v-if="historyMode">
+          Histórico de Edições
+          <small>{{ title || slug.replaceAll("_", " ") }}</small>
+        </h1>
+        <h1 v-else class="legacy-edit-title">
+          {{ media ? "Imagem: " : "" }}{{ title || slug.replaceAll("_", " ") }}
+          <span class="legacy-edit-badge"
+            >{{ loaded && !pageExists ? "Criar" : "Editar" }} {{ media ? "Imagem" : "Página" }}</span
+          >
+        </h1>
+        <p v-if="saveNotice" class="alert alert-info" role="status">
+          {{ saveNotice }}
         </p>
+        <p v-if="loading" role="status">Carregando…</p>
+        <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
+        <RouterLink
+          v-if="loginRequired"
+          :to="{ path: '/p/login', query: { redirect: route.fullPath } }"
+          >Fazer login para continuar</RouterLink
+        >
+        <template v-if="loaded && !loading && !loginRequired">
+          <form v-if="!historyMode" id="frm_edit" @submit.prevent="save">
+            <label v-if="!pageExists && !media" class="form-label d-block mb-3">
+              Título da página
+              <input v-model="title" name="nome" class="form-control" maxlength="250" required />
+            </label>
+            <input v-else type="hidden" name="nome" :value="title" /><input
+              type="hidden"
+              name="nome_url"
+              :value="slug"
+            />
+            <p class="legacy-edit-warning">
+              <span aria-hidden="true">×</span> Obs.: Não colocar respostas nas
+              especialidades. O foco desta página é somente as perguntas conforme
+              o manual.
+            </p>
+            <template v-if="media">
+              <div class="legacy-image-editor">
+                <button
+                  type="button"
+                  class="legacy-image-picker"
+                  :aria-label="
+                    mediaPreview ? 'Trocar Imagem' : 'Adicionar imagem'
+                  "
+                  :disabled="busy"
+                  @click="imageInput?.click()"
+                >
+                  <img v-if="mediaPreview" :src="mediaPreview" :alt="title" />
+                  <span v-else class="legacy-image-placeholder"
+                    >adicionar imagem</span
+                  >
+                </button>
+                <input
+                  ref="imageInput"
+                  type="file"
+                  class="visually-hidden"
+                  aria-label="Enviar imagem"
+                  accept=".jpg,.jpeg,.png,.svg"
+                  :disabled="busy"
+                  @change="upload"
+                />
+              </div>
+              <div v-if="mediaPreview" class="legacy-edit-actions">
+                <button
+                  type="button"
+                  class="btn legacy-edit-remove"
+                  :disabled="busy"
+                  @click="removeImage"
+                >
+                  Remover Imagem
+                </button>
+                <button
+                  type="button"
+                  class="btn legacy-edit-save"
+                  :disabled="busy"
+                  @click="imageInput?.click()"
+                >
+                  Trocar Imagem
+                </button>
+              </div>
+              <p v-if="busy" role="status">Aguarde…</p>
+            </template>
+            <template v-else>
+              <LegacyWikiEditor
+                v-model="source"
+                :key="slug"
+                :disabled="busy"
+                :label="format === 'html' ? 'Código HTML' : 'Código wiki'"
+                @error="error = $event"
+              />
+              <div class="legacy-edit-actions">
+                <button class="btn legacy-edit-save" :disabled="busy">
+                  {{ busy ? "Aguarde…" : "Salvar" }}
+                </button>
+              </div>
+            </template>
+          </form>
+          <template v-else>
+            <p v-if="!revisions.length">Ainda não há revisões registradas.</p>
+            <div class="table-responsive">
+              <table v-if="revisions.length" class="table align-middle">
+                <thead>
+                  <tr>
+                    <th>Comparar</th>
+                    <th>Revisão</th>
+                    <th>Autor</th>
+                    <th>Categorias</th>
+                    <th class="text-end">Caracteres</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="({ revision: r, current, removed }) in historyCategories" :key="r.id">
+                    <td>
+                      <input
+                        v-model="older"
+                        type="radio"
+                        :value="r.id"
+                        name="older"
+                        :aria-label="`Versão anterior ${r.id}`"
+                      />
+                      <input
+                        v-model="newer"
+                        type="radio"
+                        :value="r.id"
+                        name="newer"
+                        :aria-label="`Versão nova ${r.id}`"
+                      />
+                    </td>
+                    <td>{{ r.id }}</td>
+                    <td>
+                      <span class="history-author">
+                        <AuthorAvatar :photo="r.author_photo" />
+                        <RouterLink v-if="r.author_profile_id" :to="'/u/' + r.author_profile_id">{{ r.author || "Usuário" }}</RouterLink>
+                        <span v-else>{{ r.author || "Usuário" }}</span>
+                      </span>
+                    </td>
+                    <td class="history-categories">
+                      <template v-if="current">
+                        <ul v-if="current.length || removed.length"
+                          class="list-unstyled d-flex flex-wrap gap-1 mb-0">
+                          <li v-for="category in current" :key="category.key"
+                            class="history-category" :class="{ 'history-category-added': category.added }">
+                            <template v-if="category.added"><span aria-hidden="true">+ </span><span class="visually-hidden">Adicionada: </span></template>{{ category.title }}
+                          </li>
+                          <li v-for="category in removed" :key="category.key"
+                            class="history-category history-category-removed">
+                            <span aria-hidden="true">− </span><span class="visually-hidden">Removida: </span>{{ category.title }}
+                          </li>
+                        </ul>
+                        <span v-else class="text-muted">Nenhuma</span>
+                      </template>
+                      <span v-else class="text-muted">Indisponíveis</span>
+                    </td>
+                    <td class="history-character-count text-end">
+                      {{
+                        Array.from(r.source || "").length.toLocaleString("pt-BR")
+                      }}
+                    </td>
+                    <td>{{ r.created_at }}</td>
+                    <td>
+                      <button
+                        class="btn btn-sm btn-outline-primary me-2"
+                        @click="showRevision(r)"
+                      >
+                        Visualizar</button
+                      ><button
+                        class="btn btn-sm btn-outline-secondary"
+                        :disabled="busy"
+                        v-if="userRole(api.state.user) !== 'reader'"
+                        @click="restore(r.id)"
+                      >
+                        Restaurar
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button
+              v-if="before"
+              class="btn btn-outline-primary me-2"
+              :disabled="busy"
+              @click="more"
+            >
+              Mais revisões</button
+            ><button
+              v-if="revisions.length > 1"
+              class="btn btn-primary"
+              @click="showComparison"
+            >
+              Comparar versões
+            </button>
+          </template>
+        </template>
+        <div v-if="error && !loginRequired" class="mt-3">
+          <button
+            v-if="media && dirty"
+            class="btn btn-info me-2"
+            :disabled="busy"
+            @click="save"
+          >
+            Salvar novamente</button
+          ><button class="btn btn-outline-secondary" @click="load">
+            Recarregar
+          </button>
+          <p v-if="dirty">
+            Copie o conteúdo antes de recarregar para preservar suas alterações.
+          </p>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+    <aside v-if="showCategories && categoryOptions" class="page-relations" aria-label="Opções de edição">
+      <CategoryEditor ref="categoryEditor" v-model="categories"
+        :options="categoryOptions" :disabled="busy" />
+    </aside>
+  </div>
   <WorkspaceModal
     v-if="modal"
     :busy="modal === 'delete' && busy"
@@ -563,6 +621,13 @@ async function removeImage() {
     />
     <template v-else-if="selected"
       ><RevisionMetadata :revision="selected" />
+      <template v-if="selected.categories">
+        <h3 class="h6">Categorias</h3>
+        <ul v-if="selected.categories.length">
+          <li v-for="category in selected.categories" :key="category.key">{{ category.title }}</li>
+        </ul>
+        <p v-else>Nenhuma categoria</p>
+      </template>
       <pre class="revision-source">{{ selected.source }}</pre>
     </template>
     <template v-if="modal === 'delete'" #footer>
@@ -590,6 +655,21 @@ async function removeImage() {
 .workspace-image-preview {
   max-width: 100%;
   height: auto;
+}
+.history-categories {
+  min-width: 10rem;
+}
+.history-category {
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #f1f1f1;
+  overflow-wrap: anywhere;
+}
+.history-category-added {
+  background: #d3f9d8;
+}
+.history-category-removed {
+  background: #ffe3e3;
 }
 .history-author {
   display: inline-flex;

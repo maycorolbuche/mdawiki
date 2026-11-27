@@ -1,11 +1,27 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import RevisionMetadata from './RevisionMetadata.vue'
-type RevisionInfo = { author?: string | null; author_photo?: string | null; created_at?: string | null }
+type Category = { key: string; title: string }
+type RevisionInfo = { categories?: Category[]; author?: string | null; author_photo?: string | null; created_at?: string | null }
 import { splitRevisionDiff, type DiffPart } from '../services/revision-diff'
 const props = defineProps<{ changes: DiffPart[]; older: number | null; newer: number | null; olderRevision?: RevisionInfo; newerRevision?: RevisionInfo }>()
 const mode = ref('split')
 const rows = computed(() => splitRevisionDiff(props.changes))
+const categoryColumns = computed(() => [
+  { label: 'Anterior', categories: props.olderRevision?.categories,
+    other: props.newerRevision?.categories, change: 'removed', status: 'Removida' },
+  { label: 'Nova', categories: props.newerRevision?.categories,
+    other: props.olderRevision?.categories, change: 'added', status: 'Adicionada' },
+].map(column => {
+  const otherKeys = new Set(column.other?.map(category => category.key))
+  return {
+    ...column,
+    items: column.categories?.map(category => ({
+      ...category,
+      changed: column.other !== undefined && !otherKeys.has(category.key),
+    })),
+  }
+}))
 </script>
 <template>
   <div class="comparison-options"><label for="revision-comparison-mode">Modo de visualização</label><select id="revision-comparison-mode" v-model="mode" class="form-select form-select-sm"><option value="merged">Mesclado</option><option value="split">Dividido</option></select></div>
@@ -14,6 +30,22 @@ const rows = computed(() => splitRevisionDiff(props.changes))
     <section aria-label="Dados da revisão anterior"><strong>Anterior — Revisão {{ older }}</strong><RevisionMetadata :revision="olderRevision" /></section>
     <section aria-label="Dados da revisão nova"><strong>Nova — Revisão {{ newer }}</strong><RevisionMetadata :revision="newerRevision" /></section>
   </div>
+  <section v-if="categoryColumns.some(column => column.items)" class="mb-3" aria-labelledby="revision-categories-heading">
+    <h3 id="revision-categories-heading" class="h6">Categorias</h3>
+    <div class="comparison-metadata">
+      <div v-for="column in categoryColumns" :key="column.label">
+        <strong>{{ column.label }}</strong>
+        <p v-if="!column.items" class="mb-0 text-muted">Categorias indisponíveis nesta revisão.</p>
+        <p v-else-if="!column.items.length" class="mb-0 text-muted">Nenhuma categoria</p>
+        <ul v-else class="list-unstyled d-flex flex-wrap gap-2 mt-1 mb-0">
+          <li v-for="category in column.items" :key="category.key"
+            class="category-chip" :class="category.changed ? column.change : undefined">
+            {{ category.title }}<small v-if="category.changed"> · {{ column.status }}</small>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
   <p class="small text-muted">Vermelho: removido da versão anterior. Verde: adicionado à versão nova.</p>
   <div v-if="mode === 'merged'" class="revision-diff"><span v-for="(part, i) in changes" :key="i" :class="{ added: part.added, removed: part.removed }">{{ part.value }}</span></div>
   <div v-else class="split-comparison-scroll">
@@ -32,7 +64,8 @@ const rows = computed(() => splitRevisionDiff(props.changes))
 .split-comparison th, .split-comparison td { width: 50%; border: 1px solid #ddd; padding: 6px 10px; vertical-align: top; }
 .split-comparison th { background: #f1f1f1; }
 .split-comparison pre { margin: 0; font-family: ui-monospace, monospace; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
-.split-comparison .removed { background: #ffe3e3; }
-.split-comparison .added { background: #d3f9d8; }
+.split-comparison .removed, .category-chip.removed { background: #ffe3e3; }
+.split-comparison .added, .category-chip.added { background: #d3f9d8; }
+.category-chip { padding: 3px 7px; border: 1px solid #ddd; border-radius: 3px; }
 .empty-diff-cell { background: #f3f3f3; }
 </style>

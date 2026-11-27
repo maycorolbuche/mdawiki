@@ -3,7 +3,7 @@ const headers = {
   "access-control-allow-origin": "http://127.0.0.1:4173",
   "access-control-allow-credentials": "true",
 };
-async function setup(page: Page) {
+async function setup(page: Page, categoryFields = {}) {
   const writes: { path: string; body: any }[] = [];
   await page.route("http://127.0.0.1:8080/**", async (route) => {
     const request = route.request(),
@@ -30,6 +30,7 @@ async function setup(page: Page) {
         media: false,
         base_version: "version-1",
         exists: true,
+        ...categoryFields,
       };
     else if (path.endsWith("/visits")) data = { counted: true };
     else if (request.method() !== "GET") {
@@ -108,13 +109,11 @@ test("legacy dropdowns and prompts insert original wiki syntax and cancellation 
   await page.locator(".m_font_size").first().hover();
   await page.getByRole("link", { name: "Tamanho 3", exact: true }).click();
   await expect(editor).toHaveValue("{{TamanhoTexto:3}}Texto{{/TamanhoTexto}}");
-  await editor.fill("");
-  page.once("dialog", (dialog) => dialog.accept("Artes, Habilidades"));
-  await page.locator(".m_categorias > a").click();
-  await expect(editor).toHaveValue("{{Categorias:Artes, Habilidades}}");
+  await expect(page.locator(".m_categorias")).toHaveCount(0);
+  await editor.fill("Manter este texto");
   page.once("dialog", (dialog) => dialog.dismiss());
   await page.locator(".m_imagem > a").click();
-  await expect(editor).toHaveValue("{{Categorias:Artes, Habilidades}}");
+  await expect(editor).toHaveValue("Manter este texto");
   await editor.fill("");
   await page.locator(".m_tabela").first().hover();
   await page
@@ -262,4 +261,40 @@ test("a tela de imagem substitui o arquivo e mostra a versão anterior", async (
   await confirmation.getByRole("button", { name: "Excluir imagem" }).click();
   await expect(toolbar.getByRole("button", { name: "Enviar imagem" })).toBeVisible();
   expect(payloads[1]).toEqual({ clear: true, base_version: "2" });
+});
+
+test("categories can be selected, added as free text, and removed", async ({ page }) => {
+  const writes = await setup(page, {
+    categories: [{ slug: "Especialidades", title: "Especialidades" }],
+    category_options: [
+      { slug: "Especialidades", title: "Especialidades" },
+      { slug: "Atividades-Recreativas", title: "Atividades Recreativas" },
+    ],
+  });
+  await page.setViewportSize({ width: 1535, height: 1000 });
+  await page.goto("/Teste/editar");
+  const article = page.locator(".article-layout > .article-card");
+  const sidebar = page.locator(".article-layout > .page-relations");
+  await expect(sidebar.getByRole("heading", { name: "Categorias 1" })).toBeVisible();
+  await expect(sidebar.locator(".relation-blue .category-tags")).toContainText("Especialidades");
+  const articleBox = (await article.boundingBox())!;
+  const sidebarBox = (await sidebar.boundingBox())!;
+  expect(sidebarBox.x).toBeGreaterThanOrEqual(articleBox.x + articleBox.width);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobileArticle = (await article.boundingBox())!;
+  expect((await sidebar.boundingBox())!.y).toBeGreaterThanOrEqual(mobileArticle.y + mobileArticle.height);
+  await page.setViewportSize({ width: 1535, height: 1000 });
+  const input = page.getByRole("textbox", { name: "Nome da categoria" });
+  await page.getByRole("button", { name: "Remover Especialidades" }).click();
+  await input.fill("atividades");
+  await page.getByRole("button", { name: "Atividades Recreativas", exact: true }).click();
+  await input.fill("Categoria nova");
+  await input.press("Enter");
+  await expect(page.getByRole("button", { name: "Remover Categoria nova" })).toBeVisible();
+  await page.getByRole("button", { name: "Salvar", exact: true }).click();
+  await expect(page).toHaveURL(/\/Teste\/$/);
+  expect(writes.find((write) => write.path.endsWith("/pages/Teste"))?.body).toMatchObject({
+    source: "Texto original",
+    categories: ["Atividades-Recreativas", "Categoria nova"],
+  });
 });
