@@ -314,7 +314,7 @@ test("the editor saves one card of each template type and repeatable positions",
   await selector.selectOption("person");
   await add.click();
   await expect(selector.locator('option[value="person"]')).toHaveCount(0);
-  const person = page.locator(".relation-panel").filter({ has: page.getByRole("heading", { name: "Pessoa", exact: true }) });
+  const person = page.locator(".relation-panel").filter({ has: page.getByRole("button", { name: "Remover Pessoa", exact: true }) });
   await person.getByRole("button", { name: "Adicionar cargo" }).click();
   await person.getByRole("button", { name: "Adicionar cargo" }).click();
   await person.getByLabel("Cargo", { exact: true }).first().fill("Cargo A");
