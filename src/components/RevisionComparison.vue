@@ -2,7 +2,8 @@
 import { computed, ref } from 'vue'
 import RevisionMetadata from './RevisionMetadata.vue'
 type Category = { key: string; title: string }
-type RevisionInfo = { categories?: Category[]; author?: string | null; author_photo?: string | null; created_at?: string | null }
+import { describeTemplate, templateLabels, type PageTemplate } from "../services/page-templates"
+type RevisionInfo = { templates?: PageTemplate[]; categories?: Category[]; author?: string | null; author_photo?: string | null; created_at?: string | null }
 import { splitRevisionDiff, type DiffPart } from '../services/revision-diff'
 const props = defineProps<{ changes: DiffPart[]; older: number | null; newer: number | null; olderRevision?: RevisionInfo; newerRevision?: RevisionInfo }>()
 const mode = ref('split')
@@ -22,6 +23,14 @@ const categoryColumns = computed(() => [
     })),
   }
 }))
+const templateChanges = computed(() => {
+  if (!props.olderRevision?.templates || !props.newerRevision?.templates) return []
+  const before = new Map(props.olderRevision.templates.map(item => [item.template, describeTemplate(item)]))
+  const after = new Map(props.newerRevision.templates.map(item => [item.template, describeTemplate(item)]))
+  return [...new Set([...before.keys(), ...after.keys()])]
+    .filter(type => before.get(type) !== after.get(type))
+    .map(type => ({ type, before: before.get(type), after: after.get(type) }))
+})
 </script>
 <template>
   <div class="comparison-options"><label for="revision-comparison-mode">Modo de visualização</label><select id="revision-comparison-mode" v-model="mode" class="form-select form-select-sm"><option value="merged">Mesclado</option><option value="split">Dividido</option></select></div>
@@ -46,6 +55,16 @@ const categoryColumns = computed(() => [
       </div>
     </div>
   </section>
+  <section v-if="templateChanges.length" class="mb-3" aria-labelledby="revision-template-heading">
+    <h3 id="revision-template-heading" class="h6">Alterações nos templates</h3>
+    <div v-for="item in templateChanges" :key="item.type" class="mb-2">
+      <strong>{{ templateLabels[item.type] }}</strong>
+      <div class="comparison-metadata">
+        <div><small>Anterior</small><p class="category-chip removed template-summary">{{ item.before ?? 'Sem template' }}</p></div>
+        <div><small>Nova</small><p class="category-chip added template-summary">{{ item.after ?? 'Sem template' }}</p></div>
+      </div>
+    </div>
+  </section>
   <p class="small text-muted">Vermelho: removido da versão anterior. Verde: adicionado à versão nova.</p>
   <div v-if="mode === 'merged'" class="revision-diff"><span v-for="(part, i) in changes" :key="i" :class="{ added: part.added, removed: part.removed }">{{ part.value }}</span></div>
   <div v-else class="split-comparison-scroll">
@@ -67,5 +86,6 @@ const categoryColumns = computed(() => [
 .split-comparison .removed, .category-chip.removed { background: #ffe3e3; }
 .split-comparison .added, .category-chip.added { background: #d3f9d8; }
 .category-chip { padding: 3px 7px; border: 1px solid #ddd; border-radius: 3px; }
+.template-summary { white-space: pre-line; overflow-wrap: anywhere; }
 .empty-diff-cell { background: #f3f3f3; }
 </style>
