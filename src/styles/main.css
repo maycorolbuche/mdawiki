@@ -195,6 +195,10 @@ summary:focus-visible {
   background: #30333f;
 }
 
+.header-brand a {
+  display: flex
+}
+
 .header-brand img {
   object-fit: contain;
   display: block;
@@ -986,11 +990,11 @@ summary:focus-visible {
 /* Homepage keeps the panels and cover of the original wiki. */
 .home-cover {
   padding: 20px;
+  display: flex;
 }
 
 .home-cover img {
   display: block;
-  width: 100%;
   height: auto;
 }
 
