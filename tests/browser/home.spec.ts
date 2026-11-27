@@ -14,8 +14,13 @@ test('static home keeps layout but embeds no dynamic items or article catalog', 
   const page = await context.newPage()
   await page.goto('http://127.0.0.1:4173/')
   for (const heading of headings) await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
-  await expect(page.locator('.home-cover img')).toBeVisible()
-  await expect.poll(() => page.locator('.home-cover img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0)
+  const cover = page.locator('.home-cover')
+  await expect(cover.locator('img')).toHaveCount(2)
+  for (const asset of ['logo_a3d3.svg', 'logo_mdawiki_texto.svg']) {
+    const image = cover.locator(`img[src$="/assets/${asset}"]`)
+    await expect(image).toBeVisible()
+    await expect.poll(() => image.evaluate(img => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
+  }
   await expect(page.locator('.home-random-card')).toHaveCount(0)
   await expect(page.locator('.home-table')).toHaveCount(0)
   const snapshot = JSON.parse((await page.locator('#page-data').textContent())!)

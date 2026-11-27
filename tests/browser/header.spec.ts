@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 const headers = { 'access-control-allow-origin': 'http://127.0.0.1:4173', 'access-control-allow-credentials': 'true', 'access-control-allow-methods': 'GET, POST, OPTIONS', 'access-control-allow-headers': 'Accept, Content-Type, X-CSRF-Token' }
-const user = { ID: 1, NOME: 'Mayco Rolbuche', APELIDO: 'MRolbuche', EMAIL: 'mayco@example.test', NIVEL: 1, photo: '/assets/logo_mdawiki.svg' }
+const user = { ID: 1, NOME: 'Mayco Rolbuche', APELIDO: 'MRolbuche', EMAIL: 'mayco@example.test', NIVEL: 1, photo: '/assets/logo_mdawiki_initials.svg' }
 
 test('account dropdown shows avatar, account links, keyboard dismissal and logout', async ({ page }) => {
   let loggedIn = true
