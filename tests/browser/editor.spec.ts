@@ -273,16 +273,23 @@ test("categories can be selected, added as free text, and removed", async ({ pag
   });
   await page.setViewportSize({ width: 1535, height: 1000 });
   await page.goto("/Teste/editar");
-  const article = page.locator(".article-layout > .article-card");
   const sidebar = page.locator(".article-layout > .page-relations");
   await expect(sidebar.getByRole("heading", { name: "Categorias 1" })).toBeVisible();
   await expect(sidebar.locator(".relation-blue .category-tags")).toContainText("Especialidades");
-  const articleBox = (await article.boundingBox())!;
-  const sidebarBox = (await sidebar.boundingBox())!;
-  expect(sidebarBox.x).toBeGreaterThanOrEqual(articleBox.x + articleBox.width);
+  const sidebarIsPositioned = (direction: "right" | "below") =>
+    sidebar.evaluate((element, direction) => {
+      const article = element.parentElement?.querySelector(".article-card");
+      if (!article) return false;
+      const articleBox = article.getBoundingClientRect();
+      const sidebarBox = element.getBoundingClientRect();
+      return direction === "right"
+        ? sidebarBox.left >= articleBox.right
+        : sidebarBox.top >= articleBox.bottom;
+    }, direction);
+
+  await expect.poll(() => sidebarIsPositioned("right")).toBe(true);
   await page.setViewportSize({ width: 390, height: 844 });
-  const mobileArticle = (await article.boundingBox())!;
-  expect((await sidebar.boundingBox())!.y).toBeGreaterThanOrEqual(mobileArticle.y + mobileArticle.height);
+  await expect.poll(() => sidebarIsPositioned("below")).toBe(true);
   await page.setViewportSize({ width: 1535, height: 1000 });
   const input = page.getByRole("textbox", { name: "Nome da categoria" });
   await page.getByRole("button", { name: "Remover Especialidades" }).click();
