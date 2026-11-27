@@ -83,7 +83,6 @@ const myBbcodeSettings = {
           {name:'Listar P&aacute;ginas sem categoria', replaceWith:'{{{Lista:Paginas Sem Categoria|exibeTotais:sim|colunas:2}}}', className:"m_submenu"},
           {name:'Listar P&aacute;ginas de redirecionamento', replaceWith:'{{{Lista:Redirecionamentos|exibeTotais:sim|paginapara:sim}}}', className:"m_submenu"}
       ]},
-      {name:'Categorias', openWith:'{{Categorias:[![Coloque\u0020as\u0020categorias\u0020separadas\u0020por\u0020v\u00edrgula]!]}}', className:"m_categorias"}, 
       {separator:'---------------' },
       {name:'Ignorar c&oacute;digo', openWith:'[codigo]',closeWith:'[/codigo]', className:"m_codigo"},
       {name:'Inserir anota&ccedil;&atilde;o (obs.: Anota&ccedil;&otilde;es n&atilde;o aparecem no texto publicado)', openWith:'/*',closeWith:'*/', className:"m_comentario"}, 

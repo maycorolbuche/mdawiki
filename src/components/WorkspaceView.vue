@@ -14,6 +14,7 @@ const LegacyWikiEditor = defineAsyncComponent(
   () => import("./LegacyWikiEditor.vue"),
 );
 import { RequestError, userRole, type SessionClient } from "../services/session";
+import CategoryEditor from "./CategoryEditor.vue";
 import AuthorAvatar from "./AuthorAvatar.vue";
 import RevisionComparison from "./RevisionComparison.vue";
 import RevisionMetadata from "./RevisionMetadata.vue";
@@ -96,8 +97,13 @@ const mediaPreview = computed(() =>
     ? source.value
     : "",
 );
+type Category = { slug?: string; title: string };
+const categories = ref<Category[]>([]);
+const categoryOptions = ref<Category[] | null>(null);
+const originalCategories = ref<Category[]>(categories.value);
+const categoryEditor = ref<InstanceType<typeof CategoryEditor>>();
 const dirty = computed(
-  () => source.value !== original.value || title.value !== originalTitle.value,
+  () => source.value !== original.value || title.value !== originalTitle.value || categories.value !== originalCategories.value,
 );
 const loaded = ref(false);
 const changes = computed(() => {
@@ -145,6 +151,8 @@ async function load() {
       older.value = data.revisions[1]?.id;
       newer.value = data.revisions[0]?.id;
     } else {
+      categories.value = originalCategories.value = data.categories ?? [];
+      categoryOptions.value = data.category_options ?? null;
       source.value = data.source;
       original.value = data.source;
       media.value = data.media;
@@ -178,6 +186,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("beforeunload", unload);
 });
 async function save() {
+  categoryEditor.value?.commit();
   await persist(source.value);
 }
 async function persist(nextSource: string): Promise<boolean> {
@@ -188,11 +197,15 @@ async function persist(nextSource: string): Promise<boolean> {
     const result = await api.request(endpoint.value, "PUT", {
       title: title.value,
       source: nextSource,
+      ...(!media.value && categoryOptions.value !== null
+        ? { categories: categories.value.map((category) => category.slug || category.title) }
+        : {}),
       base_version: version.value,
     });
     source.value = nextSource;
     original.value = nextSource;
     originalTitle.value = title.value;
+    originalCategories.value = categories.value;
     if (result.unchanged === true) {
       version.value = result.base_version;
       saveNotice.value =
@@ -390,20 +403,24 @@ async function removeImage() {
             </div>
             <p v-if="busy" role="status">Aguarde…</p>
           </template>
-          <template v-else>
-            <LegacyWikiEditor
-              v-model="source"
-              :key="slug"
-              :disabled="busy"
-              :label="format === 'html' ? 'Código HTML' : 'Código wiki'"
-              @error="error = $event"
-            />
-            <div class="legacy-edit-actions">
-              <button class="btn legacy-edit-save" :disabled="busy">
-                {{ busy ? "Aguarde…" : "Salvar" }}
-              </button>
+          <div v-else class="workspace-edit-grid" :class="{ 'has-categories': categoryOptions !== null }">
+            <div class="workspace-edit-content">
+              <LegacyWikiEditor
+                v-model="source"
+                :key="slug"
+                :disabled="busy"
+                :label="format === 'html' ? 'Código HTML' : 'Código wiki'"
+                @error="error = $event"
+              />
+              <div class="legacy-edit-actions">
+                <button class="btn legacy-edit-save" :disabled="busy">
+                  {{ busy ? "Aguarde…" : "Salvar" }}
+                </button>
+              </div>
             </div>
-          </template>
+            <CategoryEditor v-if="categoryOptions !== null" ref="categoryEditor" v-model="categories"
+              :options="categoryOptions" :disabled="busy" />
+          </div>
         </form>
         <template v-else>
           <p v-if="!revisions.length">Ainda não há revisões registradas.</p>
@@ -587,6 +604,20 @@ async function removeImage() {
 </template>
 
 <style scoped>
+.workspace-edit-grid {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+.workspace-edit-content {
+  min-width: 0;
+}
+@media (min-width: 992px) {
+  .workspace-edit-grid.has-categories {
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 25%);
+  }
+}
+
 .workspace-image-preview {
   max-width: 100%;
   height: auto;
