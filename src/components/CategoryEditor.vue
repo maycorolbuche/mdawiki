@@ -39,18 +39,19 @@ defineExpose({ commit });
 </script>
 
 <template>
-  <aside class="card">
-    <div class="card-body">
-      <h2 class="h6 card-title">Categorias</h2>
-      <ul v-if="categories.length" class="list-unstyled d-flex flex-wrap gap-1 mb-2">
-        <li v-for="(category, index) in categories" :key="category.slug || category.title"
-          class="badge text-bg-secondary d-inline-flex align-items-center gap-1 text-wrap text-start">
+  <section class="relation-panel relation-blue">
+    <h2>Categorias <span class="relation-count">{{ categories.length }}</span></h2>
+    <ul v-if="categories.length" class="category-tags">
+      <li v-for="(category, index) in categories" :key="category.slug || category.title">
+        <span class="category-tag">
           {{ category.title }}
-          <button type="button" class="btn-close btn-close-white" :disabled="disabled"
+          <button type="button" class="btn-close" :disabled="disabled"
             :aria-label="'Remover ' + category.title"
             @click="categories = categories.filter((_, position) => position !== index)" />
-        </li>
-      </ul>
+        </span>
+      </li>
+    </ul>
+    <div class="category-controls">
       <div class="input-group input-group-sm">
         <input v-model="input" type="text" class="form-control" aria-label="Nome da categoria"
           placeholder="Buscar ou digitar" maxlength="250" :disabled="disabled" autocomplete="off"
@@ -66,5 +67,29 @@ defineExpose({ commit });
         </li>
       </ul>
     </div>
-  </aside>
+  </section>
 </template>
+
+
+<style scoped>
+.category-controls {
+  padding: 0 18px 18px;
+}
+
+h2 + .category-controls {
+  padding-top: 18px;
+}
+
+.category-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.category-tag .btn-close {
+  flex-shrink: 0;
+  padding: 2px;
+  font-size: 9px;
+}
+</style>

@@ -106,6 +106,10 @@ const dirty = computed(
   () => source.value !== original.value || title.value !== originalTitle.value || categories.value !== originalCategories.value,
 );
 const loaded = ref(false);
+const showCategories = computed(() =>
+  loaded.value && !loading.value && !loginRequired.value && !historyMode.value
+  && !media.value && categoryOptions.value !== null
+);
 const changes = computed(() => {
   const a =
       revisions.value.find((r) => Number(r.id) === Number(older.value))
@@ -293,118 +297,118 @@ async function removeImage() {
 }
 </script>
 <template>
-  <section
-    class="card article-card"
-    :class="{ 'legacy-edit-page': !historyMode }"
-  >
-    <nav class="article-toolbar" aria-label="Ações da página">
-      <RouterLink class="article-action" :to="`/${encodeURIComponent(slug)}/`"
-        ><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar</RouterLink
-      >
-      <button
-        v-if="!historyMode"
-        type="button"
-        class="article-action"
-        :disabled="!loaded || loading || busy"
-        @click="preview"
-      >
-        <i class="bi bi-eye" aria-hidden="true"></i> Visualizar página
-      </button>
-      <button
-        v-if="!historyMode && loaded && pageExists"
-        type="button"
-        class="article-action text-danger"
-        :disabled="loading || busy"
-        @click="confirmDelete"
-      >
-        <i class="bi bi-trash" aria-hidden="true"></i> Excluir página
-      </button>
-    </nav>
-    <div class="article-body">
-      <h1 v-if="historyMode">
-        Histórico de Edições
-        <small>{{ title || slug.replaceAll("_", " ") }}</small>
-      </h1>
-      <h1 v-else class="legacy-edit-title">
-        {{ media ? "Imagem: " : "" }}{{ title || slug.replaceAll("_", " ") }}
-        <span class="legacy-edit-badge"
-          >{{ loaded && !pageExists ? "Criar" : "Editar" }} {{ media ? "Imagem" : "Página" }}</span
+  <div class="article-layout" :class="{ 'has-relations': showCategories }">
+    <section
+      class="card article-card"
+      :class="{ 'legacy-edit-page': !historyMode }"
+    >
+      <nav class="article-toolbar" aria-label="Ações da página">
+        <RouterLink class="article-action" :to="`/${encodeURIComponent(slug)}/`"
+          ><i class="bi bi-arrow-left" aria-hidden="true"></i> Voltar</RouterLink
         >
-      </h1>
-      <p v-if="saveNotice" class="alert alert-info" role="status">
-        {{ saveNotice }}
-      </p>
-      <p v-if="loading" role="status">Carregando…</p>
-      <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
-      <RouterLink
-        v-if="loginRequired"
-        :to="{ path: '/p/login', query: { redirect: route.fullPath } }"
-        >Fazer login para continuar</RouterLink
-      >
-      <template v-if="loaded && !loading && !loginRequired">
-        <form v-if="!historyMode" id="frm_edit" @submit.prevent="save">
-          <label v-if="!pageExists && !media" class="form-label d-block mb-3">
-            Título da página
-            <input v-model="title" name="nome" class="form-control" maxlength="250" required />
-          </label>
-          <input v-else type="hidden" name="nome" :value="title" /><input
-            type="hidden"
-            name="nome_url"
-            :value="slug"
-          />
-          <p class="legacy-edit-warning">
-            <span aria-hidden="true">×</span> Obs.: Não colocar respostas nas
-            especialidades. O foco desta página é somente as perguntas conforme
-            o manual.
-          </p>
-          <template v-if="media">
-            <div class="legacy-image-editor">
-              <button
-                type="button"
-                class="legacy-image-picker"
-                :aria-label="
-                  mediaPreview ? 'Trocar Imagem' : 'Adicionar imagem'
-                "
-                :disabled="busy"
-                @click="imageInput?.click()"
-              >
-                <img v-if="mediaPreview" :src="mediaPreview" :alt="title" />
-                <span v-else class="legacy-image-placeholder"
-                  >adicionar imagem</span
+        <button
+          v-if="!historyMode"
+          type="button"
+          class="article-action"
+          :disabled="!loaded || loading || busy"
+          @click="preview"
+        >
+          <i class="bi bi-eye" aria-hidden="true"></i> Visualizar página
+        </button>
+        <button
+          v-if="!historyMode && loaded && pageExists"
+          type="button"
+          class="article-action text-danger"
+          :disabled="loading || busy"
+          @click="confirmDelete"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i> Excluir página
+        </button>
+      </nav>
+      <div class="article-body">
+        <h1 v-if="historyMode">
+          Histórico de Edições
+          <small>{{ title || slug.replaceAll("_", " ") }}</small>
+        </h1>
+        <h1 v-else class="legacy-edit-title">
+          {{ media ? "Imagem: " : "" }}{{ title || slug.replaceAll("_", " ") }}
+          <span class="legacy-edit-badge"
+            >{{ loaded && !pageExists ? "Criar" : "Editar" }} {{ media ? "Imagem" : "Página" }}</span
+          >
+        </h1>
+        <p v-if="saveNotice" class="alert alert-info" role="status">
+          {{ saveNotice }}
+        </p>
+        <p v-if="loading" role="status">Carregando…</p>
+        <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
+        <RouterLink
+          v-if="loginRequired"
+          :to="{ path: '/p/login', query: { redirect: route.fullPath } }"
+          >Fazer login para continuar</RouterLink
+        >
+        <template v-if="loaded && !loading && !loginRequired">
+          <form v-if="!historyMode" id="frm_edit" @submit.prevent="save">
+            <label v-if="!pageExists && !media" class="form-label d-block mb-3">
+              Título da página
+              <input v-model="title" name="nome" class="form-control" maxlength="250" required />
+            </label>
+            <input v-else type="hidden" name="nome" :value="title" /><input
+              type="hidden"
+              name="nome_url"
+              :value="slug"
+            />
+            <p class="legacy-edit-warning">
+              <span aria-hidden="true">×</span> Obs.: Não colocar respostas nas
+              especialidades. O foco desta página é somente as perguntas conforme
+              o manual.
+            </p>
+            <template v-if="media">
+              <div class="legacy-image-editor">
+                <button
+                  type="button"
+                  class="legacy-image-picker"
+                  :aria-label="
+                    mediaPreview ? 'Trocar Imagem' : 'Adicionar imagem'
+                  "
+                  :disabled="busy"
+                  @click="imageInput?.click()"
                 >
-              </button>
-              <input
-                ref="imageInput"
-                type="file"
-                class="visually-hidden"
-                aria-label="Enviar imagem"
-                accept=".jpg,.jpeg,.png,.svg"
-                :disabled="busy"
-                @change="upload"
-              />
-            </div>
-            <div v-if="mediaPreview" class="legacy-edit-actions">
-              <button
-                type="button"
-                class="btn legacy-edit-remove"
-                :disabled="busy"
-                @click="removeImage"
-              >
-                Remover Imagem
-              </button>
-              <button
-                type="button"
-                class="btn legacy-edit-save"
-                :disabled="busy"
-                @click="imageInput?.click()"
-              >
-                Trocar Imagem
-              </button>
-            </div>
-            <p v-if="busy" role="status">Aguarde…</p>
-          </template>
-          <div v-else class="workspace-edit-grid" :class="{ 'has-categories': categoryOptions !== null }">
-            <div class="workspace-edit-content">
+                  <img v-if="mediaPreview" :src="mediaPreview" :alt="title" />
+                  <span v-else class="legacy-image-placeholder"
+                    >adicionar imagem</span
+                  >
+                </button>
+                <input
+                  ref="imageInput"
+                  type="file"
+                  class="visually-hidden"
+                  aria-label="Enviar imagem"
+                  accept=".jpg,.jpeg,.png,.svg"
+                  :disabled="busy"
+                  @change="upload"
+                />
+              </div>
+              <div v-if="mediaPreview" class="legacy-edit-actions">
+                <button
+                  type="button"
+                  class="btn legacy-edit-remove"
+                  :disabled="busy"
+                  @click="removeImage"
+                >
+                  Remover Imagem
+                </button>
+                <button
+                  type="button"
+                  class="btn legacy-edit-save"
+                  :disabled="busy"
+                  @click="imageInput?.click()"
+                >
+                  Trocar Imagem
+                </button>
+              </div>
+              <p v-if="busy" role="status">Aguarde…</p>
+            </template>
+            <template v-else>
               <LegacyWikiEditor
                 v-model="source"
                 :key="slug"
@@ -417,109 +421,111 @@ async function removeImage() {
                   {{ busy ? "Aguarde…" : "Salvar" }}
                 </button>
               </div>
+            </template>
+          </form>
+          <template v-else>
+            <p v-if="!revisions.length">Ainda não há revisões registradas.</p>
+            <div class="table-responsive">
+              <table v-if="revisions.length" class="table align-middle">
+                <thead>
+                  <tr>
+                    <th>Comparar</th>
+                    <th>Revisão</th>
+                    <th>Autor</th>
+                    <th class="text-end">Caracteres</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="r in revisions" :key="r.id">
+                    <td>
+                      <input
+                        v-model="older"
+                        type="radio"
+                        :value="r.id"
+                        name="older"
+                        :aria-label="`Versão anterior ${r.id}`"
+                      />
+                      <input
+                        v-model="newer"
+                        type="radio"
+                        :value="r.id"
+                        name="newer"
+                        :aria-label="`Versão nova ${r.id}`"
+                      />
+                    </td>
+                    <td>{{ r.id }}</td>
+                    <td>
+                      <span class="history-author">
+                        <AuthorAvatar :photo="r.author_photo" />
+                        <RouterLink v-if="r.author_profile_id" :to="'/u/' + r.author_profile_id">{{ r.author || "Usuário" }}</RouterLink>
+                        <span v-else>{{ r.author || "Usuário" }}</span>
+                      </span>
+                    </td>
+                    <td class="history-character-count text-end">
+                      {{
+                        Array.from(r.source || "").length.toLocaleString("pt-BR")
+                      }}
+                    </td>
+                    <td>{{ r.created_at }}</td>
+                    <td>
+                      <button
+                        class="btn btn-sm btn-outline-primary me-2"
+                        @click="showRevision(r)"
+                      >
+                        Visualizar</button
+                      ><button
+                        class="btn btn-sm btn-outline-secondary"
+                        :disabled="busy"
+                        v-if="userRole(api.state.user) !== 'reader'"
+                        @click="restore(r.id)"
+                      >
+                        Restaurar
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <CategoryEditor v-if="categoryOptions !== null" ref="categoryEditor" v-model="categories"
-              :options="categoryOptions" :disabled="busy" />
-          </div>
-        </form>
-        <template v-else>
-          <p v-if="!revisions.length">Ainda não há revisões registradas.</p>
-          <div class="table-responsive">
-            <table v-if="revisions.length" class="table align-middle">
-              <thead>
-                <tr>
-                  <th>Comparar</th>
-                  <th>Revisão</th>
-                  <th>Autor</th>
-                  <th class="text-end">Caracteres</th>
-                  <th>Data</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="r in revisions" :key="r.id">
-                  <td>
-                    <input
-                      v-model="older"
-                      type="radio"
-                      :value="r.id"
-                      name="older"
-                      :aria-label="`Versão anterior ${r.id}`"
-                    />
-                    <input
-                      v-model="newer"
-                      type="radio"
-                      :value="r.id"
-                      name="newer"
-                      :aria-label="`Versão nova ${r.id}`"
-                    />
-                  </td>
-                  <td>{{ r.id }}</td>
-                  <td>
-                    <span class="history-author">
-                      <AuthorAvatar :photo="r.author_photo" />
-                      <RouterLink v-if="r.author_profile_id" :to="'/u/' + r.author_profile_id">{{ r.author || "Usuário" }}</RouterLink>
-                      <span v-else>{{ r.author || "Usuário" }}</span>
-                    </span>
-                  </td>
-                  <td class="history-character-count text-end">
-                    {{
-                      Array.from(r.source || "").length.toLocaleString("pt-BR")
-                    }}
-                  </td>
-                  <td>{{ r.created_at }}</td>
-                  <td>
-                    <button
-                      class="btn btn-sm btn-outline-primary me-2"
-                      @click="showRevision(r)"
-                    >
-                      Visualizar</button
-                    ><button
-                      class="btn btn-sm btn-outline-secondary"
-                      :disabled="busy"
-                      v-if="userRole(api.state.user) !== 'reader'"
-                      @click="restore(r.id)"
-                    >
-                      Restaurar
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <button
-            v-if="before"
-            class="btn btn-outline-primary me-2"
-            :disabled="busy"
-            @click="more"
-          >
-            Mais revisões</button
-          ><button
-            v-if="revisions.length > 1"
-            class="btn btn-primary"
-            @click="showComparison"
-          >
-            Comparar versões
-          </button>
+            <button
+              v-if="before"
+              class="btn btn-outline-primary me-2"
+              :disabled="busy"
+              @click="more"
+            >
+              Mais revisões</button
+            ><button
+              v-if="revisions.length > 1"
+              class="btn btn-primary"
+              @click="showComparison"
+            >
+              Comparar versões
+            </button>
+          </template>
         </template>
-      </template>
-      <div v-if="error && !loginRequired" class="mt-3">
-        <button
-          v-if="media && dirty"
-          class="btn btn-info me-2"
-          :disabled="busy"
-          @click="save"
-        >
-          Salvar novamente</button
-        ><button class="btn btn-outline-secondary" @click="load">
-          Recarregar
-        </button>
-        <p v-if="dirty">
-          Copie o conteúdo antes de recarregar para preservar suas alterações.
-        </p>
+        <div v-if="error && !loginRequired" class="mt-3">
+          <button
+            v-if="media && dirty"
+            class="btn btn-info me-2"
+            :disabled="busy"
+            @click="save"
+          >
+            Salvar novamente</button
+          ><button class="btn btn-outline-secondary" @click="load">
+            Recarregar
+          </button>
+          <p v-if="dirty">
+            Copie o conteúdo antes de recarregar para preservar suas alterações.
+          </p>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+    <aside v-if="showCategories && categoryOptions" class="page-relations" aria-label="Opções de edição">
+      <CategoryEditor ref="categoryEditor" v-model="categories"
+        :options="categoryOptions" :disabled="busy" />
+    </aside>
+  </div>
   <WorkspaceModal
     v-if="modal"
     :busy="modal === 'delete' && busy"
@@ -604,20 +610,6 @@ async function removeImage() {
 </template>
 
 <style scoped>
-.workspace-edit-grid {
-  display: grid;
-  gap: 1rem;
-  align-items: start;
-}
-.workspace-edit-content {
-  min-width: 0;
-}
-@media (min-width: 992px) {
-  .workspace-edit-grid.has-categories {
-    grid-template-columns: minmax(0, 1fr) minmax(15rem, 25%);
-  }
-}
-
 .workspace-image-preview {
   max-width: 100%;
   height: auto;

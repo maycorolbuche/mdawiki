@@ -675,7 +675,8 @@ summary:focus-visible {
   padding: 5px 0;
 }
 
-.category-tags a {
+.category-tags a,
+.category-tags .category-tag {
   display: inline-block;
   border: 1px solid #e5e5e5;
   border-left: 4px solid #4a89dc;
