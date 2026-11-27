@@ -305,3 +305,31 @@ test("categories can be selected, added as free text, and removed", async ({ pag
     categories: ["Atividades-Recreativas", "Categoria nova"],
   });
 });
+
+test("the editor saves one card of each template type and repeatable positions", async ({ page }) => {
+  const writes = await setup(page, { templates: [], category_options: [] });
+  await page.goto("/Teste/editar");
+  const selector = page.getByLabel("Tipo de template");
+  const add = page.getByRole("button", { name: "Adicionar template", exact: true });
+  await selector.selectOption("person");
+  await add.click();
+  await expect(selector.locator('option[value="person"]')).toHaveCount(0);
+  const person = page.locator(".relation-panel").filter({ has: page.getByRole("button", { name: "Remover Pessoa", exact: true }) });
+  await person.getByRole("button", { name: "Adicionar cargo" }).click();
+  await person.getByRole("button", { name: "Adicionar cargo" }).click();
+  await person.getByLabel("Cargo", { exact: true }).first().fill("Cargo A");
+  await person.getByLabel("Cargo", { exact: true }).last().fill("Cargo B");
+  await selector.selectOption("adventurer_honor");
+  await add.click();
+  await page.getByLabel("Especialidade obsoleta").check();
+  await selector.selectOption("pathfinder_honor");
+  await add.click();
+  await page.getByRole("button", { name: "Remover Especialidade de Desbravadores" }).click();
+  await expect(selector.locator('option[value="pathfinder_honor"]')).toHaveCount(1);
+  await page.getByRole("button", { name: "Salvar", exact: true }).click();
+  await expect(page).toHaveURL(/\/Teste\/$/);
+  expect(writes.find(write => write.path.endsWith("/pages/Teste"))?.body.templates).toMatchObject([
+    { template: "person", meta: { positions: [{ title: "Cargo A" }, { title: "Cargo B" }] } },
+    { template: "adventurer_honor", meta: { is_obsolete: true } },
+  ]);
+});

@@ -16,6 +16,8 @@ const LegacyWikiEditor = defineAsyncComponent(
 import { RequestError, userRole, type SessionClient } from "../services/session";
 import CategoryEditor from "./CategoryEditor.vue";
 import AuthorAvatar from "./AuthorAvatar.vue";
+import PageTemplateEditor from "./PageTemplateEditor.vue";
+import { describeTemplate, templateLabels, type PageTemplate } from "../services/page-templates";
 import RevisionComparison from "./RevisionComparison.vue";
 import RevisionMetadata from "./RevisionMetadata.vue";
 import WorkspaceModal from "./WorkspaceModal.vue";
@@ -69,6 +71,7 @@ async function preview() {
   try {
     const result = await api.request(endpoint.value + "/preview", "POST", {
       source: source.value,
+      ...(templates.value === null ? {} : { templates: templates.value }),
     });
     if (generation !== previewGeneration) return;
     if (typeof result?.html !== "string")
@@ -102,10 +105,13 @@ const mediaPreview = computed(() =>
 type Category = { slug?: string; title: string };
 const categories = ref<Category[]>([]);
 const categoryOptions = ref<Category[] | null>(null);
+const templates = ref<PageTemplate[] | null>(null);
+const originalTemplates = ref("null");
 const originalCategories = ref<Category[]>(categories.value);
 const categoryEditor = ref<InstanceType<typeof CategoryEditor>>();
 const dirty = computed(
-  () => source.value !== original.value || title.value !== originalTitle.value || categories.value !== originalCategories.value,
+  () => source.value !== original.value || title.value !== originalTitle.value || categories.value !== originalCategories.value
+    || JSON.stringify(templates.value) !== originalTemplates.value,
 );
 const historyCategories = computed(() => revisions.value.map((revision, index) => {
   const current: RevisionCategory[] | undefined = revision.categories;
@@ -123,9 +129,9 @@ const historyCategories = computed(() => revisions.value.map((revision, index) =
   };
 }));
 const loaded = ref(false);
-const showCategories = computed(() =>
+const showEditorSidebar = computed(() =>
   loaded.value && !loading.value && !loginRequired.value && !historyMode.value
-  && !media.value && categoryOptions.value !== null
+  && !media.value && (categoryOptions.value !== null || templates.value !== null)
 );
 const changes = computed(() => {
   const a =
@@ -174,6 +180,8 @@ async function load() {
     } else {
       categories.value = originalCategories.value = data.categories ?? [];
       categoryOptions.value = data.category_options ?? null;
+      templates.value = data.templates ?? null;
+      originalTemplates.value = JSON.stringify(templates.value);
       source.value = data.source;
       original.value = data.source;
       media.value = data.media;
@@ -210,7 +218,7 @@ async function save() {
   categoryEditor.value?.commit();
   await persist(source.value);
 }
-async function persist(nextSource: string): Promise<boolean> {
+async function persist(nextSource: string, nextTemplates = templates.value): Promise<boolean> {
   busy.value = true;
   error.value = "";
   saveNotice.value = "";
@@ -221,12 +229,15 @@ async function persist(nextSource: string): Promise<boolean> {
       ...(!media.value && categoryOptions.value !== null
         ? { categories: categories.value.map((category) => category.slug || category.title) }
         : {}),
+      ...(nextTemplates === null ? {} : { templates: nextTemplates }),
       base_version: version.value,
     });
     source.value = nextSource;
     original.value = nextSource;
     originalTitle.value = title.value;
     originalCategories.value = categories.value;
+    templates.value = nextTemplates;
+    originalTemplates.value = JSON.stringify(nextTemplates);
     if (result.unchanged === true) {
       version.value = result.base_version;
       saveNotice.value =
@@ -249,7 +260,7 @@ function confirmDelete() {
 }
 async function deletePage() {
   if (busy.value) return;
-  if (await persist("")) closeModal();
+  if (await persist("", templates.value === null ? null : [])) closeModal();
 }
 async function more() {
   busy.value = true;
@@ -314,7 +325,7 @@ async function removeImage() {
 }
 </script>
 <template>
-  <div class="article-layout" :class="{ 'has-relations': showCategories }">
+  <div class="article-layout" :class="{ 'has-relations': showEditorSidebar }">
     <section
       class="card article-card"
       :class="{ 'legacy-edit-page': !historyMode }"
@@ -556,9 +567,10 @@ async function removeImage() {
         </div>
       </div>
     </section>
-    <aside v-if="showCategories && categoryOptions" class="page-relations" aria-label="Opções de edição">
-      <CategoryEditor ref="categoryEditor" v-model="categories"
+    <aside v-if="showEditorSidebar" class="page-relations" aria-label="Opções de edição">
+      <CategoryEditor v-if="categoryOptions" ref="categoryEditor" v-model="categories"
         :options="categoryOptions" :disabled="busy" />
+      <PageTemplateEditor v-if="templates" v-model="templates" :disabled="busy" />
     </aside>
   </div>
   <WorkspaceModal
@@ -628,6 +640,13 @@ async function removeImage() {
         </ul>
         <p v-else>Nenhuma categoria</p>
       </template>
+      <template v-if="selected.templates?.length">
+        <h3 class="h6">Templates</h3>
+        <section v-for="item in (selected.templates as PageTemplate[])" :key="item.template">
+          <strong>{{ templateLabels[item.template] }}</strong>
+          <p class="template-summary">{{ describeTemplate(item) }}</p>
+        </section>
+      </template>
       <pre class="revision-source">{{ selected.source }}</pre>
     </template>
     <template v-if="modal === 'delete'" #footer>
@@ -652,6 +671,7 @@ async function removeImage() {
 </template>
 
 <style scoped>
+.template-summary { white-space: pre-line; overflow-wrap: anywhere; }
 .workspace-image-preview {
   max-width: 100%;
   height: auto;
