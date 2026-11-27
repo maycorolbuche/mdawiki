@@ -236,11 +236,11 @@ async function restore(id: number) {
   busy.value = true;
   error.value = "";
   try {
-    await api.request(endpoint.value + "/restore", "POST", {
+    const result = await api.request(endpoint.value + "/restore", "POST", {
       revision: id,
       base_version: version.value,
     });
-    await load();
+    await router.push("/" + encodeURIComponent(result.slug || slug.value) + "/");
   } catch (e) {
     error.value = (e as Error).message;
   } finally {
