@@ -271,7 +271,19 @@ test("categories can be selected, added as free text, and removed", async ({ pag
       { slug: "Atividades-Recreativas", title: "Atividades Recreativas" },
     ],
   });
+  await page.setViewportSize({ width: 1535, height: 1000 });
   await page.goto("/Teste/editar");
+  const article = page.locator(".article-layout > .article-card");
+  const sidebar = page.locator(".article-layout > .page-relations");
+  await expect(sidebar.getByRole("heading", { name: "Categorias 1" })).toBeVisible();
+  await expect(sidebar.locator(".relation-blue .category-tags")).toContainText("Especialidades");
+  const articleBox = (await article.boundingBox())!;
+  const sidebarBox = (await sidebar.boundingBox())!;
+  expect(sidebarBox.x).toBeGreaterThanOrEqual(articleBox.x + articleBox.width);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobileArticle = (await article.boundingBox())!;
+  expect((await sidebar.boundingBox())!.y).toBeGreaterThanOrEqual(mobileArticle.y + mobileArticle.height);
+  await page.setViewportSize({ width: 1535, height: 1000 });
   const input = page.getByRole("textbox", { name: "Nome da categoria" });
   await page.getByRole("button", { name: "Remover Especialidades" }).click();
   await input.fill("atividades");
