@@ -25,6 +25,8 @@ const route = useRoute(),
   api = inject<SessionClient>("session")!;
 const slug = computed(() => String(route.params.slug)),
   historyMode = computed(() => route.meta.action === "history");
+type RevisionCategory = { key: string; title: string };
+
 const title = ref(""),
   source = ref(""),
   original = ref(""),
@@ -105,6 +107,21 @@ const categoryEditor = ref<InstanceType<typeof CategoryEditor>>();
 const dirty = computed(
   () => source.value !== original.value || title.value !== originalTitle.value || categories.value !== originalCategories.value,
 );
+const historyCategories = computed(() => revisions.value.map((revision, index) => {
+  const current: RevisionCategory[] | undefined = revision.categories;
+  const previous: RevisionCategory[] | undefined = revisions.value[index + 1]?.categories;
+  const previousKeys = new Set(previous?.map(category => category.key));
+  const currentKeys = new Set(current?.map(category => category.key));
+
+  return {
+    revision,
+    current: current?.map(category => ({
+      ...category,
+      added: previous !== undefined && !previousKeys.has(category.key),
+    })),
+    removed: current === undefined ? [] : (previous ?? []).filter(category => !currentKeys.has(category.key)),
+  };
+}));
 const loaded = ref(false);
 const showCategories = computed(() =>
   loaded.value && !loading.value && !loginRequired.value && !historyMode.value
@@ -432,13 +449,14 @@ async function removeImage() {
                     <th>Comparar</th>
                     <th>Revisão</th>
                     <th>Autor</th>
+                    <th>Categorias</th>
                     <th class="text-end">Caracteres</th>
                     <th>Data</th>
                     <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="r in revisions" :key="r.id">
+                  <tr v-for="({ revision: r, current, removed }) in historyCategories" :key="r.id">
                     <td>
                       <input
                         v-model="older"
@@ -462,6 +480,23 @@ async function removeImage() {
                         <RouterLink v-if="r.author_profile_id" :to="'/u/' + r.author_profile_id">{{ r.author || "Usuário" }}</RouterLink>
                         <span v-else>{{ r.author || "Usuário" }}</span>
                       </span>
+                    </td>
+                    <td class="history-categories">
+                      <template v-if="current">
+                        <ul v-if="current.length || removed.length"
+                          class="list-unstyled d-flex flex-wrap gap-1 mb-0">
+                          <li v-for="category in current" :key="category.key"
+                            class="history-category" :class="{ 'history-category-added': category.added }">
+                            <template v-if="category.added"><span aria-hidden="true">+ </span><span class="visually-hidden">Adicionada: </span></template>{{ category.title }}
+                          </li>
+                          <li v-for="category in removed" :key="category.key"
+                            class="history-category history-category-removed">
+                            <span aria-hidden="true">− </span><span class="visually-hidden">Removida: </span>{{ category.title }}
+                          </li>
+                        </ul>
+                        <span v-else class="text-muted">Nenhuma</span>
+                      </template>
+                      <span v-else class="text-muted">Indisponíveis</span>
                     </td>
                     <td class="history-character-count text-end">
                       {{
@@ -620,6 +655,21 @@ async function removeImage() {
 .workspace-image-preview {
   max-width: 100%;
   height: auto;
+}
+.history-categories {
+  min-width: 10rem;
+}
+.history-category {
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #f1f1f1;
+  overflow-wrap: anywhere;
+}
+.history-category-added {
+  background: #d3f9d8;
+}
+.history-category-removed {
+  background: #ffe3e3;
 }
 .history-author {
   display: inline-flex;

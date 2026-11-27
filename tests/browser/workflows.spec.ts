@@ -288,14 +288,17 @@ test('unchanged save stays in editor and explains that no revision was created',
   await expect(page.getByLabel('Código wiki', { exact: true })).toHaveValue('Original')
 })
 
-test('history shows source character counts between author and date including Unicode and empty revisions', async ({ page }) => {
+test('history shows category changes and counts Unicode source characters', async ({ page }) => {
   await mock(page, () => ({ title: 'Teste', base_version: 'v2', next_cursor: null, revisions: [
-    { id: 2, source: 'Ação🙂', author: 'Editor', created_at: '2026-11-19 12:00:00' },
-    { id: 1, source: '', author: 'Editor', created_at: '2026-11-18 12:00:00' },
+    { id: 2, source: 'Ação🙂', categories: [{ key: 'nova', title: 'Nova categoria' }], author: 'Editor', created_at: '2026-11-19 12:00:00' },
+    { id: 1, source: '', categories: [{ key: 'antiga', title: 'Categoria antiga' }], author: 'Editor', created_at: '2026-11-18 12:00:00' },
   ] }), true)
   await page.goto('/Teste/historico')
   const table = page.locator('.article-body table')
-  await expect(table.getByRole('columnheader')).toHaveText(['Comparar', 'Revisão', 'Autor', 'Caracteres', 'Data', 'Ações'])
+  await expect(table.getByRole('columnheader')).toHaveText(['Comparar', 'Revisão', 'Autor', 'Categorias', 'Caracteres', 'Data', 'Ações'])
+  await expect(table.locator('tbody tr').first().locator('.history-category-added')).toContainText('Nova categoria')
+  await expect(table.locator('tbody tr').first().locator('.history-category-removed')).toContainText('Categoria antiga')
+  await expect(table.locator('tbody tr').last().locator('.history-category-added, .history-category-removed')).toHaveCount(0)
   await expect(table.locator('.history-character-count')).toHaveText(['5', '0'])
 })
 
