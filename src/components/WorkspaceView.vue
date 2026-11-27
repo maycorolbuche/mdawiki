@@ -117,7 +117,7 @@ const changes = computed(() => {
     b =
       revisions.value.find((r) => Number(r.id) === Number(newer.value))
         ?.source || "";
-  return compare.value ? diffLines(a, b, { timeout: 1000 }) || [] : [];
+  return compare.value ? diffLines(a.replace(/\r\n?/g, "\n"), b.replace(/\r\n?/g, "\n"), { timeout: 1000 }) || [] : [];
 });
 const olderRevision = computed(() =>
   revisions.value.find((r) => Number(r.id) === Number(older.value)),
@@ -586,6 +586,13 @@ async function removeImage() {
     />
     <template v-else-if="selected"
       ><RevisionMetadata :revision="selected" />
+      <template v-if="selected.categories">
+        <h3 class="h6">Categorias</h3>
+        <ul v-if="selected.categories.length">
+          <li v-for="category in selected.categories" :key="category.key">{{ category.title }}</li>
+        </ul>
+        <p v-else>Nenhuma categoria</p>
+      </template>
       <pre class="revision-source">{{ selected.source }}</pre>
     </template>
     <template v-if="modal === 'delete'" #footer>
