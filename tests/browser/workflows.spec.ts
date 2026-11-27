@@ -94,8 +94,9 @@ test('conflict keeps the edited source visible and never overwrites silently', a
 test('history compares and restores an actual selected revision through API', async ({ page }) => {
   let restored = false
   await mock(page, (path, method, data) => {
-    if (path.endsWith('/restore')) { expect(data.revision).toBe(1); restored = true; return { revision: 3 } }
-    return { title: 'Teste', base_version: 'v2', next_cursor: null, revisions: [ ...(restored ? [{ id: 3, source: 'Antigo\n', author: 'Editor', created_at: '2026-11-17 13:00:00' }] : []), { id: 2, source: 'Novo\n', author: 'Editor', created_at: '2026-11-17 12:00:00' }, { id: 1, source: 'Antigo\n', author: 'Editor', created_at: '2026-11-17 11:00:00' }] }
+    if (path.endsWith('/restore')) { expect(data).toEqual({ revision: 1, base_version: 'v2' }); restored = true; return { slug: 'Teste', revision: 3 } }
+    if (path === '/view/Teste') return { id: 'teste', slug: 'Teste', title: 'Teste', html: restored ? '<p>Antigo</p>' : '<p>Novo</p>' }
+    return { title: 'Teste', base_version: 'v2', next_cursor: null, revisions: [ { id: 2, source: 'Novo\n', author: 'Editor', created_at: '2026-11-17 12:00:00' }, { id: 1, source: 'Antigo\n', author: 'Editor', created_at: '2026-11-17 11:00:00' }] }
   }, true)
   await page.goto('/Teste/historico')
   const toolbar = page.getByRole('navigation', { name: 'Ações da página' })
@@ -114,7 +115,8 @@ test('history compares and restores an actual selected revision through API', as
   await expect(page.getByRole('dialog')).toHaveCount(0)
   page.on('dialog', dialog => dialog.accept())
   await page.locator('tbody tr').last().getByRole('button', { name: 'Restaurar' }).click()
-  await expect(page.locator('tbody tr')).toHaveCount(3)
+  await expect(page).toHaveURL(/\/Teste\/$/)
+  await expect(page.locator('.wiki-content')).toContainText('Antigo')
   expect(restored).toBe(true)
 })
 
